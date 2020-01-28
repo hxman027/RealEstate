@@ -1,5 +1,5 @@
 # An Analysis on Commercial Real Estate Property Assessment and Property Tax in BC
-Project proposed by Harry Xu \
+Project proposed by Harry Xu (Altus Group) \
 Graduate consultants: Gian Carlo Diluvi, Mallory Flynn, Sophia Li, Vittorio Romaniello \
 Undergraduate consultants: Peter Han, Yuetong Liu, Leonie Lu, Yuting Wen \
 Instructors: Gabriela Cohen Freue, Miguel Birón \

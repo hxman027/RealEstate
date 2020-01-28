@@ -1,0 +1,5 @@
+Real Estate project TO DO
+(Update: Jan 28.)
+
+- Populate folders with files/data
+- Delete folders that are not needed (just brought them from previous project)

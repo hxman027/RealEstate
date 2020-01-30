@@ -2,6 +2,7 @@
 Project proposed by Harry Xu (Altus Group) \
 
 #make table here
+
 Graduate consultants: Gian Carlo Diluvi, Mallory Flynn, Sophia Li, Vittorio Romaniello \
 Undergraduate consultants: Peter Han, Yuetong Liu, Leonie Lu, Yuting Wen \
 Instructors: Gabriela Cohen Freue, Miguel Birón \
@@ -9,7 +10,7 @@ STAT 450/550 Techniques of Statistical Consulting \
 UBC Statistics
 
 ## Project background
-Every year, all property owners in BC have to pay property taxes&mdash;the single greatest operating expense. The property tax is determined based on property assessment, and property tax rate (mill rates). This project will be a value-add to the business in projecting commercial real estate property taxes, and providing tax and assessment insights for different neighborhoods/and or property types. If time allow, a statistical research question can be explored.
+Every year, all property owners in BC have to pay property taxes&mdash;the single greatest operating expense. The property tax is determined based on property assessment and property tax rate (mill rates). This project will be a value-add to the business in projecting commercial real estate property taxes, and providing tax and assessment insights for different neighborhoods/and or property types. If time allow, a statistical research question can be explored.
 
 ## Project objectives
 * To **predict** the property tax for a given property for the upcoming year.

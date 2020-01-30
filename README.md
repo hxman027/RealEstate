@@ -5,12 +5,15 @@ STAT 450/550 Techniques of Statistical Consulting
 An Analysis on Commercial Real Estate Property Assessment and Property Tax in BC
 --------------------------------------------------------------------------------
 
+Researcher: Harry Xu (Altus Group)
+
 | Graduate consultants  | Undergraduate consultants | Instructors |
 | :---: | :---: | :---: |
 | Gian Carlo Diluvi | Peter Han | Gabriela Cohen Freue |
 | Mallory Flynn | Yuetong Liu | Lang Wu |
 | Sophia Li | Leonie Lu | Estella Qi |
 | Vittorio Romaniello | Yuting Wen | Miguel Birón |
+
 
 
 ### Project background

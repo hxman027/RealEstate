@@ -1,3 +1,8 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
 # An Analysis on Commercial Real Estate Property Assessment and Property Tax in BC
 Project proposed by Harry Xu (Altus Group) \
 
@@ -19,6 +24,7 @@ Every year, all property owners in BC have to pay property taxes&mdash;the singl
 ## Directory roadmap
 (We may want to edit this once we have better-defined folders. Below an example.)
 Each directory includes its own README file. In general:
+
 * `doc` includes the written portions of the project: main, sections, appendices, and project outline tex/pdfs/aux files.
 * `misc` contains miscelaneous files.
 * `ref` has the bib file for generating the project's references.

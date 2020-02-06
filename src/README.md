@@ -1,1 +1,2 @@
-Code developed for the project goes here. Ideally we would have one folder per language (so an R folder, a Python folder, and so on). (If we only use one language, then this is not necessary.) Also, we might want to include an R project to guarantee reproducibility.
+# README 
+This folders contains all relevant source codes for this project. 

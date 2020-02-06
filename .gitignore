@@ -1,0 +1,3 @@
+# exclude everything in data folder except README
+data/*
+!data/README.md

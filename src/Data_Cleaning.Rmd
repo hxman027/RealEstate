@@ -1,0 +1,127 @@
+---
+title: "Data Cleaning"
+author: "YuetongLiu"
+date: '2020-02-08'
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r install, include=FALSE}
+# install.packages(c("dplyr","here","readxl"))
+library(dplyr)
+library(here)
+library(readxl)
+```
+
+# Load Data
+
+```{r load}
+assessment.1620 <- read.csv(here("data/Assessment", "2016 - 2020 Raw.csv"),header = F)
+col.name <- read_excel(here("data/Assessment", "2020 Only.xlsx"))
+
+colnames(assessment.1620) <- colnames(col.name)
+
+```
+
+# Data Cleaning
+
+## Select features relevent to MillRate, city around Vancouver, and TaxClass in 01,05,06
+```{r filter}
+municipality.list = c(
+  "Burnaby", 
+  "Coquitlam", 
+  "Delta", 
+  "Langley - City", 
+  "Langley - Township",
+  "Maple Ridge",
+  "Maple Ridge Rural", 
+  "North Vancouver - City",
+  "North Vancouver - Dist",
+  "Pitt Meadows", 
+  "Port Coquitlam", 
+  "Port Moody", 
+  "Richmond", 
+  "Surrey", 
+  "Vancouver", 
+  "White Rock", 
+  "West Vancouver", 
+  "Bowen Island", 
+  "Anmore", 
+  "Belcarra",
+  "Lions Bay")
+
+
+# Select only relevent features
+assessment.thin <- assessment.1620 %>%
+  select(PIC,Year,AssessorAreaCode:AddressAssessorMunicipalityDesc, TaxClassCode:TaxClassTaxRate)%>% 
+  filter(TaxClassCode %in% c("01","05","06"))%>%
+  filter(AddressAssessorMunicipalityDesc %in% municipality.list)
+
+head(assessment.thin)
+dim(assessment.thin)
+
+```
+**TODO: Confirm with Hurry if the list of cities is correct**
+
+## Find Missing Values in Data
+```{r missing}
+# Check Missing Value 
+for (feature in colnames(assessment.thin)){
+  variable = eval(parse(text = paste0("assessment.thin$",feature)))
+  null.count = sum(variable == "NULL")
+  print(paste(feature,null.count, sep = ":"))
+} 
+```
+
+TaxOwingAmountTotalCalculated has 2229 missing values
+
+TaxClassTaxRate has 3658 missing values 
+
+**TODO: Impute TaxClassTaxRate and TaxOwingAmountTotalCalculated**
+
+
+
+## Check if the Data Structure is same as Hurry's description
+
+### Assumption1: CurrentYearTotal = sum(AssessedValuedAmount)
+```{r}
+CurrentYearTotal.test <- assessment.thin%>%
+  group_by(PIC, Year, TaxClassCode)%>%
+  summarise(test = sum(AssessedValueAmt))
+
+total.conflict.set <- merge(assessment.thin, CurrentYearTotal.test, by = c("PIC", "Year", "TaxClassCode"))%>%
+  filter(CurrentYearTotal != test)
+
+head(total.conflict.set)
+
+```
+
+Above is the list properties that their CurrentYearTotal != Improvment Assessment + Land Assessment
+
+**TODO: DISCUSSION **
+
+- Is it because of missing rows?
+
+- Otherwise, shoud then be ignored or imputed?
+
+### Assumpetion2: TaxClassTaxRate is constant at same Year, AddressAssessorMunicipalityDesc, TaxClassCode
+```{r}
+
+(TaxClassTaxRate.text <- assessment.thin%>%
+  group_by(Year, AddressAssessorMunicipalityDesc, AssetTypeDesc,TaxClassCode)%>%
+  filter(TaxClassTaxRate != "NULL")%>%
+  summarise(test = var(as.numeric(TaxClassTaxRate)))%>%
+  filter(test !=0))
+
+  
+```
+New finding: TaxClassTaxRate also associates with AssetTypeDesc.
+
+Above is the list of blocks that doesn't have a constant TaxClassCode and 90% of them are in Delta. One possible reason is the TaxClassTaxRate associates with neighborhood.
+
+**TODO: DISCUSSION**

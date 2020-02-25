@@ -94,6 +94,9 @@ Municipalities<-tax.full$Municipalities
 pct_2017<-(tax.full$`2017`-tax.full$`2016`)/tax.full$`2016`*100
 pct_2018<-tax.pct[,3]<-(tax.full$`2018`-tax.full$`2017`)/tax.full$`2017`*100
 tax.pct<-data.frame(Municipalities,pct_2017,pct_2018)
+
+write.csv(tax.full, here("data","tax_final.csv"))
+write.csv(tax.pct, here("data","tax_pct.csv"))
 ```
 
 Note: 

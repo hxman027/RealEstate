@@ -1,0 +1,27 @@
+---
+title: "draft"
+author: "Xuechun Lu"
+date: "25/02/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+```{r}
+library(tidyverse)
+```
+
+1. read the data and aggregate them
+```{r}
+tax_pct<-read_csv(here("data", "tax_pct.csv"))
+assessment_pct<-read_csv(here("data", "assessment_pct.csv"))
+# omit 2016
+assessment_pct<-na.omit(assessment_pct)
+
+
+```
+
+

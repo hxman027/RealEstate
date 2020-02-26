@@ -13,6 +13,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(tidyverse)
+library(dplyr)
+library(here)
+library(readxl)
 ```
 
 ```{r}
@@ -102,3 +105,9 @@ write.csv(tax.pct, here("data","tax_pct.csv"))
 Note: 
 - tax.full contains tax from 2016-2018 for 20 municipalities
 - tax.pct contains percentage change of tax from 2017-2018.
+
+# aggregate data
+```{r}
+assessment_pct<-read_csv(here("data", "assessment_pct.csv"))
+assessment_pct<-na.omit(assessment_pct)
+```

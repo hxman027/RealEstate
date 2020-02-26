@@ -12,6 +12,9 @@ knitr::opts_chunk$set(echo = TRUE)
 ## R Markdown
 ```{r}
 library(tidyverse)
+library(dplyr)
+library(here)
+library(readxl)
 ```
 
 1. read the data and aggregate them
@@ -46,6 +49,8 @@ write.csv(data_final, here("data","data_final.csv"))
 ```
 
 2. plots
+```{r}
 
+```
 
 

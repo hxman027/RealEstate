@@ -62,9 +62,112 @@ data_final
 
 ```
 
-2. plots
+2. pct_plots
+plot pct change of mill rates
 ```{r}
+dat_1<-data_final %>% subset(Municipalities == "Vancouver") %>% subset(TaxClassCode == "01")
+dat_1
+dat_1$rate_pct
+plot(dat_1$rate_pct)
 
+
+
+
+municipality.list = c(
+  "Burnaby", 
+  "Coquitlam", 
+  "Delta", 
+  "Langley - City", 
+  "Langley - Township",
+  "Maple Ridge",
+  "Maple Ridge Rural", 
+  "North Vancouver - City",
+  "North Vancouver - Dist",
+  "Pitt Meadows", 
+  "Port Coquitlam", 
+  "Port Moody", 
+  "Richmond", 
+  "Surrey", 
+  "Vancouver", 
+  "White Rock", 
+  "West Vancouver", 
+  "Bowen Island", 
+  "Anmore", 
+  "Belcarra",
+  "Lions Bay")
+tax.list<-c("01","05","06")
+tax.list[1]
+# overtall trend for tax class 1
+for (i in 1:3){
+  plot<-data_final %>% 
+  filter(Municipalities %in% municipality.list) %>%
+  filter(TaxClassCode == tax.list[i]) %>%
+  ggplot(aes(x=Year, y=rate_pct, group=Municipalities, color=Municipalities)) +
+    geom_line();
+  print(plot)
+}
+
+
+# for each municipality
+
+for (i in 1:21){
+  plot<-data_final %>% filter(Municipalities == municipality.list[i]) %>% 
+  filter(TaxClassCode %in% tax.list) %>% 
+  ggplot(aes(x=Year, y=rate_pct, group=TaxClassCode, color=TaxClassCode)) +
+    geom_line()
+  print(plot)
+}
+
+
+```
+
+plot pct change of assessment
+```{r}
+# total trend of assessment 
+for (i in 1:21){
+  plot<-data_final %>% filter(Municipalities == municipality.list[i]) %>% 
+  filter(TaxClassCode %in% tax.list) %>% 
+  ggplot(aes(x=Year, y=assessTotal_pct, group=TaxClassCode, color=TaxClassCode)) +
+    geom_line()
+  print(plot)
+}
+```
+
+plot pct change of tax(budget)
+```{r}
+# total trend for budget 
+for (i in 1:21){
+  plot<-data_final %>% filter(Municipalities == municipality.list[i]) %>% 
+  filter(TaxClassCode %in% tax.list) %>% 
+  ggplot(aes(x=Year, y=tax, group=TaxClassCode, color=TaxClassCode)) +
+    geom_line()
+  print(plot)
+}
+```
+
+
+```{r}
+# plot rate and assessment for each municipality. 
+
+for (i in 1:21){
+  test1<-data_final %>% filter(Municipalities == municipality.list[i]) %>% 
+  filter(TaxClassCode %in% tax.list) %>% 
+  ggplot(aes(x=Year, y=rate_pct, group=TaxClassCode, color=TaxClassCode)) +
+   geom_line() 
+  
+  test2<-data_final %>% filter(Municipalities == municipality.list[i]) %>% 
+  filter(TaxClassCode %in% tax.list) %>% 
+  ggplot(aes(x=Year, y=assessTotal_pct, group=TaxClassCode, color=TaxClassCode)) +
+   geom_line() 
+
+  test3<-data_final %>% filter(Municipalities == municipality.list[i]) %>% 
+  filter(TaxClassCode %in% tax.list) %>% 
+  ggplot(aes(x=Year, y=assessTotal_pct, group=TaxClassCode, color=TaxClassCode))+
+   geom_line() 
+  
+  multiplot(test1,test2,test3)
+  
+}
 ```
 
 

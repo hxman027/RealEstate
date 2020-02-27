@@ -161,10 +161,10 @@ rate_class5 <- dat_rate_5 %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMuni
 
 dat_rate_6 <- dat_rate %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="6") 
 #head(dat_rate_6)
-rate_class6 <- dat_rate_6 %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("mill rate for taxClass 6")
+rate_class6 <- dat_rate_6 %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("mill rate for taxClass 6") + theme(legend.position = "none")
 #rate_class6
 
-multiplot(rate_class1, rate_class5, rate_class6)
+#multiplot(rate_class1, rate_class5, rate_class6)
 
 # plot assessed value vesus year for each municipality and tax class
 dat_assess <- assessment_aggregate %>% select(Year, AddressAssessorMunicipalityDesc, TaxClassCode, assessTotal)
@@ -182,18 +182,20 @@ assess_class5 <- dat_assess_5 %>% ggplot(aes(x=Year,y=assessTotal,group=AddressA
 
 dat_assess_6 <- dat_assess %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="6") 
 #head(dat_assess_6)
-assess_class6 <- dat_assess_1 %>% ggplot(aes(x=Year,y=assessTotal,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("assessTotal for taxClass 6")
+assess_class6 <- dat_assess_1 %>% ggplot(aes(x=Year,y=assessTotal,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("assessTotal for taxClass 6") + theme(legend.position = "none")
 #assess_class6
 
-multiplot(assess_class1, assess_class5, assess_class6)
-
-
+#multiplot(assess_class1, assess_class5, assess_class6)
 
 # plot budgets vesus year
 dat_tax_long <- gather(tax_modified, Year, TaxAmount, X2016:X2019, factor_key=TRUE)
-dat_tax_long
+#dat_tax_long
 budget_plot <- dat_tax_long %>% ggplot(aes(x=Year,y=TaxAmount,group=Municipalities,color=Municipalities)) + geom_line() +ggtitle("Tax v.s Year")
-budget_plot
+#budget_plot
+
+multiplot(rate_class1,assess_class1,budget_plot)
+multiplot(rate_class5,assess_class5,budget_plot)
+multiplot(rate_class6,assess_class6,budget_plot)
 ```
 
 
@@ -201,16 +203,50 @@ budget_plot
 pct change of mill rates for each tax class
 ```{r}
 tax.list<-c("01","05","06")
-#tax.list[1]
-# overtall trend for tax class 1
-for (i in 1:3){
-  plot<-pct_final %>% 
+pct_rate1 <- pct_final %>% 
   filter(Municipalities %in% municipality.list) %>%
-  filter(TaxClassCode == tax.list[i]) %>%
+  filter(TaxClassCode == "01") %>%
   ggplot(aes(x=Year, y=rate_pct, group=Municipalities, color=Municipalities)) +
-    geom_line() + ggtitle(tax.list[i])
-  print(plot)
-}
+    geom_line() + ggtitle("taxClass1 pct rate v.s year") + theme(legend.position = "none")
+
+pct_rate5 <- pct_final %>% 
+  filter(Municipalities %in% municipality.list) %>%
+  filter(TaxClassCode == "05") %>%
+  ggplot(aes(x=Year, y=rate_pct, group=Municipalities, color=Municipalities)) +
+    geom_line() + ggtitle("taxClass5 pct rate v.s year") + theme(legend.position = "none")
+
+pct_rate6 <- pct_final %>% 
+  filter(Municipalities %in% municipality.list) %>%
+  filter(TaxClassCode == "06") %>%
+  ggplot(aes(x=Year, y=rate_pct, group=Municipalities, color=Municipalities)) +
+    geom_line() + ggtitle("taxClass6 pct rate v.s year") + theme(legend.position = "none")
+
+pct_assess1 <- pct_final %>% 
+  filter(Municipalities %in% municipality.list) %>%
+  filter(TaxClassCode == "01") %>%
+  ggplot(aes(x=Year, y=assessTotal_pct, group=Municipalities, color=Municipalities)) +
+    geom_line() + ggtitle("taxClass1 pct assessment v.s year") + theme(legend.position = "none")
+
+pct_assess5 <- pct_final %>% 
+  filter(Municipalities %in% municipality.list) %>%
+  filter(TaxClassCode == "05") %>%
+  ggplot(aes(x=Year, y=assessTotal_pct, group=Municipalities, color=Municipalities)) +
+    geom_line() + ggtitle("taxClass5 pct assessment v.s year") + theme(legend.position = "none")
+
+pct_assess6 <- pct_final %>% 
+  filter(Municipalities %in% municipality.list) %>%
+  filter(TaxClassCode == "06") %>%
+  ggplot(aes(x=Year, y=assessTotal_pct, group=Municipalities, color=Municipalities)) +
+    geom_line() + ggtitle("taxClass6 pct assessment v.s year") + theme(legend.position = "none")
+
+tax_156 <- pct_final %>% filter(Municipalities == municipality.list[i]) %>% 
+  filter(TaxClassCode %in% tax.list) %>% 
+  ggplot(aes(x=Year, y=tax)) +
+   geom_line() + theme(legend.position = "none") + ggtitle("tax amount")
+
+multiplot(pct_rate1,pct_assess1,tax_156)
+multiplot(pct_rate5,pct_assess5,tax_156)
+multiplot(pct_rate6,pct_assess6,tax_156)
 ```
 pct change of mill rate for each municipality
 ```{r}
@@ -266,8 +302,8 @@ for (i in 1:21){
 
   test3<-pct_final %>% filter(Municipalities == municipality.list[i]) %>% 
   filter(TaxClassCode %in% tax.list) %>% 
-  ggplot(aes(x=Year, y=tax, group=TaxClassCode, color=TaxClassCode))+
-   geom_line() 
+  ggplot(aes(x=Year, y=tax)) +
+   geom_line() + theme(legend.position = "none")
   
   multiplot(test1,test2,test3)
   
@@ -340,3 +376,13 @@ for (i in 1:21) {
   }
 }
 ```
+
+model fitting
+```{r}
+linear1<-lm(rate_pct~factor(Year)+factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=pct_final)
+summary(linear1)
+
+linear2<-lm(rate_pct~factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=pct_final)
+summary(linear2)
+```
+

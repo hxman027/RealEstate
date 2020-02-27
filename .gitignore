@@ -2,3 +2,4 @@
 data/*
 !data/README.md
 .Rproj.user
+.Rhistory

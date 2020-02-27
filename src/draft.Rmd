@@ -2,7 +2,8 @@
 title: "EDA"
 author: "Xuechun Lu, Yuting Wen, Peter Han"
 date: "25/02/2020"
-output: html_document
+output:
+  github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -50,7 +51,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 ```
 
 1. data processing
-```{r}
+```{r, warning=F, message=F}
 # all municipalities
 municipality.list = c(
   "Burnaby", 
@@ -202,7 +203,6 @@ multiplot(rate_class6,assess_class6,budget_plot)
 3. pct_plots
 pct change of mill rates for each tax class
 ```{r}
-tax.list<-c("01","05","06")
 pct_rate1 <- pct_final %>% 
   filter(Municipalities %in% municipality.list) %>%
   filter(TaxClassCode == "01") %>%
@@ -239,18 +239,16 @@ pct_assess6 <- pct_final %>%
   ggplot(aes(x=Year, y=assessTotal_pct, group=Municipalities, color=Municipalities)) +
     geom_line() + ggtitle("taxClass6 pct assessment v.s year") + theme(legend.position = "none")
 
-tax_156 <- pct_final %>% filter(Municipalities == municipality.list[i]) %>% 
-  filter(TaxClassCode %in% tax.list) %>% 
-  ggplot(aes(x=Year, y=tax)) +
-   geom_line() + theme(legend.position = "none") + ggtitle("tax amount")
 
-multiplot(pct_rate1,pct_assess1,tax_156)
-multiplot(pct_rate5,pct_assess5,tax_156)
-multiplot(pct_rate6,pct_assess6,tax_156)
+
+multiplot(pct_rate1,pct_assess1)
+multiplot(pct_rate5,pct_assess5)
+multiplot(pct_rate6,pct_assess6)
 ```
 pct change of mill rate for each municipality
 ```{r}
 # for each municipality
+tax.list <- c("01","05","06")
 for (i in 1:21){
   plot<-pct_final %>% filter(Municipalities == municipality.list[i]) %>% 
   filter(TaxClassCode %in% tax.list) %>% 

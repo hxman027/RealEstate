@@ -121,6 +121,8 @@ head(dat_rate_6)
 rate_class6 <- dat_rate_6 %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("mill rate for taxClass 6")
 rate_class6
 
+multiplot(rate_class1, rate_class5, rate_class6)
+
 # plot assessed value vesus year for each municipality and tax class
 dat_assess <- assessment_aggregate %>% select(Year, AddressAssessorMunicipalityDesc, TaxClassCode, assessTotal)
 head(dat_assess)
@@ -139,6 +141,10 @@ dat_assess_6 <- dat_assess %>% filter(AddressAssessorMunicipalityDesc %in% munic
 head(dat_assess_6)
 assess_class6 <- dat_assess_1 %>% ggplot(aes(x=Year,y=assessTotal,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("assessTotal for taxClass 6")
 assess_class6
+
+multiplot(assess_class1, assess_class5, assess_class6)
+
+
 
 # plot budgets vesus year
 dat_tax_long <- gather(tax_modified, Year, TaxAmount, X2016:X2019, factor_key=TRUE)
@@ -234,7 +240,7 @@ for (i in 1:21){
 4. box plots of mill rates, grouped by region
 ```{r}
 rate_boxes <- ggplot(dat_rate, aes(x=AddressAssessorMunicipalityDesc,y=rate,fill=TaxClassCode)) + geom_boxplot() + facet_wrap(~TaxClassCode)
-rate_boxes
+rate_boxes + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 ```
 
 

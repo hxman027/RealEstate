@@ -1,6 +1,6 @@
 ---
 title: "EDA"
-author: "Xuechun Lu, Yuting Wen"
+author: "Xuechun Lu, Yuting Wen, Peter Han"
 date: "25/02/2020"
 output: html_document
 ---
@@ -10,16 +10,47 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## R Markdown
-libraries and global variables
+libraries
 ```{r}
 library(tidyverse)
 library(ggplot2)
 library(dplyr)
 library(here)
 library(readxl)
-```
-```{r}
 
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  numPlots = length(plots)
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+ if (numPlots==1) {
+    print(plots[[1]])
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+```
+
+1. data processing
+```{r}
 # all municipalities
 municipality.list = c(
   "Burnaby", 
@@ -43,10 +74,8 @@ municipality.list = c(
   "Anmore", 
   "Belcarra",
   "Lions Bay")
-```
 
-1. read the data and aggregate them
-```{r}
+# budget and assessment data import and process
 tax_pct<-read_csv(here("data", "tax_pct.csv"))
 assessment_pct<-read_csv(here("data", "assessment_pct.csv"))
 # omit 2016
@@ -54,7 +83,7 @@ assessment_pct<-na.omit(assessment_pct)
 assessment_pct<-assessment_pct[,-c(1)]
 names(assessment_pct)[2]<-paste("Municipalities")
 tax_pct<-tax_pct[,-c(1)]
-
+head(tax_pct)
 ```
 Note: tax_pct doesn't have Maple Ridge Rural. We decide to treat Maple Ridge Rural and Maple Ridge with the same tax. 
 
@@ -64,9 +93,10 @@ Note: tax_pct doesn't have Maple Ridge Rural. We decide to treat Maple Ridge Rur
 tax_pct[,4]<-(tax_pct$pct_2017+tax_pct$pct_2018)/2
 tax_pct
 names(tax_pct)[4]<-paste("pct_2019")
-tax_pct
+head(tax_pct)
 ```
 
+aggregate tax and assessment
 ```{r}
 assessment2017<-assessment_pct  %>%  filter(Year=="2017")
 tax2017<-tax_pct[,1:2]
@@ -83,10 +113,11 @@ tax2019<-tax_pct[,c(1,4)]
 assessment2019<-assessment2019 %>% left_join(tax2019, by = c("Municipalities"))
 names(assessment2019)[9]<-paste("tax")
 
-data_final<-assessment2017 %>% full_join(assessment2018) %>% full_join(assessment2019)
-write.csv(data_final, here("data","data_final.csv"))
+pct_final<-assessment2017 %>% full_join(assessment2018) %>% full_join(assessment2019)
+write.csv(pct_final, here("data","data_final.csv"))
 
-data_final
+# all pct data aggregated
+head(pct_final)
 
 ```
 
@@ -98,9 +129,18 @@ head(tax_final)
 # tax_final is the budget
 tax_modified <- tax_final  %>% mutate(X2019=tax_final$X2018*(1+(((tax_final$X2017-tax_final$X2016)/tax_final$X2016 + (tax_final$X2018-tax_final$X2017)/tax_final$X2017)/2)))
 
-# tax_modified contains all the budget from 2016 to 2019
+# tax_modified contains all the budget values from 2016 to 2019
 head(tax_modified)
 ```
+
+global variables
+```{r}
+# all pct aggregated
+pct_final
+# all budget values
+tax_modified
+```
+
 
 2. val_plots
 ```{r}
@@ -111,18 +151,18 @@ head(dat_rate)
 
 dat_rate_1 <- dat_rate %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="1") 
 head(dat_rate_1)
-rate_class1 <- dat_rate_1 %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("mill rate for taxClass 1")
-rate_class1
+rate_class1 <- dat_rate_1 %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("mill rate for taxClass 1") + theme(legend.position = "none")
+#rate_class1
 
 dat_rate_5 <- dat_rate %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="5") 
 head(dat_rate_5)
-rate_class5 <- dat_rate_5 %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("mill rate for taxClass 5")
-rate_class5
+rate_class5 <- dat_rate_5 %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("mill rate for taxClass 5") + theme(legend.position = "none")
+#rate_class5
 
 dat_rate_6 <- dat_rate %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="6") 
 head(dat_rate_6)
 rate_class6 <- dat_rate_6 %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("mill rate for taxClass 6")
-rate_class6
+#rate_class6
 
 multiplot(rate_class1, rate_class5, rate_class6)
 
@@ -132,18 +172,18 @@ head(dat_assess)
 
 dat_assess_1 <- dat_assess %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="1") 
 head(dat_assess_1)
-assess_class1 <- dat_assess_1 %>% ggplot(aes(x=Year,y=assessTotal,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("assessTotal for taxClass 1")
-assess_class1
+assess_class1 <- dat_assess_1 %>% ggplot(aes(x=Year,y=assessTotal,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("assessTotal for taxClass 1") + theme(legend.position = "none")
+#assess_class1
 
 dat_assess_5 <- dat_assess %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="5") 
 head(dat_assess_5)
-assess_class5 <- dat_assess_5 %>% ggplot(aes(x=Year,y=assessTotal,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("assessTotal for taxClass 5")
-assess_class5
+assess_class5 <- dat_assess_5 %>% ggplot(aes(x=Year,y=assessTotal,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("assessTotal for taxClass 5") + theme(legend.position = "none")
+#assess_class5
 
 dat_assess_6 <- dat_assess %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="6") 
 head(dat_assess_6)
 assess_class6 <- dat_assess_1 %>% ggplot(aes(x=Year,y=assessTotal,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("assessTotal for taxClass 6")
-assess_class6
+#assess_class6
 
 multiplot(assess_class1, assess_class5, assess_class6)
 
@@ -158,47 +198,42 @@ budget_plot
 
 
 3. pct_plots
-plot pct change of mill rates
+pct change of mill rates for each tax class
 ```{r}
-dat_1<-data_final %>% subset(Municipalities == "Vancouver") %>% subset(TaxClassCode == "01")
-dat_1
-dat_1$rate_pct
-plot(dat_1$rate_pct)
-
 tax.list<-c("01","05","06")
 tax.list[1]
 # overtall trend for tax class 1
 for (i in 1:3){
-  plot<-data_final %>% 
+  plot<-pct_final %>% 
   filter(Municipalities %in% municipality.list) %>%
   filter(TaxClassCode == tax.list[i]) %>%
   ggplot(aes(x=Year, y=rate_pct, group=Municipalities, color=Municipalities)) +
-    geom_line();
+    geom_line() + ggtitle(tax.list[i])
   print(plot)
 }
-
-
+```
+pct change of mill rate for each municipality
+```{r}
 # for each municipality
 
 for (i in 1:21){
-  plot<-data_final %>% filter(Municipalities == municipality.list[i]) %>% 
+  plot<-pct_final %>% filter(Municipalities == municipality.list[i]) %>% 
   filter(TaxClassCode %in% tax.list) %>% 
   ggplot(aes(x=Year, y=rate_pct, group=TaxClassCode, color=TaxClassCode)) +
-    geom_line()
+    geom_line() + ggtitle(municipality.list[i])
   print(plot)
 }
-
-
 ```
+
 
 plot pct change of assessment
 ```{r}
 # total trend of assessment 
 for (i in 1:21){
-  plot<-data_final %>% filter(Municipalities == municipality.list[i]) %>% 
+  plot<-pct_final %>% filter(Municipalities == municipality.list[i]) %>% 
   filter(TaxClassCode %in% tax.list) %>% 
   ggplot(aes(x=Year, y=assessTotal_pct, group=TaxClassCode, color=TaxClassCode)) +
-    geom_line()
+    geom_line() + ggtitle(municipality.list[i])
   print(plot)
 }
 ```
@@ -207,10 +242,10 @@ plot pct change of tax(budget)
 ```{r}
 # total trend for budget 
 for (i in 1:21){
-  plot<-data_final %>% filter(Municipalities == municipality.list[i]) %>% 
+  plot<-pct_final %>% filter(Municipalities == municipality.list[i]) %>% 
   filter(TaxClassCode %in% tax.list) %>% 
   ggplot(aes(x=Year, y=tax, group=TaxClassCode, color=TaxClassCode)) +
-    geom_line()
+    geom_line() + ggtitle(municipality.list[i])
   print(plot)
 }
 ```
@@ -220,19 +255,19 @@ for (i in 1:21){
 # plot rate and assessment for each municipality. 
 
 for (i in 1:21){
-  test1<-data_final %>% filter(Municipalities == municipality.list[i]) %>% 
+  test1<-pct_final %>% filter(Municipalities == municipality.list[i]) %>% 
   filter(TaxClassCode %in% tax.list) %>% 
   ggplot(aes(x=Year, y=rate_pct, group=TaxClassCode, color=TaxClassCode)) +
    geom_line() 
   
-  test2<-data_final %>% filter(Municipalities == municipality.list[i]) %>% 
+  test2<-pct_final %>% filter(Municipalities == municipality.list[i]) %>% 
   filter(TaxClassCode %in% tax.list) %>% 
   ggplot(aes(x=Year, y=assessTotal_pct, group=TaxClassCode, color=TaxClassCode)) +
    geom_line() 
 
-  test3<-data_final %>% filter(Municipalities == municipality.list[i]) %>% 
+  test3<-pct_final %>% filter(Municipalities == municipality.list[i]) %>% 
   filter(TaxClassCode %in% tax.list) %>% 
-  ggplot(aes(x=Year, y=assessTotal_pct, group=TaxClassCode, color=TaxClassCode))+
+  ggplot(aes(x=Year, y=tax, group=TaxClassCode, color=TaxClassCode))+
    geom_line() 
   
   multiplot(test1,test2,test3)

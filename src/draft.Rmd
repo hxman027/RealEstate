@@ -12,13 +12,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## R Markdown
 libraries
-```{r}
+```{r, message=F, warning=F}
 library(tidyverse)
 library(ggplot2)
 library(dplyr)
 library(here)
 library(readxl)
+```
 
+```{r}
 multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   library(grid)
   # Make a list from the ... arguments and plotlist

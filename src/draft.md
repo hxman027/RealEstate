@@ -10,41 +10,11 @@ libraries
 
 ``` r
 library(tidyverse)
-```
-
-    ## Warning in as.POSIXlt.POSIXct(Sys.time()): unknown timezone 'zone/tz/2019c.
-    ## 1.0/zoneinfo/America/Vancouver'
-
-    ## -- Attaching packages -------------------------------------------------------------------------------------------- tidyverse 1.3.0 --
-
-    ## v ggplot2 3.2.1     v purrr   0.3.3
-    ## v tibble  2.1.3     v dplyr   0.8.3
-    ## v tidyr   1.0.0     v stringr 1.4.0
-    ## v readr   1.3.1     v forcats 0.4.0
-
-    ## Warning: package 'readr' was built under R version 3.4.4
-
-    ## Warning: package 'stringr' was built under R version 3.4.4
-
-    ## Warning: package 'forcats' was built under R version 3.4.4
-
-    ## -- Conflicts ----------------------------------------------------------------------------------------------- tidyverse_conflicts() --
-    ## x dplyr::filter() masks stats::filter()
-    ## x dplyr::lag()    masks stats::lag()
-
-``` r
 library(ggplot2)
 library(dplyr)
 library(here)
-```
-
-    ## here() starts at /Users/Alkane/Desktop/RealEstate
-
-``` r
 library(readxl)
 ```
-
-    ## Warning: package 'readxl' was built under R version 3.4.4
 
 ``` r
 multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
@@ -279,19 +249,19 @@ budget_plot <- dat_tax_long %>% ggplot(aes(x=Year,y=TaxAmount,group=Municipaliti
 multiplot(rate_class1,assess_class1,budget_plot)
 ```
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-7-1.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-8-1.png)
 
 ``` r
 multiplot(rate_class5,assess_class5,budget_plot)
 ```
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-7-2.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-8-2.png)
 
 ``` r
 multiplot(rate_class6,assess_class6,budget_plot)
 ```
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-7-3.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-8-3.png)
 
 1.  pct\_plots pct change of mill rates for each tax class
 
@@ -337,19 +307,19 @@ pct_assess6 <- pct_final %>%
 multiplot(pct_rate1,pct_assess1)
 ```
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-8-1.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-1.png)
 
 ``` r
 multiplot(pct_rate5,pct_assess5)
 ```
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-8-2.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-2.png)
 
 ``` r
 multiplot(pct_rate6,pct_assess6)
 ```
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-8-3.png) pct change of mill rate for each municipality
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-3.png) pct change of mill rate for each municipality
 
 ``` r
 # for each municipality
@@ -363,12 +333,12 @@ for (i in 1:21){
 }
 ```
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-1.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-2.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-3.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-4.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-5.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-6.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-7.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-8.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-9.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-10.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-11.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-12.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-13.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-14.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-15.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-16.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-17.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-18.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-19.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-20.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-1.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-2.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-3.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-4.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-5.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-6.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-7.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-8.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-9.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-10.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-11.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-12.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-13.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-14.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-15.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-16.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-17.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-18.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-19.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-20.png)
 
     ## geom_path: Each group consists of only one observation. Do you need to
     ## adjust the group aesthetic?
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-9-21.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-21.png)
 
 plot pct change of assessment
 
@@ -383,12 +353,12 @@ for (i in 1:21){
 }
 ```
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-1.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-2.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-3.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-4.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-5.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-6.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-7.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-8.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-9.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-10.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-11.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-12.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-13.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-14.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-15.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-16.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-17.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-18.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-19.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-20.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-1.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-2.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-3.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-4.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-5.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-6.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-7.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-8.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-9.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-10.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-11.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-12.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-13.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-14.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-15.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-16.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-17.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-18.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-19.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-20.png)
 
     ## geom_path: Each group consists of only one observation. Do you need to
     ## adjust the group aesthetic?
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-10-21.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-21.png)
 
 plot pct change of tax(budget)
 
@@ -403,16 +373,16 @@ for (i in 1:21){
 }
 ```
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-1.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-2.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-3.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-4.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-5.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-6.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-1.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-2.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-3.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-4.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-5.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-6.png)
 
     ## Warning: Removed 6 rows containing missing values (geom_path).
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-7.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-8.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-9.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-10.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-11.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-12.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-13.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-14.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-15.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-16.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-17.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-18.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-19.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-20.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-7.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-8.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-9.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-10.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-11.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-12.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-13.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-14.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-15.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-16.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-17.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-18.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-19.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-20.png)
 
     ## geom_path: Each group consists of only one observation. Do you need to
     ## adjust the group aesthetic?
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-11-21.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-21.png)
 
 ``` r
 # plot rate, assessment, and budget for each municipality. 
@@ -438,18 +408,18 @@ for (i in 1:21){
 }
 ```
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-1.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-2.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-3.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-4.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-5.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-6.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-1.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-2.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-3.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-4.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-5.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-6.png)
 
     ## Warning: Removed 6 rows containing missing values (geom_path).
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-7.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-8.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-9.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-10.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-11.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-12.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-13.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-14.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-15.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-16.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-17.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-18.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-19.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-20.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-7.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-8.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-9.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-10.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-11.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-12.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-13.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-14.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-15.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-16.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-17.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-18.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-19.png)![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-20.png)
 
     ## geom_path: Each group consists of only one observation. Do you need to
     ## adjust the group aesthetic?
     ## geom_path: Each group consists of only one observation. Do you need to
     ## adjust the group aesthetic?
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-12-21.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-21.png)
 
 1.  box plots of mill rates, grouped by region
 
@@ -458,7 +428,7 @@ rate_boxes <- ggplot(dat_rate, aes(x=AddressAssessorMunicipalityDesc,y=rate,fill
 rate_boxes 
 ```
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-1.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-14-1.png)
 
 1.  Test correlations between past mill rates and assessed values and government budget.
 
@@ -607,84 +577,84 @@ for (i in 1:21) {
 
     ## [1] "Burnaby"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-1.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-1.png)
 
     ## [1] "Coquitlam"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-2.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-2.png)
 
     ## [1] "Delta"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-3.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-3.png)
 
     ## [1] "Langley - City"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-4.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-4.png)
 
     ## [1] "Langley - Township"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-5.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-5.png)
 
     ## [1] "Maple Ridge"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-6.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-6.png)
 
     ## [1] "Maple Ridge Rural"
     ## [1] "North Vancouver - City"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-7.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-7.png)
 
     ## [1] "North Vancouver - Dist"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-8.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-8.png)
 
     ## [1] "Pitt Meadows"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-9.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-9.png)
 
     ## [1] "Port Coquitlam"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-10.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-10.png)
 
     ## [1] "Port Moody"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-11.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-11.png)
 
     ## [1] "Richmond"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-12.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-12.png)
 
     ## [1] "Surrey"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-13.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-13.png)
 
     ## [1] "Vancouver"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-14.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-14.png)
 
     ## [1] "White Rock"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-15.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-15.png)
 
     ## [1] "West Vancouver"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-16.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-16.png)
 
     ## [1] "Bowen Island"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-17.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-17.png)
 
     ## [1] "Anmore"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-18.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-18.png)
 
     ## [1] "Belcarra"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-19.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-19.png)
 
     ## [1] "Lions Bay"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-20.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-20.png)
 
 ``` r
 for (i in 1:21) {
@@ -699,69 +669,69 @@ for (i in 1:21) {
 
     ## [1] "Burnaby"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-21.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-21.png)
 
     ## [1] "Coquitlam"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-22.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-22.png)
 
     ## [1] "Delta"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-23.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-23.png)
 
     ## [1] "Langley - City"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-24.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-24.png)
 
     ## [1] "Langley - Township"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-25.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-25.png)
 
     ## [1] "Maple Ridge"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-26.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-26.png)
 
     ## [1] "Maple Ridge Rural"
     ## [1] "North Vancouver - City"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-27.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-27.png)
 
     ## [1] "North Vancouver - Dist"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-28.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-28.png)
 
     ## [1] "Pitt Meadows"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-29.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-29.png)
 
     ## [1] "Port Coquitlam"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-30.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-30.png)
 
     ## [1] "Port Moody"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-31.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-31.png)
 
     ## [1] "Richmond"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-32.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-32.png)
 
     ## [1] "Surrey"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-33.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-33.png)
 
     ## [1] "Vancouver"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-34.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-34.png)
 
     ## [1] "White Rock"
     ## [1] "West Vancouver"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-35.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-35.png)
 
     ## [1] "Bowen Island"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-36.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-36.png)
 
     ## [1] "Anmore"
     ## [1] "Belcarra"
@@ -780,82 +750,82 @@ for (i in 1:21) {
 
     ## [1] "Burnaby"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-37.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-37.png)
 
     ## [1] "Coquitlam"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-38.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-38.png)
 
     ## [1] "Delta"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-39.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-39.png)
 
     ## [1] "Langley - City"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-40.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-40.png)
 
     ## [1] "Langley - Township"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-41.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-41.png)
 
     ## [1] "Maple Ridge"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-42.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-42.png)
 
     ## [1] "Maple Ridge Rural"
     ## [1] "North Vancouver - City"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-43.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-43.png)
 
     ## [1] "North Vancouver - Dist"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-44.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-44.png)
 
     ## [1] "Pitt Meadows"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-45.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-45.png)
 
     ## [1] "Port Coquitlam"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-46.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-46.png)
 
     ## [1] "Port Moody"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-47.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-47.png)
 
     ## [1] "Richmond"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-48.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-48.png)
 
     ## [1] "Surrey"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-49.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-49.png)
 
     ## [1] "Vancouver"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-50.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-50.png)
 
     ## [1] "White Rock"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-51.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-51.png)
 
     ## [1] "West Vancouver"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-52.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-52.png)
 
     ## [1] "Bowen Island"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-53.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-53.png)
 
     ## [1] "Anmore"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-54.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-54.png)
 
     ## [1] "Belcarra"
 
     ## [1] "Lions Bay"
 
-![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-15-55.png)
+![](draft_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-16-55.png)
 
 model fitting
 

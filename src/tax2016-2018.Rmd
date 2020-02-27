@@ -1,5 +1,5 @@
 ---
-title: "budget"
+title: "tax"
 author: "Xuechun Lu"
 date: "25/02/2020"
 output: html_document
@@ -105,9 +105,3 @@ write.csv(tax.pct, here("data","tax_pct.csv"))
 Note: 
 - tax.full contains tax from 2016-2018 for 20 municipalities
 - tax.pct contains percentage change of tax from 2017-2018.
-
-# aggregate data
-```{r}
-assessment_pct<-read_csv(here("data", "assessment_pct.csv"))
-assessment_pct<-na.omit(assessment_pct)
-```

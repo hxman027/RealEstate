@@ -1,6 +1,6 @@
 ---
-title: "draft"
-author: "Xuechun Lu"
+title: "EDA"
+author: "Xuechun Lu, Yuting Wen"
 date: "25/02/2020"
 output: html_document
 ---
@@ -61,6 +61,16 @@ write.csv(data_final, here("data","data_final.csv"))
 data_final
 
 ```
+
+2019 tax is missing, we imputed 2019 tax using previous values
+```{r}
+tax_final <- read.csv("~/Desktop/tax_final.csv")
+head(tax_final)
+
+tax_modified <- tax_final  %>% mutate(X2019=tax_final$X2018*(1+(((tax_final$X2017-tax_final$X2016)/tax_final$X2016 + (tax_final$X2018-tax_final$X2017)/tax_final$X2017)/2)))
+head(tax_modified)
+```
+
 
 2. pct_plots
 plot pct change of mill rates

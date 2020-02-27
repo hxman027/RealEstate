@@ -245,7 +245,8 @@ for (i in 1:21){
 rate_boxes <- ggplot(dat_rate, aes(x=AddressAssessorMunicipalityDesc,y=rate,fill=TaxClassCode)) + geom_boxplot() + facet_wrap(~TaxClassCode) + theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none")
 rate_boxes 
 ```
-5. 
+
+5. Test correlations between past mill rates and assessed values and government budget.
 ```{r}
 #tax_final
 #assessment_aggregate
@@ -275,7 +276,33 @@ for(city in municipality.list){
 corr.list
 city.cor <- cbind(city.cor,corr.list)
 #city.cor
-
-
 ```
 
+6. Compute autocorrelations of past mill rates to test the independence of mill rates. 
+```{r}
+# all white noise
+for (i in 1:21) {
+  print(municipality.list[i])
+  dat_tmp <- dat_rate %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list[i] & TaxClassCode %in% "1") %>% select(rate)
+  if (municipality.list[i] != "Maple Ridge Rural") {
+    as.ts(dat_tmp)
+    acf(dat_tmp)
+  }
+}
+for (i in 1:21) {
+  print(municipality.list[i])
+  dat_tmp <- dat_rate %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list[i] & TaxClassCode %in% "5") %>% select(rate)
+  if (municipality.list[i] != "Maple Ridge Rural" & municipality.list[i] != "White Rock" & municipality.list[i] != "Anmore" & municipality.list[i] != "Belcarra" & municipality.list[i] != "Lions Bay") {
+    as.ts(dat_tmp)
+    acf(dat_tmp)
+  }
+}
+for (i in 1:21) {
+  print(municipality.list[i])
+  dat_tmp <- dat_rate %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list[i] & TaxClassCode %in% "6") %>% select(rate)
+  if (municipality.list[i] != "Maple Ridge Rural") {
+    as.ts(dat_tmp)
+    acf(dat_tmp)
+  }
+}
+```

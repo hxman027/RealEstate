@@ -16,6 +16,31 @@ library(dplyr)
 library(here)
 library(readxl)
 ```
+```{r}
+# all municipalities
+municipality.list = c(
+  "Burnaby", 
+  "Coquitlam", 
+  "Delta", 
+  "Langley - City", 
+  "Langley - Township",
+  "Maple Ridge",
+  "Maple Ridge Rural", 
+  "North Vancouver - City",
+  "North Vancouver - Dist",
+  "Pitt Meadows", 
+  "Port Coquitlam", 
+  "Port Moody", 
+  "Richmond", 
+  "Surrey", 
+  "Vancouver", 
+  "White Rock", 
+  "West Vancouver", 
+  "Bowen Island", 
+  "Anmore", 
+  "Belcarra",
+  "Lions Bay")
+```
 
 1. read the data and aggregate them
 ```{r}
@@ -64,15 +89,57 @@ data_final
 
 2019 tax is missing, we imputed 2019 tax using previous values
 ```{r}
-tax_final <- read.csv("~/Desktop/tax_final.csv")
+tax_final <- read.csv(here("data","tax_final.csv"))
 head(tax_final)
 
 tax_modified <- tax_final  %>% mutate(X2019=tax_final$X2018*(1+(((tax_final$X2017-tax_final$X2016)/tax_final$X2016 + (tax_final$X2018-tax_final$X2017)/tax_final$X2017)/2)))
 head(tax_modified)
 ```
 
+2. val_plots
+```{r}
+# mill rate vesus year for each municipality and tax class
+assessment_aggregate <- read.csv(here("data","assessment_aggregate.csv"))
+dat_rate <- assessment_aggregate %>% select(Year, AddressAssessorMunicipalityDesc, TaxClassCode, rate)
+head(dat_rate)
 
-2. pct_plots
+dat_rate_1 <- dat_rate %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="1") 
+head(dat_rate_1)
+rate_class1 <- dat_rate_1 %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line()
+rate_class1
+
+dat_rate_5 <- dat_rate %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="5") 
+head(dat_rate_5)
+rate_class5 <- dat_rate_5 %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line()
+rate_class5
+
+dat_rate_6 <- dat_rate %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="6") 
+head(dat_rate_6)
+rate_class6 <- dat_rate_6 %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line()
+rate_class6
+
+# plot assessed value vesus year for each municipality and tax class
+dat_assess <- assessment_aggregate %>% select(Year, AddressAssessorMunicipalityDesc, TaxClassCode, assessTotal)
+head(dat_assess)
+
+dat_assess_1 <- dat_assess %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="1") 
+head(dat_assess_1)
+assess_class1 <- dat_assess_1 %>% ggplot(aes(x=Year,y=assessTotal,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("assessTotal for taxClass 1")
+assess_class1
+
+dat_assess_5 <- dat_assess %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="5") 
+head(dat_assess_5)
+assess_class5 <- dat_assess_5 %>% ggplot(aes(x=Year,y=assessTotal,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("assessTotal for taxClass 5")
+assess_class5
+
+dat_assess_6 <- dat_assess %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="6") 
+head(dat_assess_6)
+assess_class6 <- dat_assess_1 %>% ggplot(aes(x=Year,y=assessTotal,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("assessTotal for taxClass 6")
+assess_class6
+```
+
+
+3. pct_plots
 plot pct change of mill rates
 ```{r}
 dat_1<-data_final %>% subset(Municipalities == "Vancouver") %>% subset(TaxClassCode == "01")
@@ -80,31 +147,6 @@ dat_1
 dat_1$rate_pct
 plot(dat_1$rate_pct)
 
-
-
-
-municipality.list = c(
-  "Burnaby", 
-  "Coquitlam", 
-  "Delta", 
-  "Langley - City", 
-  "Langley - Township",
-  "Maple Ridge",
-  "Maple Ridge Rural", 
-  "North Vancouver - City",
-  "North Vancouver - Dist",
-  "Pitt Meadows", 
-  "Port Coquitlam", 
-  "Port Moody", 
-  "Richmond", 
-  "Surrey", 
-  "Vancouver", 
-  "White Rock", 
-  "West Vancouver", 
-  "Bowen Island", 
-  "Anmore", 
-  "Belcarra",
-  "Lions Bay")
 tax.list<-c("01","05","06")
 tax.list[1]
 # overtall trend for tax class 1

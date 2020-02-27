@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ## R Markdown
 ```{r}
 library(tidyverse)
+library(ggplot2)
 library(dplyr)
 library(here)
 library(readxl)
@@ -105,17 +106,17 @@ head(dat_rate)
 
 dat_rate_1 <- dat_rate %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="1") 
 head(dat_rate_1)
-rate_class1 <- dat_rate_1 %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line()
+rate_class1 <- dat_rate_1 %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("mill rate for taxClass 1")
 rate_class1
 
 dat_rate_5 <- dat_rate %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="5") 
 head(dat_rate_5)
-rate_class5 <- dat_rate_5 %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line()
+rate_class5 <- dat_rate_5 %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("mill rate for taxClass 5")
 rate_class5
 
 dat_rate_6 <- dat_rate %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="6") 
 head(dat_rate_6)
-rate_class6 <- dat_rate_6 %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line()
+rate_class6 <- dat_rate_6 %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("mill rate for taxClass 6")
 rate_class6
 
 # plot assessed value vesus year for each municipality and tax class
@@ -136,6 +137,12 @@ dat_assess_6 <- dat_assess %>% filter(AddressAssessorMunicipalityDesc %in% munic
 head(dat_assess_6)
 assess_class6 <- dat_assess_1 %>% ggplot(aes(x=Year,y=assessTotal,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_line() + ggtitle("assessTotal for taxClass 6")
 assess_class6
+
+# plot budgets vesus year
+dat_tax_long <- gather(tax_modified, Year, TaxAmount, X2016:X2019, factor_key=TRUE)
+dat_tax_long
+budget_plot <- dat_tax_long %>% ggplot(aes(x=Year,y=TaxAmount,group=Municipalities,color=Municipalities)) + geom_line() +ggtitle("Tax v.s Year")
+budget_plot
 ```
 
 

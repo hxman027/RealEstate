@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## R Markdown
+libraries and global variables
 ```{r}
 library(tidyverse)
 library(ggplot2)
@@ -18,6 +19,7 @@ library(here)
 library(readxl)
 ```
 ```{r}
+
 # all municipalities
 municipality.list = c(
   "Burnaby", 
@@ -227,6 +229,12 @@ for (i in 1:21){
   multiplot(test1,test2,test3)
   
 }
+```
+
+4. box plots of mill rates, grouped by region
+```{r}
+rate_boxes <- ggplot(dat_rate, aes(x=AddressAssessorMunicipalityDesc,y=rate,fill=TaxClassCode)) + geom_boxplot() + facet_wrap(~TaxClassCode)
+rate_boxes
 ```
 
 

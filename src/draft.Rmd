@@ -471,7 +471,8 @@ eval_results(y, predictions_train, train)
 ```
 Lasso doesn't seem to work well, but it is still better than ridge. R squared = 0.2000649.
 
-Elastic net
+Elastic net: 
+reference: https://daviddalpiaz.github.io/r4sl/elastic-net.html
 ```{r}
 library(caret)
 tibble::as_tibble(test)

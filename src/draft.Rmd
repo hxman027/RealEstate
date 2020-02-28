@@ -96,7 +96,8 @@ Note: tax_pct doesn't have Maple Ridge Rural. We decide to treat Maple Ridge Rur
 tax_pct[,4]<-(tax_pct$pct_2017+tax_pct$pct_2018)/2
 #tax_pct
 names(tax_pct)[4]<-paste("pct_2019")
-tax_pct<-rbind(tax_pct,c("Maple Ridge Rural", 6.195736, 5.6949567))
+tax_pct<-rbind(tax_pct,c("Maple Ridge Rural", 6.195736, 5.6949567,5.945346))
+
 #head(tax_pct)
 ```
 
@@ -323,7 +324,7 @@ colnames(tax_modified) <- c("X","Municipalities","2016","2017","2018","2019")
 head(tax_modified)
 dat_tax_long <- gather(tax_modified, Year, TaxAmount, "2016":"2019", factor_key=TRUE)
 
-tax.all <- full_join(assessment_aggregate, tax_modified, by = 'Municipalities')
+#tax.all <- full_join(assessment_aggregate, tax_modified, by = 'Municipalities')
 
 tax_modified1 <- gather(tax_modified, Year, tax, '2016':'2019', factor_key = TRUE)%>%
   rename(AddressAssessorMunicipalityDesc = Municipalities)
@@ -391,17 +392,19 @@ summary(linear1)
 linear2<-lm(rate_pct~factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=pct_final)
 summary(linear2)
 ```
+r^2 is too small. we re-looked at the data and found percentage changes of tax in "Langley - City" and "Langley - Township" are too large (~400). We ignored the two municipalities and refit the linear model and observed that r^@ improved to 0.4882.
 
-3. Fit linear model
+```{r}
+test<-pct_final %>% filter(Municipalities!="Langley - City") %>% 
+  filter(Municipalities!="Langley - Township")
+linear_test<-lm(rate_pct~factor(Year)+factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=test)
+summary(linear_test)
+```
+
+Lasso
 ```{r}
 
-linear1<-lm(rate_pct~factor(Year)+factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=pct_final)
-summary(linear1)
 
-
-
-linear2<-lm(rate_pct~factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=pct_final)
-summary(linear2)
 library(glmnet)
 
 

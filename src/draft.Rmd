@@ -274,7 +274,7 @@ for (i in 1:21){
 ```
 
 plot pct change of tax(budget)
-```{r}
+```{r, warning=F}
 # total trend for budget 
 for (i in 1:21){
   plot<-pct_final %>% filter(Municipalities == municipality.list[i]) %>% 
@@ -318,19 +318,24 @@ rate_boxes
 
 5. Test correlations between past mill rates and assessed values and government budget.
 ```{r}
-#tax_final
-#assessment_aggregate
+colnames(tax_modified) <- c("X","Municipalities","2016","2017","2018","2019")
+head(tax_modified)
+dat_tax_long <- gather(tax_modified, Year, TaxAmount, "2016":"2019", factor_key=TRUE)
 
-#colnames(tax_modified) <- c("X","Municipalities","2016","2017","2018","2019")
-#head(tax_modified)
-#dat_tax_long <- gather(tax_modified, Year, TaxAmount, "2016":"2019", factor_key=TRUE)
+tax.all <- full_join(assessment_aggregate, tax_modified, by = 'Municipalities')
 
-#tax.all <- full_join(assessment_aggregate, tax_modified, by = 'Municipalities') 
-#tax.all
-#(tax.all <- tax.all[,-5])
-# correlation by Municipalities?
-#mill.budget.cor <- tax.all  %>% summarize(cor_2017 = cor(pct_2017, X2017), cor_2018 = cor(pct_2018, X2018), cor_2019 = cor(pct_2019, X2019))
-#mill.budget.cor
+tax_modified1 <- gather(tax_modified, Year, tax, '2016':'2019', factor_key = TRUE)%>%
+  rename(AddressAssessorMunicipalityDesc = Municipalities)
+
+assessment_aggregate <- merge(assessment_aggregate, tax_modified1, by = c("AddressAssessorMunicipalityDesc","Year"))
+
+correlation <- assessment_aggregate %>%
+  group_by(AddressAssessorMunicipalityDesc,TaxClassCode)%>%
+  summarise(cor(rate, tax))
+
+correlation2 <- assessment_aggregate %>%
+  group_by(AddressAssessorMunicipalityDesc,TaxClassCode)%>%
+  summarise(cor(assessTotal, rate))
 
 
 

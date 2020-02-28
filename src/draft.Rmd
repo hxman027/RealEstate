@@ -96,7 +96,8 @@ Note: tax_pct doesn't have Maple Ridge Rural. We decide to treat Maple Ridge Rur
 tax_pct[,4]<-(tax_pct$pct_2017+tax_pct$pct_2018)/2
 #tax_pct
 names(tax_pct)[4]<-paste("pct_2019")
-tax_pct<-rbind(tax_pct,c("Maple Ridge Rural", 6.195736, 5.6949567))
+tax_pct<-rbind(tax_pct,c("Maple Ridge Rural", 6.195736, 5.6949567,5.945346))
+
 #head(tax_pct)
 ```
 
@@ -406,32 +407,97 @@ summary(linear1)
 linear2<-lm(rate_pct~factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=pct_final)
 summary(linear2)
 ```
+r^2 is too small. we re-looked at the data and found percentage changes of tax in "Langley - City" and "Langley - Township" are too large (~400). We ignored the two municipalities and refit the linear model and observed that r^2 improved to 0.4882.
 
-3. Fit linear model
 ```{r}
+test<-pct_final %>% filter(Municipalities!="Langley - City") %>% 
+  filter(Municipalities!="Langley - Township")
+linear_test<-lm(rate_pct~factor(Year)+factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=test)
+summary(linear_test)
+```
 
-linear1<-lm(rate_pct~factor(Year)+factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=pct_final)
-summary(linear1)
-
-
-
-linear2<-lm(rate_pct~factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=pct_final)
-summary(linear2)
+Ridge Regression!
+reference: https://www.pluralsight.com/guides/linear-lasso-and-ridge-regression-with-r
+```{r}
 library(glmnet)
-
-
-
-x_matrix<-pct_final[,-c(8)]
-x_matrix[,1]<-factor(x_matrix$Year)
-x_matrix[,2]<-factor(x_matrix$Municipalities)
-x_matrix[,3]<-factor(x_matrix$TaxClassCode)
-x_matrix<-x_matrix[,-c(5,6,7)]
-x_matrix<-as.matrix(x_matrix)
-
-
+library(dummies)
+dummy_year<-dummy(test$Year)
+dummy_municipal<-dummy(test$Municipalities)
+dummy_taxclass<-dummy(test$TaxClassCode)
+# build x matrix
+x<-cbind(dummy_year,dummy_municipal)
+x<-cbind(x,dummy_taxclass)
+x<-cbind(x,as.numeric(test$assessTotal_pct))
+x<-cbind(x,as.numeric(test$tax))
+y<-test$rate_pct
 lambdas <- 10^seq(2, -3, by = -.1)
-ridge_reg = glmnet(x_matrix, pct_final$rate_pct, nlambda = 25, alpha = 0, family = 'gaussian', lambda = lambdas)
+dim(x)
+colnames(x)[26]<-paste("assessment")
+colnames(x)[27]<-paste("tax")
+colnames(x)
 
-summary(ridge_reg)
+cv_ridge <- cv.glmnet(x, y, alpha = 0, lambda = lambdas)
+optimal_lambda <- cv_ridge$lambda.min
+optimal_lambda
+predictions_train <- predict(cv_ridge, s = optimal_lambda, newx = x)
+
+# Compute R^2 from true and predicted values
+eval_results <- function(true, predicted, df) {
+  SSE <- sum((predicted - true)^2)
+  SST <- sum((true - mean(true))^2)
+  R_square <- 1 - SSE / SST
+  RMSE = sqrt(SSE/nrow(df))
+
+  
+  # Model performance metrics
+data.frame(
+  RMSE = RMSE,
+  Rsquare = R_square
+)
+  
+}
+
+# Prediction and evaluation on train data
+predictions_train <- predict(ridge_reg, s = optimal_lambda, newx = x)
+eval_results(y, predictions_train, train)
+
+# Prediction and evaluation on test data
+predictions_test <- predict(ridge_reg, s = optimal_lambda, newx = x_test)
+eval_results(y_test, predictions_test, test)
 
 ```
+Ridge regression doesn't seem to work well. R square = 0.1967394.
+
+Lasso 
+```{r}
+lambdas <- 10^seq(2, -3, by = -.1)
+
+# Setting alpha = 1 implements lasso regression
+lasso_reg <- cv.glmnet(x, y, alpha = 1, lambda = lambdas, standardize = TRUE, nfolds = 5)
+
+# Best 
+lambda_best <- lasso_reg$lambda.min;lambda_best
+
+lasso_model <- glmnet(x, y, alpha = 1, lambda = lambda_best, standardize = TRUE)
+
+predictions_train <- predict(lasso_model, s = lambda_best, newx = x)
+eval_results(y, predictions_train, train)
+# R squared = 0.2000649	
+```
+Lasso doesn't seem to work well, but it is still better than ridge. R squared = 0.2000649.
+
+Elastic net: 
+reference: https://daviddalpiaz.github.io/r4sl/elastic-net.html
+```{r}
+library(caret)
+tibble::as_tibble(test)
+cv_5 = trainControl(method = "cv", number = 5)
+ridge = train(
+  rate_pct ~ Year + Municipalities + TaxClassCode + assessTotal_pct + tax, data = test,
+  method = "glmnet",
+  trControl = cv_5
+)
+ridge
+```
+apha = 1 which implies lasso! refer to lasso.
+

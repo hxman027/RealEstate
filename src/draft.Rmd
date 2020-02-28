@@ -391,3 +391,31 @@ linear2<-lm(rate_pct~factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct
 summary(linear2)
 ```
 
+3. Fit linear model
+```{r}
+
+linear1<-lm(rate_pct~factor(Year)+factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=pct_final)
+summary(linear1)
+
+
+
+linear2<-lm(rate_pct~factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=pct_final)
+summary(linear2)
+library(glmnet)
+
+
+
+x_matrix<-pct_final[,-c(8)]
+x_matrix[,1]<-factor(x_matrix$Year)
+x_matrix[,2]<-factor(x_matrix$Municipalities)
+x_matrix[,3]<-factor(x_matrix$TaxClassCode)
+x_matrix<-x_matrix[,-c(5,6,7)]
+x_matrix<-as.matrix(x_matrix)
+
+
+lambdas <- 10^seq(2, -3, by = -.1)
+ridge_reg = glmnet(x_matrix, pct_final$rate_pct, nlambda = 25, alpha = 0, family = 'gaussian', lambda = lambdas)
+
+summary(ridge_reg)
+
+```

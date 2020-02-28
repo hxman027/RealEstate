@@ -1,2 +1,4 @@
 # README 
-This folders contains all relevant source codes for this project. 
+- **Data_Cleaning.Rmd** aggreagted 2.4 millions rows of data into ~260 data entries, grouped by municipality, year, and tax code
+- **EDA&model_fitting.Rmd** Performed exploratory data analysis and linear model (work in progress)
+- **Note:** No need to run **Data_Cleaning.Rmd**, the result from it has already been exported into csv file which can be found in *./data*

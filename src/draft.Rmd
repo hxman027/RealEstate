@@ -96,6 +96,7 @@ Note: tax_pct doesn't have Maple Ridge Rural. We decide to treat Maple Ridge Rur
 tax_pct[,4]<-(tax_pct$pct_2017+tax_pct$pct_2018)/2
 #tax_pct
 names(tax_pct)[4]<-paste("pct_2019")
+tax_pct<-rbind(tax_pct,c("Maple Ridge Rural", 6.195736, 5.6949567))
 #head(tax_pct)
 ```
 

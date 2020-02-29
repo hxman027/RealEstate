@@ -18,6 +18,7 @@ library(ggplot2)
 library(dplyr)
 library(here)
 library(readxl)
+require(neuralnet)
 ```
 
 ```{r}
@@ -89,6 +90,9 @@ tax_pct<-tax_pct[,-c(1)]
 #head(tax_pct)
 
 assessment_aggregate <- read.csv(here("data","assessment_aggregate.csv"))
+assessment_final <- read.csv(here("data","assessment_final.csv"))
+assessment_final <- assessment_final[,-1]
+assessment_final <- assessment_final[complete.cases(assessment_final),]
 ```
 Note: tax_pct doesn't have Maple Ridge Rural. We decide to treat Maple Ridge Rural and Maple Ridge with the same tax. 
 
@@ -151,14 +155,28 @@ tax_modified
 check match between budget and assessTotal*mill_rate
 ```{r}
 # get predicted tax income for all tax classes and each municipality
-assessment_aggregate[,10] <- assessment_aggregate$assessTotal*assessment_aggregate$rate/100
+assessment_aggregate[,10] <- assessment_aggregate$assessTotal*assessment_aggregate$rate/1000
 names(assessment_aggregate)[10] <- paste("predTaxIncome")
 
 dat_pred_income <- assessment_aggregate %>% select(Year,AddressAssessorMunicipalityDesc,TaxClassCode,predTaxIncome)
-
 dat_pred_income <- aggregate(dat_pred_income$predTaxIncome,by=list(Year=dat_pred_income$Year,Municipalities=dat_pred_income$AddressAssessorMunicipalityDesc),FUN=sum)
 names(dat_pred_income)[3] <- paste("predTaxIncome")
-head(dat_pred_income)
+
+tax_refactored <- tax_modified
+names(tax_refactored)[3] <- paste("2016")
+names(tax_refactored)[4] <- paste("2017")
+names(tax_refactored)[5] <- paste("2018")
+names(tax_refactored)[6] <- paste("2019")
+dat_true_income <- gather(tax_refactored, Year, TaxAmount, "2016":"2019", factor_key=TRUE)
+dat_true_income <- dat_true_income[,-1]
+
+income_budget_compare <- merge(dat_true_income,dat_pred_income,by=c("Municipalities","Year"))
+income_budget_compare <- gather(income_budget_compare, TaxType, Amount, TaxAmount:predTaxIncome, factor_key=TRUE)
+
+compare_full_plot <- income_budget_compare %>% filter(Municipalities!="Vancouver") %>% ggplot(aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),color=Municipalities)) + geom_line()
+
+compare_plot <- income_budget_compare %>% filter(Municipalities=="Vancouver" | Municipalities=="Surrey" | Municipalities=="Burnaby" | Municipalities=="Richmond") %>% ggplot(aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),color=TaxType)) + geom_line() + ggtitle("budget v.s taxIncome")
+compare_plot
 ```
 
 
@@ -436,4 +454,10 @@ ridge = train(
 ridge
 ```
 apha = 1 which implies lasso! refer to lasso.
+
+## neural network
+```{r}
+nn=neuralnet(TaxClassTaxRate~Year+TaxClassCode+AssessorAreaCode+AddressAssessorMunicipalityCode+AssessedValueAmt+CurrentYearTotal+TaxOwingAmountTotalCalculated,data=assessment_final, hidden=20, act.fct = "logistic", linear.output = FALSE)
+plot(nn)
+```
 

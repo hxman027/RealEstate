@@ -385,23 +385,54 @@ for (i in 1:21) {
 ```
 
 model fitting
+(i) linear model
+Not too much difference between linear 1 and linear 2 (with and without year).
+This probably implies adding year doesn't make a difference.
 ```{r}
 linear1<-lm(rate_pct~factor(Year)+factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=pct_final)
 summary(linear1)
 
 linear2<-lm(rate_pct~factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=pct_final)
 summary(linear2)
+
+# goodness of fit (all data)
+library(broom)
+linear1_fit<-augment(linear1)
+sqrt(sum((linear1_fit$.resid)^2)/nrow(pct_final)) # 5.614843
+linear2_fit<-augment(linear2)
+sqrt(sum((linear2_fit$.resid)^2)/nrow(pct_final)) # 5.614843
+
 ```
-r^2 is too small. we re-looked at the data and found percentage changes of tax in "Langley - City" and "Langley - Township" are too large (~400). We ignored the two municipalities and refit the linear model and observed that r^2 improved to 0.4882.
+linear 1: Multiple R-squared:  0.4796,	Adjusted R-squared:  0.155 
+linear 2: Multiple R-squared:  0.4796,	Adjusted R-squared:  0.155
+
+we re-looked at the data and found percentage changes of tax in "Langley - City" and "Langley - Township" are too large (~400). We ignored the two municipalities and refit the linear model and observed that r^2 improved to 0.4882 (Multiple R-squared:  0.4882,	Adjusted R-squared:  0.1605).
+Still not too much difference bewteen the model with and without variable year.
 
 ```{r}
 test<-pct_final %>% filter(Municipalities!="Langley - City") %>% 
   filter(Municipalities!="Langley - Township")
 linear_test<-lm(rate_pct~factor(Year)+factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=test)
 summary(linear_test)
-```
 
-Ridge Regression!
+# goodness of fit
+fit_linear_test<-augment(linear_test)
+sqrt(sum((fit_linear_test$.resid)^2)/nrow(test)) # 5.775885
+
+linear_test_2<-lm(rate_pct~factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=test)
+summary(linear_test_2)
+
+# goodness of fit
+fit_linear_test_2<-augment(linear_test_2)
+sqrt(sum((fit_linear_test_2$.resid)^2)/nrow(test)) # 5.775885
+
+```
+Question: How to judge goodness of fit? Multiple R square? Adjusted R square? or mean prediction error?
+**TODO: create training/test sets to test the prediction power!
+
+(ii) Ridge, Lasso and elastic net.
+
+Ridge Regression
 reference: https://www.pluralsight.com/guides/linear-lasso-and-ridge-regression-with-r
 ```{r}
 library(glmnet)

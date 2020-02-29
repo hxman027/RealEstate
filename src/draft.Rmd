@@ -119,6 +119,7 @@ assessment2019<-assessment2019 %>% left_join(tax2019, by = c("Municipalities"))
 names(assessment2019)[9]<-paste("tax")
 
 pct_final<-assessment2017 %>% full_join(assessment2018) %>% full_join(assessment2019)
+pct_final$tax<-as.numeric(pct_final$tax)
 write.csv(pct_final, here("data","data_final.csv"))
 
 # all pct data aggregated
@@ -398,16 +399,21 @@ summary(linear2)
 # goodness of fit (all data)
 library(broom)
 linear1_fit<-augment(linear1)
-sqrt(sum((linear1_fit$.resid)^2)/nrow(pct_final)) # 5.614843
+sqrt(sum((linear1_fit$.resid)^2)/nrow(pct_final)) # 6.672786
 linear2_fit<-augment(linear2)
-sqrt(sum((linear2_fit$.resid)^2)/nrow(pct_final)) # 5.614843
+sqrt(sum((linear2_fit$.resid)^2)/nrow(pct_final)) # 7.248359
 
 ```
-linear 1: Multiple R-squared:  0.4796,	Adjusted R-squared:  0.155 
-linear 2: Multiple R-squared:  0.4796,	Adjusted R-squared:  0.155
+linear 1: Residual standard error: 7.296 on 138 degrees of freedom
+Multiple R-squared:  0.265,	Adjusted R-squared:  0.1265 
+PMSE = 6.672786
 
-we re-looked at the data and found percentage changes of tax in "Langley - City" and "Langley - Township" are too large (~400). We ignored the two municipalities and refit the linear model and observed that r^2 improved to 0.4882 (Multiple R-squared:  0.4882,	Adjusted R-squared:  0.1605).
-Still not too much difference bewteen the model with and without variable year.
+linear 2: Residual standard error: 7.869 on 140 degrees of freedom
+Multiple R-squared:  0.1327,	Adjusted R-squared:  -0.01593 
+F-statistic: 0.8929 on 24 and 140 DF,  p-value: 0.6112
+PMSE = 7.248359
+
+we re-looked at the data and found percentage changes of tax in "Langley - City" and "Langley - Township" are too large (~400). We ignored the two municipalities and refit the linear model
 
 ```{r}
 test<-pct_final %>% filter(Municipalities!="Langley - City") %>% 
@@ -417,16 +423,38 @@ summary(linear_test)
 
 # goodness of fit
 fit_linear_test<-augment(linear_test)
-sqrt(sum((fit_linear_test$.resid)^2)/nrow(test)) # 5.775885
+sqrt(sum((fit_linear_test$.resid)^2)/nrow(test)) # 6.767493
 
 linear_test_2<-lm(rate_pct~factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=test)
 summary(linear_test_2)
 
 # goodness of fit
 fit_linear_test_2<-augment(linear_test_2)
-sqrt(sum((fit_linear_test_2$.resid)^2)/nrow(test)) # 5.775885
+sqrt(sum((fit_linear_test_2$.resid)^2)/nrow(test)) #  7.50047
 
 ```
+After filtering Langely
+with variable year:
+Residual standard error: 7.429 on 122 degrees of freedom
+Multiple R-squared:  0.2974,	Adjusted R-squared:  0.1592 
+F-statistic: 2.152 on 24 and 122 DF,  p-value: 0.003567
+PMSE: 6.767493
+
+without variable year
+Residual standard error: 8.167 on 124 degrees of freedom
+Multiple R-squared:  0.137,	Adjusted R-squared:  -0.01609 
+F-statistic: 0.8949 on 22 and 124 DF,  p-value: 0.6014
+PMSE: 7.50047
+
+
+```{r}
+linear3<-lm(rate_pct~factor(Year)+factor(TaxClassCode)+factor(Municipalities),data=pct_final)
+summary(linear3)
+fit_linear3<-augment(linear3)
+sqrt(sum((fit_linear3$.resid)^2)/nrow(test)) #  7.50047
+
+```
+
 Question: How to judge goodness of fit? Multiple R square? Adjusted R square? or mean prediction error?
 **TODO: create training/test sets to test the prediction power!
 
@@ -515,4 +543,83 @@ ridge = train(
 ridge
 ```
 apha = 1 which implies lasso! refer to lasso.
+
+Prediction power
+train/test
+```{r}
+set.seed(450)
+train_ind<-sample(165,120)
+train1<-pct_final[train_ind,]
+test1<-pct_final[-train_ind,]
+```
+
+linear model
+```{r}
+# full model with year
+newx<-test1[,-c(5,6,7,8)]
+y<-test1[,c(8)]
+linear_1<-lm(rate_pct~factor(Year)+factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=train1)
+resid<-predict(linear_1,newdata = newx) - y
+sqrt(sum(resid^2)/nrow(test1))
+# pmse = 6.5688
+
+# full model without year
+linear_2<-lm(rate_pct~factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=train1)
+resid<-predict(linear_2,newdata = newx) - y
+sqrt(sum(resid^2)/nrow(test1))
+# 6.855429
+
+# reduced variable
+linear_3<-lm(rate_pct~factor(Year)+factor(TaxClassCode)+factor(Municipalities),data=train1)
+resid<-predict(linear_3,newdata = newx) - y
+sqrt(sum(resid^2)/nrow(test1))
+# 6.570848
+```
+Lasso
+```{r}
+# create the whole matrix
+dummy_year<-dummy(pct_final$Year)
+dummy_municipal<-dummy(pct_final$Municipalities)
+dummy_taxclass<-dummy(pct_final$TaxClassCode)
+# build x matrix
+x<-cbind(dummy_year,dummy_municipal)
+x<-cbind(x,dummy_taxclass)
+x<-cbind(x,as.numeric(pct_final$assessTotal_pct))
+x<-cbind(x,as.numeric(pct_final$tax))
+y<-as.matrix(pct_final$rate_pct)
+dim(x) # 165  29
+dim(y)
+# creat x_train matrix and y_train
+x_train<-x[train_ind,]
+y_train<-y[train_ind,]
+# create x_test matrix
+x_test<-x[-train_ind,]
+y_test<-y[-train_ind,]
+
+lambdas <- 10^seq(2, -3, by = -.1)
+# Setting alpha = 1 implements lasso regression
+set.seed(450)
+lasso_reg <- cv.glmnet(x_train, y_train, alpha = 1, lambda = lambdas, standardize = TRUE, nfolds = 10)
+
+# Best 
+lambda_best <- lasso_reg$lambda.min;lambda_best
+
+lasso_model <- glmnet(x_train, y_train, alpha = 1, lambda = lambda_best, standardize = TRUE)
+
+predictions_test <- predict(lasso_model, s = lambda_best, newx = x_test)
+eval_results(y_test, predictions_test)
+# 7.012128	
+```
+
+Ridge
+```{r}
+ridge_reg = glmnet(x_train, y_train, nlambda = 25, alpha = 0, family = 'gaussian', lambda = lambdas)
+set.seed(450)
+cv_ridge <- cv.glmnet(x_train, y_train, alpha = 0, lambda = lambdas, nfolds=10)
+optimal_lambda <- cv_ridge$lambda.min
+optimal_lambda
+predictions_test <- predict(ridge_reg, s = optimal_lambda, newx = x_test)
+eval_results(y_test, predictions_test)
+# 6.885151	
+```
 

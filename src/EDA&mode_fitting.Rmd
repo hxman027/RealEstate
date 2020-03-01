@@ -388,37 +388,33 @@ model fitting
 linear1<-lm(rate_pct~factor(Year)+factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=pct_final)
 summary(linear1)
 
-
-linear_full<-lm(rate~.,data=assessment_aggregate)
+colnames(assessment_aggregate)
+linear_full<-lm(rate~factor(AddressAssessorMunicipalityDesc)+factor(Year)+factor(TaxClassCode)+assessTotal+landTotal+improvementTotal+propertyCount+predTaxIncome,data=assessment_aggregate)
 summary(linear_full)
 
 
 library(broom)
 linear_full_fit<-augment(linear_full)
-sqrt(sum((linear_full_fit$.resid)^2)/nrow(assessment_aggregate)) #  2.772333
-
-
+sqrt(sum((linear_full_fit$.resid)^2)/nrow(assessment_aggregate)) 
 ```
-Multiple R-squared:  0.7803,	Adjusted R-squared:  0.7503 
-MSPE = 2.772333
+Multiple R-squared:  0.8874,	Adjusted R-squared:  0.8708 
+MSPE = 1.984109
 
 Next: variable selection
 with only significant variables
 ```{r}
-reduced<-lm(rate~Year+TaxClassCode+AddressAssessorMunicipalityDesc, data=assessment_aggregate)
+reduced<-lm(rate~factor(Year)+factor(TaxClassCode)+factor(AddressAssessorMunicipalityDesc), data=assessment_aggregate)
 summary(reduced)
 
 reduced_fit<-augment(reduced)
-sqrt(sum((reduced_fit$.resid)^2)/nrow(assessment_aggregate)) #  2.861619
-
-
+sqrt(sum((reduced_fit$.resid)^2)/nrow(assessment_aggregate))
 ```
-Multiple R-squared:  0.7659,	Adjusted R-squared:  0.7408 
-MSPE = 2.861619
+Multiple R-squared:  0.8826,	Adjusted R-squared:  0.8679 
+MSPE = 2.02679
 With fewer variables, adjusted R-squared declines.
 
 
-By comparing the two models, the fit of full model is better.
+By comparing the two models, the fit of full model is the better of the two.
 
 
 (ii) Ridge, Lasso and elastic net.
@@ -495,15 +491,15 @@ library(caret)
 tibble::as_tibble(assessment_aggregate)
 cv_10 = trainControl(method = "cv", number = 10)
 elastic_net = train(
-  rate~., data = assessment_aggregate,
+  rate~factor(AddressAssessorMunicipalityDesc)+factor(Year)+factor(TaxClassCode)+assessTotal+landTotal+improvementTotal+propertyCount+predTaxIncome, data = assessment_aggregate,
   method = "glmnet",
   trControl = cv_10
 )
 elastic_net
 ```
-The final values used for the model were alpha = 0.1 and lambda = 0.09334029.
-MSPE = 3.066083  
-R squared = 0.7459584
+The final values used for the model were alpha = 0.1 and lambda = 0.007102922.
+ alpha  lambda       RMSE      Rsquared   MAE     
+  0.10   0.007102922  2.238720  0.8623328  1.711568
 
 Among these all the models, lasso seems to have the best goodness of fit.
 
@@ -522,21 +518,20 @@ Full linear model
 
 newx<-test[,-c(8)]
 y<-test[,c(8)]
-linear_1<-lm(rate ~.,data=train)
+linear_1<-lm(rate~factor(AddressAssessorMunicipalityDesc)+factor(Year)+factor(TaxClassCode)+assessTotal+landTotal+improvementTotal+propertyCount+predTaxIncome,data=train)
 resid<-predict(linear_1,newdata = newx) - y
 sqrt(sum(resid^2)/nrow(test))
 ```
-MSPE = 3.52065
+MSPE =  2.592136
 
 Reduced model
 ```{r}
 # reduced variable
-linear_2<-lm(rate~Year+TaxClassCode+AddressAssessorMunicipalityDesc,data=train)
+linear_2<-lm(rate~factor(Year)+factor(TaxClassCode)+factor(AddressAssessorMunicipalityDesc),data=train)
 resid<-predict(linear_2,newdata = newx) - y
 sqrt(sum(resid^2)/nrow(test))
-# 3.516749
 ```
-MSPE = 3.516749
+MSPE = 2.537555
 
 Lasso
 ```{r}
@@ -583,19 +578,21 @@ Elastic Net
 tibble::as_tibble(assessment_aggregate[train_ind,])
 cv_10 = trainControl(method = "cv", number = 10)
 elastic_net = train(
-  rate~., data = assessment_aggregate[train_ind,],
+ rate~factor(AddressAssessorMunicipalityDesc)+factor(Year)+factor(TaxClassCode)+assessTotal+landTotal+improvementTotal+propertyCount+predTaxIncome, 
+ data = assessment_aggregate[train_ind,],
   method = "glmnet",
   trControl = cv_10
 )
 elastic_net
-# RMSE was used to select the optimal model using the smallest value.
-# The final values used for the model were alpha = 0.55 and lambda = 0.009140377.
 
-elastic_reg = glmnet(x_train, y_train, nlambda = 25, alpha = 0.55, family = 'gaussian', lambda = 0.009140377)
+# RMSE was used to select the optimal model using the smallest value.
+# The final values used for the model were alpha = 1 and lambda = 0.006549203.
+
+elastic_reg = glmnet(x_train, y_train, nlambda = 25, alpha = 1, family = 'gaussian', lambda =  0.006549203)
 predictions_test <- predict(elastic_reg, newx = x_test)
 eval_results(y_test, predictions_test)
 ```
-MSPE = 2.566096	
+MSPE = 2.559923
 
 
 ## neural network

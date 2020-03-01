@@ -327,9 +327,33 @@ rate_assess_correlation2 <- assessment_aggregate %>%
   group_by(AddressAssessorMunicipalityDesc,TaxClassCode)%>%
   summarise(cor(assessTotal, rate))
 rate_assess_correlation2
+
+
+
+
+
+## Correlation for continuous variables
+assess_class <- assessment_aggregate %>% ggplot(aes(x=assessTotal,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and assess - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+tax_class <- assessment_aggregate %>% ggplot(aes(x=predTaxIncome,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and tax - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+assess_class
+
+tax_class
+
+## Correlation for categorical variables
+TaxClassCode <- aov(rate ~ TaxClassCode, data = assessment_aggregate)
+summary(TaxClassCode)
+
+
+Year <- aov(rate_pct ~ Year, data = pct_final)
+summary(Year)
+
+Municipalities <- aov(rate ~ AddressAssessorMunicipalityDesc, data = assessment_aggregate)
+summary(Municipalities)
 ```
 
-6. Compute autocorrelations of past mill rates to test the independence of mill rates. 
+7. Compute autocorrelations of past mill rates to test the independence of mill rates. 
 ```{r}
 # all white noise
 for (i in 1:21) {
@@ -365,6 +389,12 @@ This probably implies adding year doesn't make a difference.
 ```{r}
 linear1<-lm(rate_pct~factor(Year)+factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=pct_final)
 summary(linear1)
+
+# linear1<-lm(rate~factor(Year)+factor(TaxClassCode)+factor(AddressAssessorMunicipalityDesc)+assessTotal+predTaxIncome,data=assessment_aggregate)
+# summary(linear1)
+
+linear<-lm(rate~.,data=assessment_aggregate)
+summary(linear)
 
 linear2<-lm(rate_pct~factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=pct_final)
 summary(linear2)

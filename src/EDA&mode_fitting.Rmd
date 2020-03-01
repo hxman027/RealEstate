@@ -384,82 +384,42 @@ for (i in 1:21) {
 
 model fitting
 (i) linear model
-Not too much difference between linear 1 and linear 2 (with and without year).
-This probably implies adding year doesn't make a difference.
 ```{r}
 linear1<-lm(rate_pct~factor(Year)+factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=pct_final)
 summary(linear1)
 
-# linear1<-lm(rate~factor(Year)+factor(TaxClassCode)+factor(AddressAssessorMunicipalityDesc)+assessTotal+predTaxIncome,data=assessment_aggregate)
-# summary(linear1)
 
-linear<-lm(rate~.,data=assessment_aggregate)
-summary(linear)
+linear_full<-lm(rate~.,data=assessment_aggregate)
+summary(linear_full)
 
-linear2<-lm(rate_pct~factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=pct_final)
-summary(linear2)
 
-# goodness of fit (all data)
 library(broom)
-linear1_fit<-augment(linear1)
-sqrt(sum((linear1_fit$.resid)^2)/nrow(pct_final)) # 6.672786
-linear2_fit<-augment(linear2)
-sqrt(sum((linear2_fit$.resid)^2)/nrow(pct_final)) # 7.248359
+linear_full_fit<-augment(linear_full)
+sqrt(sum((linear_full_fit$.resid)^2)/nrow(assessment_aggregate)) #  2.772333
+
 
 ```
-linear 1: Residual standard error: 7.296 on 138 degrees of freedom
-Multiple R-squared:  0.265,	Adjusted R-squared:  0.1265 
-PMSE = 6.672786
+Multiple R-squared:  0.7803,	Adjusted R-squared:  0.7503 
+MSPE = 2.772333
 
-linear 2: Residual standard error: 7.869 on 140 degrees of freedom
-Multiple R-squared:  0.1327,	Adjusted R-squared:  -0.01593 
-F-statistic: 0.8929 on 24 and 140 DF,  p-value: 0.6112
-PMSE = 7.248359
-
-we re-looked at the data and found percentage changes of tax in "Langley - City" and "Langley - Township" are too large (~400). We ignored the two municipalities and refit the linear model
-
+Next: variable selection
+with only significant variables
 ```{r}
-test<-pct_final %>% filter(Municipalities!="Langley - City") %>% 
-  filter(Municipalities!="Langley - Township")
-linear_test<-lm(rate_pct~factor(Year)+factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=test)
-summary(linear_test)
+reduced<-lm(rate~Year+TaxClassCode+AddressAssessorMunicipalityDesc, data=assessment_aggregate)
+summary(reduced)
 
-# goodness of fit
-fit_linear_test<-augment(linear_test)
-sqrt(sum((fit_linear_test$.resid)^2)/nrow(test)) # 6.767493
+reduced_fit<-augment(reduced)
+sqrt(sum((reduced_fit$.resid)^2)/nrow(assessment_aggregate)) #  2.861619
 
-linear_test_2<-lm(rate_pct~factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=test)
-summary(linear_test_2)
-
-# goodness of fit
-fit_linear_test_2<-augment(linear_test_2)
-sqrt(sum((fit_linear_test_2$.resid)^2)/nrow(test)) #  7.50047
 
 ```
-After filtering Langely
-with variable year:
-Residual standard error: 7.429 on 122 degrees of freedom
-Multiple R-squared:  0.2974,	Adjusted R-squared:  0.1592 
-F-statistic: 2.152 on 24 and 122 DF,  p-value: 0.003567
-PMSE: 6.767493
-
-without variable year
-Residual standard error: 8.167 on 124 degrees of freedom
-Multiple R-squared:  0.137,	Adjusted R-squared:  -0.01609 
-F-statistic: 0.8949 on 22 and 124 DF,  p-value: 0.6014
-PMSE: 7.50047
+Multiple R-squared:  0.7659,	Adjusted R-squared:  0.7408 
+MSPE = 2.861619
+With fewer variables, adjusted R-squared declines.
 
 
-```{r}
-linear3<-lm(rate_pct~factor(Year)+factor(TaxClassCode)+factor(Municipalities),data=pct_final)
-summary(linear3)
-fit_linear3<-augment(linear3)
-sqrt(sum((fit_linear3$.resid)^2)/nrow(test)) #  7.50047
+By comparing the two models, the fit of full model is better.
 
-```
-
-Question: How to judge goodness of fit? Multiple R square? Adjusted R square? or mean prediction error?
-**TODO: create training/test sets to test the prediction power!
 
 (ii) Ridge, Lasso and elastic net.
 
@@ -468,20 +428,16 @@ reference: https://www.pluralsight.com/guides/linear-lasso-and-ridge-regression-
 ```{r}
 library(glmnet)
 library(dummies)
-dummy_year<-dummy(test$Year)
-dummy_municipal<-dummy(test$Municipalities)
-dummy_taxclass<-dummy(test$TaxClassCode)
+dummy_year<-dummy(assessment_aggregate$Year)
+dummy_municipal<-dummy(assessment_aggregate$AddressAssessorMunicipalityDesc)
+dummy_taxclass<-dummy(assessment_aggregate$TaxClassCode)
 # build x matrix
-x<-cbind(dummy_year,dummy_municipal)
-x<-cbind(x,dummy_taxclass)
-x<-cbind(x,as.numeric(test$assessTotal_pct))
-x<-cbind(x,as.numeric(test$tax))
-y<-test$rate_pct
+x<-cbind(dummy_municipal,dummy_year,dummy_taxclass,assessment_aggregate$assessTotal,assessment_aggregate$landTotal,assessment_aggregate$improvementTotal,assessment_aggregate$propertyCount,assessment_aggregate$predTaxIncome,assessment_aggregate$tax)
+
+y<-assessment_aggregate$rate
 lambdas <- 10^seq(2, -3, by = -.1)
 dim(x)
-colnames(x)[26]<-paste("assessment")
-colnames(x)[27]<-paste("tax")
-colnames(x)
+
 
 lambdas <- 10^seq(2, -3, by = -.1)
 ridge_reg = glmnet(x, y, nlambda = 25, alpha = 0, family = 'gaussian', lambda = lambdas)
@@ -496,10 +452,10 @@ eval_results <- function(true, predicted) {
   SSE <- sum((predicted - true)^2)
   SST <- sum((true - mean(true))^2)
   R_square <- 1 - SSE / SST
-  RMSE = sqrt(SSE/nrow(predicted))
+  MSPE = sqrt(SSE/nrow(predicted))
 # Model performance metrics
 data.frame(
-  RMSE = RMSE,
+  MSPE = MSPE,
   Rsquare = R_square
 )
   
@@ -510,14 +466,12 @@ eval_results(y, predictions_train)
 
 
 ```
-RMSE=7.159649
-Rsquare=0.2136659
-Ridge regression doesn't seem to work well. 
+MSPE = 1.992244
+Rsquare=0.8865213	
+
 
 Lasso 
 ```{r}
-lambdas <- 10^seq(2, -3, by = -.1)
-
 # Setting alpha = 1 implements lasso regression
 set.seed(450)
 lasso_reg <- cv.glmnet(x, y, alpha = 1, lambda = lambdas, standardize = TRUE, nfolds = 10)
@@ -530,66 +484,64 @@ lasso_model <- glmnet(x, y, alpha = 1, lambda = lambda_best, standardize = TRUE)
 predictions_train <- predict(lasso_model, s = lambda_best, newx = x)
 eval_results(y, predictions_train)
 ```
-RMSE = 7.221299, Rsquare=0.2000649
+MSPE = 1.985639
+Rsquare=0.8872724	
+
 
 Elastic net: 
 reference: https://daviddalpiaz.github.io/r4sl/elastic-net.html
 ```{r}
 library(caret)
-tibble::as_tibble(test)
+tibble::as_tibble(assessment_aggregate)
 cv_10 = trainControl(method = "cv", number = 10)
-ridge = train(
-  rate_pct ~ Year + Municipalities + TaxClassCode + assessTotal_pct + tax, data = test,
+elastic_net = train(
+  rate~., data = assessment_aggregate,
   method = "glmnet",
   trControl = cv_10
 )
-ridge
+elastic_net
 ```
-apha = 1 which implies lasso! refer to lasso.
+The final values used for the model were alpha = 0.1 and lambda = 0.09334029.
+MSPE = 3.066083  
+R squared = 0.7459584
+
+Among these all the models, lasso seems to have the best goodness of fit.
+
 
 Prediction power
 train/test
 ```{r}
 set.seed(450)
-train_ind<-sample(165,120)
-train1<-pct_final[train_ind,]
-test1<-pct_final[-train_ind,]
+train_ind<-sample(218,218-50)
+train<-assessment_aggregate[train_ind,]
+test<-assessment_aggregate[-train_ind,]
 ```
 
-linear model
+Full linear model
 ```{r}
-# full model with year
-newx<-test1[,-c(5,6,7,8)]
-y<-test1[,c(8)]
-linear_1<-lm(rate_pct~factor(Year)+factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=train1)
+
+newx<-test[,-c(8)]
+y<-test[,c(8)]
+linear_1<-lm(rate ~.,data=train)
 resid<-predict(linear_1,newdata = newx) - y
-sqrt(sum(resid^2)/nrow(test1))
-# pmse = 6.5688
-
-# full model without year
-linear_2<-lm(rate_pct~factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=train1)
-resid<-predict(linear_2,newdata = newx) - y
-sqrt(sum(resid^2)/nrow(test1))
-# 6.855429
-
-# reduced variable
-linear_3<-lm(rate_pct~factor(Year)+factor(TaxClassCode)+factor(Municipalities),data=train1)
-resid<-predict(linear_3,newdata = newx) - y
-sqrt(sum(resid^2)/nrow(test1))
-# 6.570848
+sqrt(sum(resid^2)/nrow(test))
 ```
+MSPE = 3.52065
+
+Reduced model
+```{r}
+# reduced variable
+linear_2<-lm(rate~Year+TaxClassCode+AddressAssessorMunicipalityDesc,data=train)
+resid<-predict(linear_2,newdata = newx) - y
+sqrt(sum(resid^2)/nrow(test))
+# 3.516749
+```
+MSPE = 3.516749
+
 Lasso
 ```{r}
 # create the whole matrix
-dummy_year<-dummy(pct_final$Year)
-dummy_municipal<-dummy(pct_final$Municipalities)
-dummy_taxclass<-dummy(pct_final$TaxClassCode)
-# build x matrix
-x<-cbind(dummy_year,dummy_municipal)
-x<-cbind(x,dummy_taxclass)
-x<-cbind(x,as.numeric(pct_final$assessTotal_pct))
-x<-cbind(x,as.numeric(pct_final$tax))
-y<-as.matrix(pct_final$rate_pct)
+y<-as.matrix(assessment_aggregate$rate)
 dim(x) # 165  29
 dim(y)
 # creat x_train matrix and y_train
@@ -599,7 +551,6 @@ y_train<-y[train_ind,]
 x_test<-x[-train_ind,]
 y_test<-y[-train_ind,]
 
-lambdas <- 10^seq(2, -3, by = -.1)
 # Setting alpha = 1 implements lasso regression
 set.seed(450)
 lasso_reg <- cv.glmnet(x_train, y_train, alpha = 1, lambda = lambdas, standardize = TRUE, nfolds = 10)
@@ -611,8 +562,9 @@ lasso_model <- glmnet(x_train, y_train, alpha = 1, lambda = lambda_best, standar
 
 predictions_test <- predict(lasso_model, s = lambda_best, newx = x_test)
 eval_results(y_test, predictions_test)
-# 7.012128	
 ```
+MSPE = 2.530686	
+
 
 Ridge
 ```{r}
@@ -623,8 +575,28 @@ optimal_lambda <- cv_ridge$lambda.min
 optimal_lambda
 predictions_test <- predict(ridge_reg, s = optimal_lambda, newx = x_test)
 eval_results(y_test, predictions_test)
-# 6.885151	
 ```
+MSPE = 2.568047
+
+Elastic Net
+```{r}
+tibble::as_tibble(assessment_aggregate[train_ind,])
+cv_10 = trainControl(method = "cv", number = 10)
+elastic_net = train(
+  rate~., data = assessment_aggregate[train_ind,],
+  method = "glmnet",
+  trControl = cv_10
+)
+elastic_net
+# RMSE was used to select the optimal model using the smallest value.
+# The final values used for the model were alpha = 0.55 and lambda = 0.009140377.
+
+ridge_reg = glmnet(x_train, y_train, nlambda = 25, alpha = 0.55, family = 'gaussian', lambda = 0.009140377)
+predictions_test <- predict(ridge_reg, newx = x_test)
+eval_results(y_test, predictions_test)
+```
+MSPE = 2.566096	
+
 
 ## neural network
 ```{r}

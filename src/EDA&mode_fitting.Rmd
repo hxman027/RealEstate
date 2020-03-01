@@ -323,9 +323,36 @@ rate_assess_correlation2 <- assessment_aggregate %>%
   group_by(AddressAssessorMunicipalityDesc,TaxClassCode)%>%
   summarise(cor(assessTotal, rate))
 rate_assess_correlation2
+
+
+
+
+
+## Correlation for continuous variables
+rate_class <- pct_final %>% ggplot(aes(x=assessTotal_pct,y=rate_pct,group=Municipalities,color=Municipalities)) + geom_point() + ggtitle("mill rate and tax") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+assess_class <- pct_final %>% ggplot(aes(x=tax,y=rate_pct,group=Municipalities,color=Municipalities)) + geom_point() + ggtitle("assessTotal for taxClass 1 and all municipalities") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+rate_class
+
+assess_class
+
+## Correlation for categorical variables
+TaxClassCode <- aov(rate_pct ~ TaxClassCode, data = pct_final)
+summary(TaxClassCode)
+
+Year <- aov(rate_pct ~ Year, data = pct_final)
+summary(Year)
+
+Municipalities <- aov(rate_pct ~ Municipalities, data = pct_final)
+summary(Municipalities)
+
+
+TaxClassCode <- aov(rate_pct ~ TaxClassCode, data = pct_final)
+summary(TaxClassCode)
 ```
 
-6. Compute autocorrelations of past mill rates to test the independence of mill rates. 
+7. Compute autocorrelations of past mill rates to test the independence of mill rates. 
 ```{r}
 # all white noise
 for (i in 1:21) {

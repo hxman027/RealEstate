@@ -591,8 +591,8 @@ elastic_net
 # RMSE was used to select the optimal model using the smallest value.
 # The final values used for the model were alpha = 0.55 and lambda = 0.009140377.
 
-ridge_reg = glmnet(x_train, y_train, nlambda = 25, alpha = 0.55, family = 'gaussian', lambda = 0.009140377)
-predictions_test <- predict(ridge_reg, newx = x_test)
+elastic_reg = glmnet(x_train, y_train, nlambda = 25, alpha = 0.55, family = 'gaussian', lambda = 0.009140377)
+predictions_test <- predict(elastic_reg, newx = x_test)
 eval_results(y_test, predictions_test)
 ```
 MSPE = 2.566096	

@@ -93,6 +93,7 @@ assessment_aggregate <- read.csv(here("data","assessment_aggregate.csv"))
 assessment_final <- read.csv(here("data","assessment_final.csv"))
 assessment_final <- assessment_final[,-1]
 assessment_final <- assessment_final[complete.cases(assessment_final),]
+assessment_final <- assessment_final[,-4]
 ```
 Note: tax_pct doesn't have Maple Ridge Rural. We decide to treat Maple Ridge Rural and Maple Ridge with the same tax. 
 
@@ -176,8 +177,11 @@ income_budget_compare <- gather(income_budget_compare, TaxType, Amount, TaxAmoun
 
 compare_full_plot <- income_budget_compare %>% filter(Municipalities!="Vancouver") %>% ggplot(aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),color=Municipalities)) + geom_line()
 
-compare_plot <- income_budget_compare %>% filter(Municipalities=="Vancouver" | Municipalities=="Surrey" | Municipalities=="Burnaby" | Municipalities=="Richmond") %>% ggplot(aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),color=TaxType)) + geom_line() + ggtitle("budget v.s taxIncome")
-compare_plot
+compare_plot1 <- income_budget_compare %>% filter(Municipalities=="Vancouver") %>% ggplot(aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),color=TaxType)) + geom_line() + ggtitle("budget v.s taxIncome for Vancouver")
+compare_plot2 <- income_budget_compare %>% filter(Municipalities=="Surrey") %>% ggplot(aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),color=TaxType)) + geom_line() + ggtitle("budget v.s taxIncome for Surrey")
+compare_plot3 <- income_budget_compare %>% filter(Municipalities=="Burnaby") %>% ggplot(aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),color=TaxType)) + geom_line() + ggtitle("budget v.s taxIncome for Burnaby")
+compare_plot4 <- income_budget_compare %>% filter(Municipalities=="Richmond") %>% ggplot(aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),color=TaxType)) + geom_line() + ggtitle("budget v.s taxIncome for Richmond")
+multiplot(compare_plot1,compare_plot2,compare_plot3,compare_plot4,cols=2)
 ```
 
 
@@ -596,5 +600,13 @@ eval_results(y_test, predictions_test)
 ```{r}
 nn=neuralnet(TaxClassTaxRate~Year+TaxClassCode+AssessorAreaCode+AddressAssessorMunicipalityCode+AssessedValueAmt+CurrentYearTotal+TaxOwingAmountTotalCalculated,data=assessment_final, hidden=20, act.fct = "logistic", linear.output = FALSE)
 plot(nn)
+```
+
+```{r}
+# in progress
+#library(keras)
+#nn_dat <- to_categorical(assessment_final, 10)
+#train_data <- scale(assessment_final)
+
 ```
 

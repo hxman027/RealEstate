@@ -335,21 +335,33 @@ rate_assess_correlation2
 ## Correlation for continuous variables
 assess_class <- assessment_aggregate %>% ggplot(aes(x=assessTotal,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and assess - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
 
-tax_class <- assessment_aggregate %>% ggplot(aes(x=predTaxIncome,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and tax - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+tax_class <- assessment_aggregate %>% ggplot(aes(x=tax,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and tax - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+land_class<-assessment_aggregate %>% ggplot(aes(x=landTotal,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and landTotal - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+improvementTotal_class<-assessment_aggregate %>% ggplot(aes(x=improvementTotal,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and improvementTotal - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+land_class<-assessment_aggregate %>% ggplot(aes(x=landTotal,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and landTotal - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+propertyCount_class<-assessment_aggregate %>% ggplot(aes(x=propertyCount,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and propertyCount - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
 
 assess_class
-
 tax_class
+land_class
+improvementTotal_class
+propertyCount_class
+
+
 
 ## Correlation for categorical variables
-TaxClassCode <- aov(rate ~ TaxClassCode, data = assessment_aggregate)
+TaxClassCode <- aov(rate ~ factor(TaxClassCode), data = assessment_aggregate)
 summary(TaxClassCode)
 
 
-Year <- aov(rate_pct ~ Year, data = pct_final)
+Year <- aov(rate_pct ~ factor(Year), data = pct_final)
 summary(Year)
 
-Municipalities <- aov(rate ~ AddressAssessorMunicipalityDesc, data = assessment_aggregate)
+Municipalities <- aov(rate ~ factor(AddressAssessorMunicipalityDesc), data = assessment_aggregate)
 summary(Municipalities)
 ```
 

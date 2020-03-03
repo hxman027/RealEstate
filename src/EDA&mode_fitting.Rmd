@@ -334,22 +334,26 @@ rate_assess_correlation2
 
 ## Correlation for continuous variables
 assess_class <- assessment_aggregate %>% ggplot(aes(x=assessTotal,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and assess - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+cor(assessment_aggregate$assessTotal, assessment_aggregate$rate)
 
 tax_class <- assessment_aggregate %>% ggplot(aes(x=tax,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and tax - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+cor(assessment_aggregate$tax, assessment_aggregate$rate)
 
 land_class<-assessment_aggregate %>% ggplot(aes(x=landTotal,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and landTotal - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+cor(assessment_aggregate$landTotal, assessment_aggregate$rate)
 
 improvementTotal_class<-assessment_aggregate %>% ggplot(aes(x=improvementTotal,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and improvementTotal - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
-
-land_class<-assessment_aggregate %>% ggplot(aes(x=landTotal,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and landTotal - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+cor(assessment_aggregate$improvementTotal, assessment_aggregate$rate)
 
 propertyCount_class<-assessment_aggregate %>% ggplot(aes(x=propertyCount,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and propertyCount - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+cor(assessment_aggregate$propertyCount, assessment_aggregate$rate)
 
-assess_class
-tax_class
-land_class
-improvementTotal_class
-propertyCount_class
+library(plotly)
+ggplotly(assess_class)
+ggplotly(tax_class)
+ggplotly(land_class)
+ggplotly(improvementTotal_class)
+ggplotly(propertyCount_class)
 
 
 
@@ -406,6 +410,7 @@ summary(linear_full)
 
 
 library(broom)
+
 linear_full_fit<-augment(linear_full)
 sqrt(sum((linear_full_fit$.resid)^2)/nrow(assessment_aggregate)) 
 ```
@@ -469,7 +474,7 @@ data.frame(
 }
 
 predictions_train <- predict(ridge_reg, s = optimal_lambda, newx = x)
-eval_results(y, predictions_train)
+ridge_r <- eval_results(y, predictions_train)
 
 
 ```
@@ -489,7 +494,7 @@ lambda_best <- lasso_reg$lambda.min;lambda_best
 lasso_model <- glmnet(x, y, alpha = 1, lambda = lambda_best, standardize = TRUE)
 
 predictions_train <- predict(lasso_model, s = lambda_best, newx = x)
-eval_results(y, predictions_train)
+lasso_r <- eval_results(y, predictions_train)
 ```
 MSPE = 1.985463	
 Rsquare=0.8872924	
@@ -506,7 +511,9 @@ elastic_net = train(
   method = "glmnet",
   trControl = cv_10
 )
+
 elastic_net
+
 ```
 The final values used for the model were alpha = 0.1 and lambda = 0.007102922.
    alpha  lambda       RMSE      Rsquared   MAE     
@@ -603,6 +610,18 @@ eval_results(y_test, predictions_test)
 ```
 MSPE = 2.54861	
 
+Summary on GOF
+```{r}
+
+GOF_table <- rbind(
+      c("OLR full", 0.8874, 0.8707, 1.9843, 2.5902),
+      c("OLR reduced", 0.8874, 0.8721, 1.9845, 2.5237),
+      c("Ridge", 0.8868, 0.8707, 1.9896, 2.5675),
+      c("LASSO", 0.8873, 0.8707, 1.9855, 2.5280),
+      c("Elastic Net", 0.8625, 0.8707, 2.2366, 2.5486))
+colnames(GOF_table) <- c("Model", "Mutiple R-Squared","Adjusted R_Squared", "MSE", "PMSE")
+
+```
 
 ## neural network
 ```{r}

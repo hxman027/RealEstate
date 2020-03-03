@@ -6,7 +6,8 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+# knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
 ```
 # Summary
 A real estate analyst in Vancouver was interested in predicting future property tax for his company by predicting future mill rates. His expectation was to obtain a good prediction model to predict mill rates in each municipality in Metro Vancouver given the past data. In this study, data cleaning was done to prepare for the data analysis and raw data was transformed into summary statistics for each municipality. Exploratory data analysis (EDA) shows that mill rate is strongly correlated with year, municipality, tax class, assessment total, improvement, land and  property count, and weakly correlated with municipal budget. Linear regression models (ordinary linear regression, Lasso, Ridge and Elastic Net regression) were built to explore the relationship between mill rate and potential features. Among all models, ordinary linear regression with reduced features gives the slightly better goodness of fit and prediction power.
@@ -72,7 +73,7 @@ The data listed were all cleaned to reduce their dimensions before data analysis
 
 Before model construction and prediction of mill rates, EDA needs to be done to visualize the main characteristics of our dataset. In this study, EDA mainly focuses on exploring the relationships between mill rate and potential features. We first plotted correlations between mill rate and quantitative features (assessTotal, improvementTotal, propertyCount and landTotal). As for categorical features (TaxClassCode, Year and AddressAssessorMunicipalityDesc), instead of plotting correlations for all combination of them (3\*4\*21), ANOVA analysis was used to test if the correlation between mill rate and each categorical feature is significant. 
 
-## 2. Measure of goodness of fit and prediction power
+## 2. Measure of Goodness of Fit and Prediction Power
 
 In this study, we first built various models. The evaluation of model performances is based on goodness of fit (how well the model explains the data) and prediction power (how well it can predict future values). 
 
@@ -175,9 +176,9 @@ municipality.list = c(
   "Lions Bay")
 
 
-assessment_aggregate <- read.csv(here("RealEstate/data","assessment_aggregate.csv"))
+assessment_aggregate <- read.csv(here("data","assessment_aggregate.csv"))
 
-tax_final <- read.csv(here("RealEstate/data","tax_final.csv"))
+tax_final <- read.csv(here("data","tax_final.csv"))
 #head(tax_final)
 
 # tax_final is the budget
@@ -198,8 +199,14 @@ tax_modified <- tax_final  %>% mutate(X2019=tax_final$X2018*(1+(((tax_final$X201
 assessment_aggregate[,10] <- assessment_aggregate$assessTotal*assessment_aggregate$rate/1000
 names(assessment_aggregate)[10] <- paste("predTaxIncome")
 
-dat_pred_income <- assessment_aggregate %>% select(Year,AddressAssessorMunicipalityDesc,TaxClassCode,predTaxIncome)
-dat_pred_income <- aggregate(dat_pred_income$predTaxIncome,by=list(Year=dat_pred_income$Year,Municipalities=dat_pred_income$AddressAssessorMunicipalityDesc),FUN=sum)
+dat_pred_income <- assessment_aggregate %>% select(Year,
+                                                   AddressAssessorMunicipalityDesc,
+                                                   TaxClassCode,
+                                                   predTaxIncome)
+dat_pred_income <- aggregate(dat_pred_income$predTaxIncome,
+                             by=list(Year=dat_pred_income$Year,
+                                     Municipalities=dat_pred_income$AddressAssessorMunicipalityDesc),
+                             FUN=sum)
 names(dat_pred_income)[3] <- paste("predTaxIncome")
 
 tax_refactored <- tax_modified
@@ -211,14 +218,47 @@ dat_true_income <- gather(tax_refactored, Year, TaxAmount, "2016":"2019", factor
 dat_true_income <- dat_true_income[,-1]
 
 income_budget_compare <- merge(dat_true_income,dat_pred_income,by=c("Municipalities","Year"))
-income_budget_compare <- gather(income_budget_compare, TaxType, Amount, TaxAmount:predTaxIncome, factor_key=TRUE)
+income_budget_compare <- gather(income_budget_compare, 
+                                TaxType, 
+                                Amount, 
+                                TaxAmount:predTaxIncome, 
+                                factor_key=TRUE)
 
-compare_full_plot <- income_budget_compare %>% filter(Municipalities!="Vancouver") %>% ggplot(aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),color=Municipalities)) + geom_line()
+compare_full_plot <- income_budget_compare %>% filter(Municipalities!="Vancouver") %>% 
+  ggplot(
+  aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),
+      color=Municipalities)) + 
+  geom_line()
 
-compare_plot1 <- income_budget_compare %>% filter(Municipalities=="Vancouver") %>% ggplot(aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),color=TaxType)) + geom_line() + ggtitle("budget v.s tax for Vancouver")
-compare_plot2 <- income_budget_compare %>% filter(Municipalities=="Surrey") %>% ggplot(aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),color=TaxType)) + geom_line() + ggtitle("budget v.s tax for Surrey")
-compare_plot3 <- income_budget_compare %>% filter(Municipalities=="Burnaby") %>% ggplot(aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),color=TaxType)) + geom_line() + ggtitle("budget v.s tax or Burnaby")
-compare_plot4 <- income_budget_compare %>% filter(Municipalities=="Richmond") %>% ggplot(aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),color=TaxType)) + geom_line() + ggtitle("budget v.s tax for Richmond")
+compare_plot1 <- income_budget_compare %>% filter(Municipalities=="Vancouver") %>%
+  ggplot(
+    aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),
+        color=TaxType)) + 
+  geom_line() + 
+  ggtitle("budget v.s tax for Vancouver")
+
+compare_plot2 <- income_budget_compare %>% filter(Municipalities=="Surrey") %>% 
+  ggplot(
+  aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),
+      color=TaxType)) + 
+  geom_line() + 
+  ggtitle("budget v.s tax for Surrey")
+
+compare_plot3 <- income_budget_compare %>% filter(Municipalities=="Burnaby") %>% 
+  ggplot(
+  aes(x=Year,y=Amount,
+      group=interaction(Municipalities,TaxType),
+      color=TaxType)) +
+  geom_line() + 
+  ggtitle("budget v.s tax or Burnaby")
+
+compare_plot4 <- income_budget_compare %>% filter(Municipalities=="Richmond") %>% 
+  ggplot(
+  aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),
+      color=TaxType)) + 
+  geom_line() + 
+  ggtitle("budget v.s tax for Richmond")
+
 multiplot(compare_plot1,compare_plot2,compare_plot3,compare_plot4,cols=2)
 ```
 
@@ -236,31 +276,80 @@ dat_tax_long <- gather(tax_modified, Year, TaxAmount, "2016":"2019", factor_key=
 tax_modified1 <- gather(tax_modified, Year, tax, '2016':'2019', factor_key = TRUE)%>%
   rename(AddressAssessorMunicipalityDesc = Municipalities)
 
-assessment_aggregate <- merge(assessment_aggregate, tax_modified1, by = c("AddressAssessorMunicipalityDesc","Year"))
+assessment_aggregate <- merge(assessment_aggregate, 
+                              tax_modified1, 
+                              by = c("AddressAssessorMunicipalityDesc","Year"))
 assessment_aggregate <- assessment_aggregate[,-c(3,11)]
 names(assessment_aggregate)[10] <- paste("tax")
 
 ## Correlation for continuous variables
-assess_class <- assessment_aggregate %>% ggplot(aes(x=assessTotal,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and assess - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")+theme(legend.position = "none") 
+assess_class <- assessment_aggregate %>% 
+  ggplot(
+  aes(x=assessTotal,
+      y=rate,
+      group=AddressAssessorMunicipalityDesc,
+      color=AddressAssessorMunicipalityDesc)) + 
+  geom_point() + 
+  ggtitle("mill rate and assessTotal") + 
+  geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")+
+  theme(legend.position = "none") 
 
-tax_class <- assessment_aggregate %>% ggplot(aes(x=tax,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and tax - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")+theme(legend.position = "none") 
+tax_class <- assessment_aggregate %>% 
+  ggplot(
+  aes(x=tax,
+      y=rate,
+      group=AddressAssessorMunicipalityDesc,
+      color=AddressAssessorMunicipalityDesc)) + 
+  geom_point() + 
+  ggtitle("mill rate and budget") +
+  geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")+
+  theme(legend.position = "none") 
 
-land_class<-assessment_aggregate %>% ggplot(aes(x=landTotal,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and landTotal - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")+theme(legend.position = "none") 
+land_class<-assessment_aggregate %>% ggplot(
+  aes(x=landTotal,
+      y=rate,
+      group=AddressAssessorMunicipalityDesc,
+      color=AddressAssessorMunicipalityDesc)) + 
+  geom_point() + 
+  ggtitle("mill rate and landTotal") + 
+  geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")+
+  theme(legend.position = "none") 
 
-improvementTotal_class<-assessment_aggregate %>% ggplot(aes(x=improvementTotal,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and improvementTotal - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")+theme(legend.position = "none") 
+improvementTotal_class<-assessment_aggregate %>% 
+  ggplot(
+  aes(x=improvementTotal,
+      y=rate,
+      group=AddressAssessorMunicipalityDesc,
+      color=AddressAssessorMunicipalityDesc)) + 
+  geom_point() + 
+  ggtitle("mill rate and improvementTotal") + 
+  geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")+
+  theme(legend.position = "none") 
 
 
-propertyCount_class<-assessment_aggregate %>% ggplot(aes(x=propertyCount,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and propertyCount - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")+theme(legend.position = "none") 
+propertyCount_class<-assessment_aggregate %>% 
+  ggplot(
+  aes(x=propertyCount,
+      y=rate,
+      group=AddressAssessorMunicipalityDesc,
+      color=AddressAssessorMunicipalityDesc)) + 
+  geom_point() + 
+  ggtitle("mill rate and propertyCount") + 
+  geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")+
+  theme(legend.position = "none") 
 
-multiplot(assess_class,
-tax_class,
-land_class,improvementTotal_class,
-          propertyCount_class, cols=2)
+multiplot(
+  assess_class,
+  tax_class,
+  land_class,
+  improvementTotal_class,
+  propertyCount_class, 
+  cols=2)
 
 
 ```
 
-Plot 2. scatterplot with regression line for mill rate against assessTotal, tax, landTotal, improvementTotal and propertyCount.
+Plot 2. scatterplot with regression line for mill rate against assessTotal, municial budget, landTotal, improvementTotal and propertyCount.
 
 Plot 2 shows the correlation between mill rate and five quantitative variables that likely affect the mill rate. Mill rate is negatively correlated with assessTotal, improvementTotal, propertyCount and landTotal considering all the 21 municipalities in Metro Vancouver, as the black linear regression lines all have a negative slope. In contrast, mill rate and budget is weakly correlated since the linear regression line is almost flat. 
 
@@ -296,7 +385,17 @@ Table 2 lists the result of ANOVA analysis of mill rate and three categorical va
 # 2. Goodness of Fit
 ```{r, echo=T, results="hide"}
 # full linear model
-linear_full<-lm(rate~factor(AddressAssessorMunicipalityDesc)+factor(Year)+factor(TaxClassCode)+assessTotal+landTotal+improvementTotal+propertyCount+tax,data=assessment_aggregate)
+linear_full<-lm(rate~
+                  factor(AddressAssessorMunicipalityDesc)+
+                  factor(Year)+
+                  factor(TaxClassCode)+
+                  assessTotal+
+                  landTotal+
+                  improvementTotal+
+                  propertyCount+
+                  tax,
+                data=assessment_aggregate)
+
 summary(linear_full)
 linear_full_fit<-augment(linear_full)
 sqrt(sum((linear_full_fit$.resid)^2)/nrow(assessment_aggregate)) 
@@ -305,13 +404,20 @@ sqrt(sum((linear_full_fit$.resid)^2)/nrow(assessment_aggregate))
 row1<-c("OLR full",0.8874, 0.8707,round(1.984285,4))
 
 # reduced model
-reduced<-lm(rate~factor(Year)+factor(TaxClassCode)+factor(AddressAssessorMunicipalityDesc)+assessTotal+landTotal, data=assessment_aggregate)
+reduced<-lm(rate~
+              factor(Year)+
+              factor(TaxClassCode)+
+              factor(AddressAssessorMunicipalityDesc)+
+              assessTotal+
+              landTotal, 
+            data=assessment_aggregate)
 summary(reduced)
 reduced_fit<-augment(reduced)
 # Multiple R-squared:  0.8874,	Adjusted R-squared:  0.8721 
 sqrt(sum((reduced_fit$.resid)^2)/nrow(assessment_aggregate))
 row2<-c("OLR reduced",0.8874,0.8721,round(1.984541,4))
 ```
+
 ```{r, echo=F}
 # create a list of significant variables from the full linear model
 
@@ -354,7 +460,15 @@ dummy_year<-dummy(assessment_aggregate$Year)
 dummy_municipal<-dummy(assessment_aggregate$AddressAssessorMunicipalityDesc)
 dummy_taxclass<-dummy(assessment_aggregate$TaxClassCode)
 # build x matrix
-x<-cbind(dummy_municipal,dummy_year,dummy_taxclass,assessment_aggregate$assessTotal,assessment_aggregate$landTotal,assessment_aggregate$improvementTotal,assessment_aggregate$propertyCount,assessment_aggregate$tax)
+x<-cbind(dummy_municipal,
+         dummy_year,
+         dummy_taxclass,
+         assessment_aggregate$assessTotal,
+         assessment_aggregate$landTotal,
+         assessment_aggregate$improvementTotal,
+         assessment_aggregate$propertyCount,
+         assessment_aggregate$tax)
+
 y<-assessment_aggregate$rate
 lambdas <- 10^seq(2, -3, by = -.1)
 
@@ -400,7 +514,15 @@ row4<-c("Lasso",round(0.8872924,4)	,"N/A",round(1.985463,4))
 #tibble::as_tibble(assessment_aggregate)
 cv_10 = trainControl(method = "cv", number = 10)
 elastic_net = train(
-  rate~factor(AddressAssessorMunicipalityDesc)+factor(Year)+factor(TaxClassCode)+assessTotal+landTotal+improvementTotal+propertyCount, data = assessment_aggregate,
+  rate~
+    factor(AddressAssessorMunicipalityDesc)+
+    factor(Year)+
+    factor(TaxClassCode)+
+    assessTotal+
+    landTotal+
+    improvementTotal+
+    propertyCount, 
+  data = assessment_aggregate,
   method = "glmnet",
   trControl = cv_10
 )
@@ -436,14 +558,28 @@ test<-assessment_aggregate[-train_ind,]
 # full linear model
 newx<-test[,-c(8,9)]
 y<-test[,c(8)]
-linear_1<-lm(rate~factor(AddressAssessorMunicipalityDesc)+factor(Year)+factor(TaxClassCode)+assessTotal+landTotal+improvementTotal+propertyCount+tax,data=train)
+linear_1<-lm(rate~
+               factor(AddressAssessorMunicipalityDesc)+
+               factor(Year)+
+               factor(TaxClassCode)+
+               assessTotal+
+               landTotal+
+               improvementTotal+
+               propertyCount+
+               tax,
+             data=train)
 resid<-predict(linear_1,newdata = newx) - y
-row1<-c("OLR full", round(sqrt(sum(resid^2)/nrow(test)),4))
 
 # reduced model
-linear_2<-lm(rate~factor(Year)+factor(TaxClassCode)+factor(AddressAssessorMunicipalityDesc)+assessTotal+landTotal,data=train)
+linear_2<-lm(rate~
+               factor(Year)+
+               factor(TaxClassCode)+
+               factor(AddressAssessorMunicipalityDesc)+
+               assessTotal+
+               landTotal,
+             data=train)
+
 resid<-predict(linear_2,newdata = newx) - y
-row2<-c("OLR reduced",round(sqrt(sum(resid^2)/nrow(test)),4))
 ```
 
 ```{r, echo=T, results="hide", warning=F}
@@ -466,7 +602,7 @@ lambda_best <- lasso_reg$lambda.min;lambda_best
 lasso_model <- glmnet(x_train, y_train, alpha = 1, lambda = lambda_best, standardize = TRUE)
 predictions_test <- predict(lasso_model, s = lambda_best, newx = x_test)
 eval_results(y_test, predictions_test)
-row4<-c("Lasso",round(2.528047,4))
+
 
 
 # ridge
@@ -477,13 +613,20 @@ optimal_lambda <- cv_ridge$lambda.min
 optimal_lambda
 predictions_test <- predict(ridge_reg, s = optimal_lambda, newx = x_test)
 eval_results(y_test, predictions_test)
-row3<-c("Ridge",round(2.567499,4))
+
 
 # elastic net
 tibble::as_tibble(assessment_aggregate[train_ind,])
 cv_10 = trainControl(method = "cv", number = 10)
 elastic_net = train(
- rate~factor(AddressAssessorMunicipalityDesc)+factor(Year)+factor(TaxClassCode)+assessTotal+landTotal+improvementTotal+propertyCount+tax, 
+ rate~
+   factor(AddressAssessorMunicipalityDesc)+
+   factor(Year)+
+   factor(TaxClassCode)+
+   assessTotal+landTotal+
+   improvementTotal+
+   propertyCount+
+   tax, 
  data = assessment_aggregate[train_ind,],
   method = "glmnet",
   trControl = cv_10
@@ -496,13 +639,18 @@ elastic_net
 elastic_reg = glmnet(x_train, y_train, nlambda = 25, alpha = 1, family = 'gaussian', lambda =  0.06549203)
 predictions_test <- predict(elastic_reg, newx = x_test)
 eval_results(y_test, predictions_test)
-row5<-c("Elastic Net",round(2.54861,4))
+
 
 ```
 
 
 ```{r, echo=F}
 colsname<-c("Model", "MSPE")
+row1<-c("OLR full", round(sqrt(sum(resid^2)/nrow(test)),4))
+row2<-c("OLR reduced",round(sqrt(sum(resid^2)/nrow(test)),4))
+row3<-c("Ridge",round(2.567499,4))
+row4<-c("Lasso",round(2.528047,4))
+row5<-c("Elastic Net",round(2.54861,4))
 table<-rbind(row1,row2,row3,row4,row5)
 colnames(table)<-colsname
 rownames(table)<-NULL
@@ -513,9 +661,11 @@ Table 5 shows that among the five models, OLR reduced has the smallest MSPE and 
 
 # Conclusion
 
-The OLR shows significant variables related to mill rates are Year, Tax Class, Municipality, Assessment and Land Total
+The OLR shows significant variables related to mill rates are Year, Tax Class, Municipality, Assessment and Land Total.
 
 OLR reduced has slightly better goodness of fit of the model and prediction power among all models. However, this good fit is likely to be a result of over-fitness since for each municipality and tax class, we only have 4 consecutive data points from 2016 to 2019. 
+
+In the current design, prediction power is measured by MSPE on one trial of testing set, which might cause a large variance of MSPE and thus an inaccurate prediction power. In the next stage, in order to get a more accurate prediction power, we will perform k-fold cross validation to decrease the variance of MSPE. 
 
 # References
 
@@ -538,17 +688,11 @@ Code repository:
 
 ## Missing Value:
 
+1. Mill Rate
 
-There are 1801 missing values in mill rate(TaxClassTaxRate). We decided to impute these missing values
-Based on client information, all properties in the same region, classcode, and year should have a unique class rate
+There are 1801 missing values in mill rate(TaxClassTaxRate). Since properties belonging to the same group (same year, region and tax class) should share a common mill rate, missing values were imputed by the common mill rate of properties in the same group.
 
-- For entries with mill rate, we aggregated them into groups by region + classcode + year.
-
-- For entries without mill rate, we found the group they belong to and assign them mill rate in that group.
-
-Here is some exceptions found:
-
-Some groups' mill rate is not unique:
+However, some groups' mill rates are not unique or missing entirely. The treatments are as below:
 
 
 - In Delta, properties in different neighbourhoods have slightly different mill rates. Since the variance is not significant, we take the mean as the overall mill rate in groups.
@@ -576,3 +720,6 @@ Year  | Region | Class |Number of Properties
 2018 | Maple Ridge Rural | 05 | 36 
 2019 | Maple Ridge Rural | 05 | 38
 
+2. Municipal Budget
+
+We used total tax collected in each area to approximate municipal budget. However, the governement website only has data available up to 2018; total tax collected in 2019 is missing. In this study, tax collected in 2019 is imputed by average value of tax collected in the previous three years.  

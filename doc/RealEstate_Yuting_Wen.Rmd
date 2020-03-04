@@ -145,7 +145,7 @@ income_budget_compare <- gather(income_budget_compare, TaxType, Amount, Budget:T
 ## Summary
 
 
-Our client is a real estate data analyst in Metro Vancouver who analyzes the market trend to make a market prediction for his company and future client. He is interested in a good prediction model that can accurately predict future mill rates, given the past data like the past mill rates and the past assessment values, in Metro Vancouver. Data cleaning, exploratory data analysis, and linear models with different kinds of regulazations were used to analyze the relationship between mill rate and other factors and predict future mill rates. Data cleaning is performed to aggregate our data into summary statistics and also reduce the number of data entries. Exploratory analysis has shown that there is a strong correlation between mill rate and municipal budget and strong correlation between mill rate and assessment in some municipalities. The results of exploratory analysis have also shown that there is no clear difference among full linear Regression model with all features (Year, TaxClassCode, Municipalities, assessTotal_pct, tax (budget), landTotal, improvementTotal, numProperties) and reduced linear regression models (Ridge, Lasso and Elastic net).
+Our client is a real estate data analyst in Metro Vancouver who analyzes the market trend to make a market prediction for his company and future client. He is interested in a good prediction model that can accurately predict future mill rates, given the past data like the past mill rates and the past assessment values, in Metro Vancouver. Data cleaning, exploratory data analysis, and linear models with different kinds of regularzations were used to analyze the relationship between mill rate and other factors and predict future mill rates. Data cleaning is performed to aggregate our data into summary statistics and also reduce the number of data entries. Exploratory analysis has shown that there is a strong correlation between mill rate and municipal budget and between mill rate and assessment in some municipalities. The results of exploratory analysis have also shown that there is no clear difference among full linear Regression model with all features (year, tax class code, municipality, total Assessment value, tax (budget), total land assessment value, total improvement assessment value, number of properties) and reduced linear regression models (Ridge, Lasso and Elastic net), while they still have relatively low error.
 
 
 ## Introduction
@@ -177,7 +177,7 @@ Our goal is to accurately predict the mill rate in 2020 based on past data from 
 
 Correlations between mill rates, assessment values, municipal budgets, land assessment values, improvement assessment values, number of properties, tax class codes, municipalities, and year are performed to see the significance of these factors in our predictive model.
 
-A full linear model with all features, a few reduced linear models with regularzations like the LASSO, Ridge Regression are used to train our predictive model. Once we have finished fitting those models, we will use the mean squared training error to evaluate the performance of our model.
+A full linear model with all features, a few reduced linear models with regularzations like the LASSO, Ridge Regression are used to train our predictive model. Once we have finished fitting those models, we will use the mean squared test error to evaluate the performance of our model.
 
 
 ## Data Description
@@ -218,9 +218,11 @@ We did some exploratory analysis to visualize the main characteristics of our da
 We assume that the government aims to match its budget and its income by adjusting the mill rates, so we have plotted a graph of tax income for three different tax classes (01, 05, and 06) vs. budget through time to see the trend of tax income in different municipalities to make sure our assumption about the data is correct. Vancouver, Richmond, and Burnaby were chosen to illustrate such relationship as they are the most representing city in metro vancouver.
 
 
-We also made scatterplot of mill rate vs. assessment, mil rate vs. municipal budget, mill rate vs. landTotal (total land assessment value), mill rate vs. improvementTotal (total improvement assessment value), and mill rate vs. numOfProperties (number of properties) to see the correlation between each of the two factors. ANOVA analysis was also performed to see the correlations between mill rate vs. tax class, mill rate vs. year and mill rate vs. municipality. 
+We also made scatterplot of mill rate vs. assessment, mil rate vs. municipal budget, mill rate vs. total land assessment value, mill rate vs. total improvement assessment value, and mill rate vs. number of properties to see the correlation between each of the two factors. ANOVA analysis was also performed to see the correlations between mill rate vs. tax class, mill rate vs. year and mill rate vs. municipality. 
 
 These exploratory analysis and plots helped us to find trends in data within each of its own categories.
+
+We used R package called "ggplot" to visualize our results.
 
 
 ### Measure of goodness of fit and prediction power

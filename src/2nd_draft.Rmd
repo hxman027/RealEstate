@@ -18,8 +18,9 @@ library(ggplot2)
 library(dplyr)
 library(here)
 library(readxl)
-require(neuralnet)
-library(plotly)
+library(broom)
+library(glmnet)
+library(dummies)
 ```
 
 1. data processing
@@ -30,40 +31,44 @@ assessment_aggregate <- read.csv(here("data","assessment_aggregate.csv"))[,-1]
 
 2. Test correlations between past mill rates and other features.
 ```{r}
-# continuous variables
+# ______________________________________________________________________________________________
+# CONTINUS variables
 assessment_transform <- assessment_aggregate
-## TODO: mean, log transform, etc.
 
-for(i in colnames(assessment_transform)[4:7]){
-  print(sprintf("correlation between mill rate and %s: %s.",
-                i, cor(assessment_aggregate$rate, eval(parse(text=paste0("assessment_aggregate$", i))))))
-  print(assessment_aggregate %>%
-                   ggplot(aes(x=!!as.name(i),
+# log transformation and take avg
+assessment_transform[,9] <- assessment_transform$assessTotal/assessment_transform$propertyCount
+names(assessment_transform)[9] <- paste("AvgTotalAssessmentValue")
+
+cor(assessment_transform$rate,assessment_transform$AvgTotalAssessmentValue)
+
+assessment_transform %>%
+                   ggplot(aes(x=AvgTotalAssessmentValue,
                               y=rate,group=AddressAssessorMunicipalityDesc,
                               color=AddressAssessorMunicipalityDesc)) + 
                    geom_point() + 
-                   ggtitle(sprintf("mill rate vs %s ", i)) + 
-                   geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black"))
+                   ggtitle(sprintf("mill rate vs average total assessment value")) + 
+                   geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
 
-}
-
-# categorical variables
-for(i in colnames(assessment_transform)[1:3]){
+# ______________________________________________________________________________________________
+# CATEGORICAL variables
+for(i in colnames(assessment_transform)[2:3]){
   print(ggplot(assessment_aggregate, aes(x=as.factor(!!as.name(i)),y=rate, fill=as.factor(!!as.name(i)))) + 
   geom_boxplot()+ 
   theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none"))
 }
+
+# kruskal.test
+kruskal.test(assessment_transform$rate~assessment_transform$TaxClassCode,data=assessment_transform)
+kruskal.test(assessment_transform$rate~assessment_transform$AddressAssessorMunicipalityDesc,data=assessment_transform)
 ```
 
 
 3.model fitting
 (i) linear model
 ```{r}
-linear_full<-lm(rate~factor(AddressAssessorMunicipalityDesc)+factor(Year)+factor(TaxClassCode)+assessTotal+landTotal+improvementTotal+propertyCount,data=assessment_aggregate)
+# based on EDA, we chose to fit model using municipality, tax class code, avg assess value
+linear_full<-lm(rate~factor(AddressAssessorMunicipalityDesc)+factor(TaxClassCode)+AvgTotalAssessmentValue,data=assessment_transform)
 summary(linear_full)
-
-
-library(broom)
 
 linear_full_fit<-augment(linear_full)
 sqrt(sum((linear_full_fit$.resid)^2)/nrow(assessment_aggregate)) 
@@ -92,8 +97,6 @@ MSPE = 1.984541
 Ridge Regression
 reference: https://www.pluralsight.com/guides/linear-lasso-and-ridge-regression-with-r
 ```{r}
-library(glmnet)
-library(dummies)
 dummy_year<-dummy(assessment_aggregate$Year)
 dummy_municipal<-dummy(assessment_aggregate$AddressAssessorMunicipalityDesc)
 dummy_taxclass<-dummy(assessment_aggregate$TaxClassCode)

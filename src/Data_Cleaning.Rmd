@@ -50,7 +50,8 @@ municipality.list = c(
   "Bowen Island", 
   "Anmore", 
   "Belcarra",
-  "Lions Bay")
+  "Lions Bay",
+  "New Westminster")
 
 # Select only relevent features
 assessment.thin <- distinct(assessment.1620) %>%
@@ -108,10 +109,15 @@ Vancouver <- assessment.thin%>%
 cat("Vancouver:")
 table(Vancouver$TaxClassTaxRate)
 
+NewWest <- assessment.thin%>%
+  filter(Year == 2019,
+         AddressAssessorMunicipalityDesc == "New Westminster",
+         TaxClassCode == "06")
+
 ```
 Langley: TaxClassTaxRate also associates with AssetTypeDesc.-> assign 11.8916 due to client request
 Delta: tax rate also associate with neighborhood -> Take Mean
-Burnaby and Vancovuer: Less that 10 cases are different form others -> Take mode 
+Burnaby, Vancovuer and New West: Less that 10 cases are different from others -> Take mode 
 
 ```{r}
 assessment.rate <- assessment.thin%>%
@@ -124,6 +130,9 @@ assessment.rate <- assessment.thin%>%
                                      Year == 2019 &
                                        AddressAssessorMunicipalityDesc == "Vancouver" &
                                        TaxClassCode == "01" ~ 2.56116,
+                                     Year == 2019 &
+                                       AddressAssessorMunicipalityDesc == "New Westminster" &
+                                       TaxClassCode == "06" ~ 14.2158,
                                      TRUE ~ TaxClassTaxRate))
 Delta <- assessment.rate%>%
   filter(!is.na(TaxClassTaxRate),

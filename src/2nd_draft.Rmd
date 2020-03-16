@@ -281,74 +281,84 @@ colnames(GOF_table) <- c("Model", "Mutiple R-Squared","Adjusted R_Squared", "MSE
 ```
 
 ```{r}
-dummy_year<-dummy(assessment_aggregate$Year)
-dummy_municipal<-dummy(assessment_aggregate$AddressAssessorMunicipalityDesc)
-dummy_taxclass<-dummy(assessment_aggregate$TaxClassCode)
+dummy_year<-dummy(assessment_transform$Year)
+dummy_municipal<-dummy(assessment_transform$AddressAssessorMunicipalityDesc)
+dummy_taxclass<-dummy(assessment_transform$TaxClassCode)
 # build x matrix
-x<-cbind(dummy_municipal,dummy_year,dummy_taxclass,assessment_aggregate$assessTotal,assessment_aggregate$landTotal,assessment_aggregate$improvementTotal,assessment_aggregate$propertyCount,assessment_aggregate$tax)
-
-y<-assessment_aggregate$rate
+x<-cbind(dummy_municipal,dummy_year,dummy_taxclass,assessment_transform$AvgTotalAssessmentValue)
+y<-assessment_transform$rate
 x<-cbind(x,y)
 # correct col name
 #assessTotal,assessment_aggregate$landTotal,assessment_aggregate$improvementTotal,assessment_aggregate$propertyCount,assessment_aggregate$tax
-colnames(x)[28:32]<-c("assessTotal","landTotal","improvementTotal","propertyCount","tax")
+colnames(x)[30]<-c("AvgTotalAssessmentValue")
 xm<-x[,1:(ncol(x)-1)]
-x.data.frame<-assessment_aggregate
-xm.data.frame<-assessment_aggregate[,-8]
-y.data.frame<-assessment_aggregate$rate
+x.data.frame<-assessment_transform
+xm.data.frame<-assessment_transform[,-8]
+y.data.frame<-assessment_transform$rate
 n <- nrow(xm)
 k <- 10
 ii <- (1:n)%%k + 1
 set.seed(123)
 N <- 50
-mspe.el<-mspe.la <- mspe.f <- mspe.ri <- mspe.reduced <- rep(0, N)
+mspe.n<-mspe.el<-mspe.la <- mspe.f <- mspe.ri <- mspe.reduced <- rep(0, N)
 
 for (i in 1:N) {
   ii <- sample(ii)
-  pr.el<-pr.la <- pr.f <- pr.ri <- pr.reduced <- rep(0, n)
+  pr.n<-pr.el<-pr.la <- pr.f <- pr.ri <- pr.reduced <- rep(0, n)
   for (j in 1:k) {
     tmp.ri <- cv.glmnet(x = xm[ii != j, ], y = y[ii != j], lambda = lambdas, 
                         nfolds = 10, alpha = 0, family = "gaussian")
     tmp.la <- cv.glmnet(x = xm[ii != j, ], y = y[ii != j], lambda = lambdas, 
                         nfolds = 10, alpha = 1, family = "gaussian")
-    tmp.reduced <- lm(rate ~ factor(Year)+factor(TaxClassCode)+factor(AddressAssessorMunicipalityDesc)+assessTotal+landTotal, 
-                  data = x.data.frame[ii != j, ])
-    tmp.full <- lm(rate ~ factor(AddressAssessorMunicipalityDesc)+factor(Year)+factor(TaxClassCode)+assessTotal+landTotal+improvementTotal+propertyCount+tax, 
-               data = x.data.frame[ii != j, ])
-    
-    tmp.elastic<-train(
-      rate~factor(AddressAssessorMunicipalityDesc)+factor(Year)+factor(TaxClassCode)+assessTotal+landTotal+improvementTotal+propertyCount+tax, 
-      data = x.data.frame[ii != j, ],
-      method = "glmnet",
-      trControl = cv_10
-    )
+    tmp.reduced <- lm(rate ~ factor(TaxClassCode)+factor(AddressAssessorMunicipalityDesc)+AvgTotalAssessmentValue, 
+                      data = x.data.frame[ii != j, ])
+    tmp.full <- lm(rate ~ factor(AddressAssessorMunicipalityDesc)+factor(Year)+factor(TaxClassCode)+assessTotal+landTotal+improvementTotal+propertyCount+AvgTotalAssessmentValue, 
+                   data = x.data.frame[ii != j, ])
+    # tmp.n<-lm(rate ~ 1, data = x.data.frame[ii != j, ])
+      
+    # tmp.elastic<-train(
+    #   rate~factor(AddressAssessorMunicipalityDesc)+factor(TaxClassCode)+AvgTotalAssessmentValue, 
+    #   data = x.data.frame[ii != j, ],
+    #   method = "glmnet",
+    #   trControl = cv_10)
     
     pr.ri[ii == j] <- predict(tmp.ri, s = tmp.ri$lambda.min, newx = xm[ii == 
-                                                                    j, ])
+                                                                         j, ])
     pr.la[ii == j] <- predict(tmp.la, s = tmp.la$lambda.min, newx = xm[ii == 
-                                                                    j, ])
+                                                                         j, ])
     pr.reduced[ii == j] <- predict(tmp.reduced, newdata = x.data.frame[ii == j, ])
     pr.f[ii == j] <- predict(tmp.full, newdata = x.data.frame[ii == j, ])
+    # pr.n[ii == j] <- predict(tmp.n, newdata = x.data.frame[ii == j, ])
     
     index<-which.min(tmp.elastic$results$RMSE)
-    pr.el[ii == j] <- predict(tmp.elastic, 
-                              alpha = tmp.elastic$results[index,1], 
-                              lambda = tmp.elastic$results[index,2], 
+    pr.el[ii == j] <- predict(tmp.elastic,
+                              alpha = tmp.elastic$results[index,1],
+                              lambda = tmp.elastic$results[index,2],
                               newdata = xm.data.frame[ii == j, ])
   }
   mspe.ri[i]<-mean((y - pr.ri)^2)
   mspe.la[i]<-mean((y - pr.la)^2)
   mspe.reduced[i]<-mean((y - pr.reduced)^2)
   mspe.f[i]<-mean((y - pr.f)^2)
+  # mspe.n[i]<-mean((y - pr.n)^2)
   mspe.el[i]<-mean((y - pr.el)^2)
   
 }
-boxplot(mspe.la, mspe.ri,mspe.el, mspe.reduced, mspe.f, 
+
+
+boxplot(mspe.la, 
+        mspe.ri,
+        mspe.el, 
+        # mspe.n, 
+        mspe.reduced, 
+        mspe.f, 
         names = c("LASSO", "Ridge", "Elastic Net", "Reduced", "Full"), 
-        col = c("yellow","steelblue", "gray80", "tomato", "springgreen"), 
+        col = c("steelblue","gray80","pink", "tomato", "springgreen"), 
         cex.axis = 1, 
         cex.lab = 1, 
         cex.main = 2)
+
 mtext(expression(hat(MSPE)), side = 2, line = 2.5)
+
 
 ```

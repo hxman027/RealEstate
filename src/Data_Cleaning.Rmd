@@ -58,7 +58,7 @@ assessment.thin <- distinct(assessment.1620) %>%
   select(PIC,Year,AssessorAreaCode:AddressAssessorMunicipalityDesc, TaxClassCode:TaxClassTaxRate)%>% 
   filter(TaxClassCode %in% c("01","05","06"),
          AddressAssessorMunicipalityDesc %in% municipality.list,
-         Year %in% c(2016,2017,2018,2019))
+         Year %in% c(2016,2017,2018,2019,2020))
 
 # Overview
 head(assessment.thin)
@@ -89,7 +89,7 @@ for (feature in colnames(assessment.thin)){
 
 
 Langley <- assessment.thin%>%
-  filter(Year == 2019,
+  filter(Year %in% c(2019, 2020),
          AddressAssessorMunicipalityDesc == "Langley - City",
          TaxClassCode == "06")
 cat("Langley:")
@@ -113,6 +113,8 @@ NewWest <- assessment.thin%>%
   filter(Year == 2019,
          AddressAssessorMunicipalityDesc == "New Westminster",
          TaxClassCode == "06")
+cat("New Westminster:")
+table(NewWest$TaxClassTaxRate)
 
 ```
 Langley: TaxClassTaxRate also associates with AssetTypeDesc.-> assign 11.8916 due to client request
@@ -121,10 +123,10 @@ Burnaby, Vancovuer and New West: Less that 10 cases are different from others ->
 
 ```{r}
 assessment.rate <- assessment.thin%>%
-  mutate(TaxClassTaxRate = case_when(Year == 2019 &
+  mutate(TaxClassTaxRate = case_when(Year %in% c(2019,2020) &
                                        AddressAssessorMunicipalityDesc == "Langley - City" &
                                        TaxClassCode == "06" ~ 11.8916,
-                                     Year == 2019 &
+                                       Year ==2019 &
                                        AddressAssessorMunicipalityDesc == "Burnaby" &
                                        TaxClassCode == "06" ~ 10.0987,
                                      Year == 2019 &
@@ -136,15 +138,13 @@ assessment.rate <- assessment.thin%>%
                                      TRUE ~ TaxClassTaxRate))
 Delta <- assessment.rate%>%
   filter(!is.na(TaxClassTaxRate),
-         Year %in% c(2017,2018,2019),
          AddressAssessorMunicipalityDesc == "Delta")%>%
   group_by(AddressAssessorMunicipalityDesc, Year, TaxClassCode)%>%
   summarise(rate = mean(TaxClassTaxRate))
 
 assessment.rate <- merge(assessment.rate, Delta,
                          by = c("AddressAssessorMunicipalityDesc", "Year", "TaxClassCode"), all = TRUE)%>%
-  mutate(TaxClassTaxRate = case_when(Year %in% c(2017,2018,2019) &
-                                       AddressAssessorMunicipalityDesc == "Delta" ~ rate,
+  mutate(TaxClassTaxRate = case_when(AddressAssessorMunicipalityDesc == "Delta" ~ rate,
                                      TRUE ~ TaxClassTaxRate))%>%
   select(-rate)
 
@@ -207,7 +207,10 @@ assessment.pct <- assessment.aggregate%>%
 ## Export Data
 
 ```{r}
-write.csv(assessment.final, "../data/Assessment/assessment_final.csv")
-write.csv(assessment.aggregate, "../data/Assessment/assessment_aggregate.csv")
-write.csv(assessment.pct, "../data/Assessment/assessment_pct.csv")
-```{r}
+write.csv(assessment.final, "../Data/Assessment/assessment_final.csv")
+write.csv(assessment.aggregate%>%
+            filter(Year != 2020), "../Data/assessment_aggregate.csv")
+write.csv(assessment.aggregate%>%
+            filter(Year == 2020), "../Data/assessment_2020.csv")
+write.csv(assessment.pct, "../Data/assessment_pct.csv")
+```

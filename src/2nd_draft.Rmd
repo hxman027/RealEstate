@@ -27,6 +27,8 @@ library(dummies)
 ```{r, warning=F, message=F}
 ## Aggregated Data
 assessment_aggregate <- read.csv(here("data","assessment_aggregate.csv"))[,-1]
+assessment_2020 <- read.csv(here("data","assessment_2020.csv"))[,-1]
+assessment_2020.full <- read_excel(here("data/Assessment", "2020 Only.xlsx"))
 ```
 
 2. Test correlations between past mill rates and other features.
@@ -416,3 +418,56 @@ boxplot(mspe.la,
 mtext(expression(hat(MSPE)), side = 2, line = 2.5)
 
 ```
+
+```{r fit}
+## choose full model
+linear_1<-lm(rate~factor(AddressAssessorMunicipalityDesc)+factor(TaxClassCode)+assessTotal+landTotal+improvementTotal+propertyCount,data=assessment_aggregate)
+
+## Fit and get PMSE
+assessment_2020.agg <- assessment_2020%>%
+  mutate(predict_rate = predict(linear_1,newdata = .))
+resid<-assessment_2020.agg$predict_rate - assessment_2020.agg$rate
+sqrt(sum(resid^2)/nrow(assessment_2020.agg))
+
+
+## Final result
+municipality.list = c(
+  "Burnaby", 
+  "Coquitlam", 
+  "Delta", 
+  "Langley - City", 
+  "Langley - Township",
+  "Maple Ridge",
+  "Maple Ridge Rural", 
+  "North Vancouver - City",
+  "North Vancouver - Dist",
+  "Pitt Meadows", 
+  "Port Coquitlam", 
+  "Port Moody", 
+  "Richmond", 
+  "Surrey", 
+  "Vancouver", 
+  "White Rock", 
+  "West Vancouver", 
+  "Bowen Island", 
+  "Anmore", 
+  "Belcarra",
+  "Lions Bay",
+  "New Westminster")
+
+## Raw Data
+a <- assessment_2020.full%>%
+  filter(TaxClassCode %in% c("01","05","06"),
+         AddressAssessorMunicipalityDesc %in% municipality.list)
+
+## Aggregate Data
+b <- assessment_2020.agg%>%
+  select(-c(Year, assessTotal : rate))%>%
+  mutate(TaxClassCode = as.factor(paste0("0",TaxClassCode)))
+
+assessment_2020.final<- merge(a, b, by =c("AddressAssessorMunicipalityDesc", "TaxClassCode"), all.x = TRUE)
+
+write.csv(assessment_2020.final, "../Data/Assessment/assessment_2020.final")
+write.csv(b, "../Data/assessment_2020.csv")
+```
+

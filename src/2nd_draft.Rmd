@@ -280,7 +280,7 @@ colnames(GOF_table) <- c("Model", "Mutiple R-Squared","Adjusted R_Squared", "MSE
 
 ```
 
-```{r}
+```{r, warning=FALSE}
 dummy_municipal<-dummy(assessment_transform$AddressAssessorMunicipalityDesc)
 dummy_taxclass<-dummy(assessment_transform$TaxClassCode)
 # build x matrix
@@ -300,11 +300,14 @@ k <- 10
 ii <- (1:n)%%k + 1
 set.seed(123)
 N <- 50
+mspe1.n<-mspe1.el<-mspe1.la <- mspe1.f <- mspe1.ri <- mspe1.reduced <- rep(0, N)
 mspe.n<-mspe.el<-mspe.la <- mspe.f <- mspe.ri <- mspe.reduced <- rep(0, N)
 for (i in 1:N) {
   ii <- sample(ii)
+  pr1.n<-pr1.el<-pr1.la <- pr1.f <- pr1.ri <- pr1.reduced <- rep(0, n)
   pr.n<-pr.el<-pr.la <- pr.f <- pr.ri <- pr.reduced <- rep(0, n)
   for (j in 1:k) {
+    # ~ models trained!
     tmp.ri <- cv.glmnet(x = xm[ii != j, ], y = y[ii != j], lambda = lambdas, 
                         nfolds = 10, alpha = 0, family = "gaussian")
     tmp.la <- cv.glmnet(x = xm[ii != j, ], y = y[ii != j], lambda = lambdas, 
@@ -316,11 +319,27 @@ for (i in 1:N) {
     # tmp.n<-lm(rate ~ 1, data = x.data.frame[ii != j, ])
     
     # tmp.elastic<-train(
-    #   rate~factor(AddressAssessorMunicipalityDesc)+factor(TaxClassCode)+AvgTotalAssessmentValue, 
+    #   rate~factor(AddressAssessorMunicipalityDesc)+factor(TaxClassCode)+AvgTotalAssessmentValue,
     #   data = x.data.frame[ii != j, ],
     #   method = "glmnet",
     #   trControl = cv_10)
     
+    # ~ prediction vector on train set
+    pr1.ri[ii != j] <- predict(tmp.ri, s = tmp.ri$lambda.min, newx = xm[ii !=
+                                                                         j, ])
+    pr1.la[ii != j] <- predict(tmp.la, s = tmp.la$lambda.min, newx = xm[ii !=
+                                                                         j, ])
+    pr1.reduced[ii != j] <- predict(tmp.reduced, newdata = x.data.frame[ii != j, ])
+    pr1.f[ii != j] <- predict(tmp.full, newdata = x.data.frame[ii != j, ])
+    # pr1.n[ii != j] <- predict(tmp.n, newdata = x.data.frame[ii != j, ])
+
+    # index<-which.min(tmp.elastic$results$RMSE)
+    # pr1.el[ii != j] <- predict(tmp.elastic,
+    #                           alpha = tmp.elastic$results[index,1],
+    #                           lambda = tmp.elastic$results[index,2],
+    #                           newdata = xm.data.frame[ii == j, ])
+    
+    # ~ prediction vector on test set
     pr.ri[ii == j] <- predict(tmp.ri, s = tmp.ri$lambda.min, newx = xm[ii == 
                                                                          j, ])
     pr.la[ii == j] <- predict(tmp.la, s = tmp.la$lambda.min, newx = xm[ii == 
@@ -328,34 +347,71 @@ for (i in 1:N) {
     pr.reduced[ii == j] <- predict(tmp.reduced, newdata = x.data.frame[ii == j, ])
     pr.f[ii == j] <- predict(tmp.full, newdata = x.data.frame[ii == j, ])
     # pr.n[ii == j] <- predict(tmp.n, newdata = x.data.frame[ii == j, ])
-    
-    index<-which.min(tmp.elastic$results$RMSE)
-    pr.el[ii == j] <- predict(tmp.elastic,
-                              alpha = tmp.elastic$results[index,1],
-                              lambda = tmp.elastic$results[index,2],
-                              newdata = xm.data.frame[ii == j, ])
+    # index<-which.min(tmp.elastic$results$RMSE)
+    # pr.el[ii == j] <- predict(tmp.elastic,
+    #                           alpha = tmp.elastic$results[index,1],
+    #                           lambda = tmp.elastic$results[index,2],
+    #                           newdata = xm.data.frame[ii == j, ])
   }
+  
+  # goodness of fit
+  mspe1.ri[i]<-mean((y - pr1.ri)^2)
+  mspe1.la[i]<-mean((y - pr1.la)^2)
+  mspe1.reduced[i]<-mean((y - pr1.reduced)^2)
+  mspe1.f[i]<-mean((y - pr1.f)^2)
+  # mspe1.n[i]<-mean((y - pr1.n)^2)
+  # mspe1.el[i]<-mean((y - pr1.el)^2)
+  
+  # prediction power
   mspe.ri[i]<-mean((y - pr.ri)^2)
   mspe.la[i]<-mean((y - pr.la)^2)
   mspe.reduced[i]<-mean((y - pr.reduced)^2)
   mspe.f[i]<-mean((y - pr.f)^2)
   # mspe.n[i]<-mean((y - pr.n)^2)
-  mspe.el[i]<-mean((y - pr.el)^2)
+  # mspe.el[i]<-mean((y - pr.el)^2)
+  
   
 }
 
 
+boxplot(mspe1.la, 
+        mspe1.ri,
+        # mspe1.el, 
+        # mspe1.n, 
+        mspe1.reduced, 
+        mspe1.f, 
+        names = c("LASSO", 
+                  "Ridge", 
+                  # "Elastic Net", 
+                  "Reduced", 
+                  "Full"), 
+        col = c("steelblue","gray80",
+                # "pink", 
+                "tomato", "springgreen"), 
+        cex.axis = 1, 
+        cex.lab = 1, 
+        cex.main = 2,
+        main = "Goodness of Fit",
+        ylab = "MSE")
+
 boxplot(mspe.la, 
         mspe.ri,
-        mspe.el, 
+        # mspe.el, 
         # mspe.n, 
         mspe.reduced, 
         mspe.f, 
-        names = c("LASSO", "Ridge", "Elastic Net", "Reduced", "Full"), 
-        col = c("steelblue","gray80","pink", "tomato", "springgreen"), 
+        names = c("LASSO", "Ridge", 
+                  # "Elastic Net", 
+                  "Reduced", "Full"), 
+        col = c("steelblue","gray80",
+                # "pink", 
+                "tomato", "springgreen"), 
         cex.axis = 1, 
         cex.lab = 1, 
-        cex.main = 2)
+        cex.main = 2,
+        main = "Prediction Power",
+        ylab = "MSPE")
+
 
 mtext(expression(hat(MSPE)), side = 2, line = 2.5)
 

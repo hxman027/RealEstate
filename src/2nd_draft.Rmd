@@ -394,7 +394,7 @@ boxplot(mspe1.la,
         cex.lab = 1, 
         cex.main = 2,
         main = "Goodness of Fit",
-        ylab = "MSE")
+        ylab = expression(hat(MSE)))
 
 boxplot(mspe.la, 
         mspe.ri,
@@ -412,10 +412,9 @@ boxplot(mspe.la,
         cex.lab = 1, 
         cex.main = 2,
         main = "Prediction Power",
-        ylab = "MSPE")
+        ylab = expression(hat(MSPE)))
 
 
-mtext(expression(hat(MSPE)), side = 2, line = 2.5)
 
 ```
 

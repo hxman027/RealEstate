@@ -29,7 +29,6 @@ Our client is only interested in accurate predictive models.The goal is to predi
 - Langley - Township
 - Maple Ridge
 - Maple Ridge Rural
-- New Westminster
 - North Vancouver - City
 - North Vancouver - Dist
 - Pitt Meadows

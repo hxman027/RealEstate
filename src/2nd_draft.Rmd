@@ -110,7 +110,7 @@ We build the three models using all features and compare their goodness of fit, 
 
 We assume that the government aims to match its budget and its income by adjusting the mill rates
 1. data processing
-```{r, warning=F, message=F}
+```{r, warning=F, message=F, echo=FALSE}
 ## Aggregated Data
 assessment_aggregate <- read.csv(here("data","assessment_aggregate.csv"))[,-1]
 #assessment_2020 <- read.csv(here("data","assessment_2020.csv"))[,-1]
@@ -120,7 +120,7 @@ assessment_aggregate <- read.csv(here("data","assessment_aggregate.csv"))[,-1]
 We calculated the total tax income of each municipality by summing the product of assessment total and mill rate of all tax class. Then we plotted the computed tax income vs municipal budget into line-chart to visualize their relationship. We chose Vancoouver, Richmond and Burnaby as representative because they are the three largest municipalities in Metro Vancouver. The plots showed that the computed tax amount was positively and approximatly linearly related to municipal budget through time. 
 
 2. Test correlations between past mill rates and other features.
-```{r}
+```{r, echo=FALSE}
 # ______________________________________________________________________________________________
 # CONTINUS variables
 assessment_transform <- assessment_aggregate
@@ -177,7 +177,8 @@ kruskal.test(assessment_transform$rate~assessment_transform$AddressAssessorMunic
 
 3.model fitting
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, echo=FALSE}
+lambdas <- 10^seq(2, -3, by = -.1)
 dummy_municipal<-dummy(assessment_transform$AddressAssessorMunicipalityDesc)
 dummy_taxclass<-dummy(assessment_transform$TaxClassCode)
 # build x matrix
@@ -313,9 +314,9 @@ boxplot(mspe.la,
 
 ```
 
-```{r fit}
+```{r fit, echo=FALSE}
 ## choose full model
-linear_1<-lm(rate~factor(AddressAssessorMunicipalityDesc)+factor(TaxClassCode)+AvgTotalAssessmentValue,data=assessment_aggregate)
+linear_1<-lm(rate~factor(AddressAssessorMunicipalityDesc)+factor(TaxClassCode)+AvgTotalAssessmentValue,data=assessment_transform)
 
 ## Fit and get PMSE
 assessment_2020.agg <- assessment_2020%>%

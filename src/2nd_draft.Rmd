@@ -393,7 +393,7 @@ All fitted linear model were able to make accurate prediction based on means squ
 ##_______________________________
 
 
-
+\pagebreak
 ## References
 
 
@@ -410,7 +410,16 @@ Code repository:
 
 - Exploratory Data Analysis and Model Fitting (https://github.com/STAT450-550/RealEstate/blob/450/src/EDA%26mode_fitting.Rmd)
 
+
+##——————————————————————————
+##TODO: more styling (Yuting)
+##___________________________
 ## Appendix
+
+##__________________________
+## TODO: add one more section: (Yuetong)
+## Include the code relevant to summarizing and aggregating the data from the client, which produces in the dataframe used for analysis.
+##__________________________
 
 ### Missing Value:
 

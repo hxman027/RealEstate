@@ -89,7 +89,7 @@ We decided to calculate the sum of TotalAssessedValue, AverageTotalAssessedValue
 ### Exploratory Analysis
 
 
-Before any prediction on the future mill rate of Metro Vancouver’s real estate market was made, exploratory data analysis was performed to explore and visualize the main characteristics of our dataset and found relationships between Mill Rate vs. Assessment, Mill Rate vs. Land Total, Mill Rate vs. Improvement Total and Mill Rate vs. Number of Properties were performed. From our initial analysis, outliers in municipalities had been found. Data transformation - calculating the average total assessment, was used to reduce the effect of outliers.
+Before any prediction on the future mill rate of Metro Vancouver’s real estate market was made, exploratory data analysis was performed to explore and visualize the main characteristics of our dataset and found relationships between Mill Rate vs. Assessment, Mill Rate vs. Land Total, and Mill Rate vs. Improvement Total were performed. From our initial analysis, outliers in municipalities had been found. Data transformation - calculating the average total assessment, was used to reduce the effect of outliers.
 
 Mill rate is mainly affected by assessment, so scatter plots of mill rate vs. total, land, and improvement assessment were created to see the correlation between each pair of the two factors. Kruskal Wallis analysis was also performed to see the correlation between mill rate vs. tax class and mill rate vs. municipality. 
 
@@ -150,6 +150,29 @@ names(assessment_transform)[9] <- paste("AvgTotalAssessmentValue")
 cor(assessment_transform$rate,assessment_transform$AvgTotalAssessmentValue)
 
 assessment_transform %>%
+                   ggplot(aes(x=assessTotal,
+                              y=rate,group=AddressAssessorMunicipalityDesc,
+                              color=AddressAssessorMunicipalityDesc)) + 
+                   geom_point() + 
+                   ggtitle(sprintf("mill rate vs total assessment value")) + 
+                   geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+assessment_transform %>%
+                   ggplot(aes(x=landTotal,
+                              y=rate,group=AddressAssessorMunicipalityDesc,
+                              color=AddressAssessorMunicipalityDesc)) + 
+                   geom_point() + 
+                   ggtitle(sprintf("mill rate vs total land assessment value")) + 
+                   geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+assessment_transform %>%
+                   ggplot(aes(x=improvementTotal,
+                              y=rate,group=AddressAssessorMunicipalityDesc,
+                              color=AddressAssessorMunicipalityDesc)) + 
+                   geom_point() + 
+                   ggtitle(sprintf("mill rate vs total improvement assessment value")) + 
+                   geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+assessment_transform %>%
                    ggplot(aes(x=AvgTotalAssessmentValue,
                               y=rate,group=AddressAssessorMunicipalityDesc,
                               color=AddressAssessorMunicipalityDesc)) + 
@@ -169,6 +192,34 @@ for(i in colnames(assessment_transform)[2:3]){
 kruskal.test(assessment_transform$rate~assessment_transform$TaxClassCode,data=assessment_transform)
 kruskal.test(assessment_transform$rate~assessment_transform$AddressAssessorMunicipalityDesc,data=assessment_transform)
 ```
+
+
+## ___________________________
+## TODO KW result table, explanation of all plots (Yuting)
+## ___________________________
+
+
+
+##_____________________________
+## TODO modify this part using boxplot and tables, change desrciptions (Leonie)
+###Linear Model
+
+**Table 2: Result from Model Used**
+
+Model | Mutiple R-Squared | Adjusted R_Squared | MSE | PMSE 
+------|--------|--------|--------|--------
+      OLR full | 0.8874| 0.8707| 1.9843| 2.5902
+      OLR reduced| 0.8874| 0.8721| 1.9845| 2.5237
+      Ridge|  0.8868| NA| 1.9896| 2.5675
+      LASSO| 0.8873| NA| 1.9855| 2.5280
+      Elastic Net| 0.8625| NA| 2.2366| 2.5486
+
+
+Above is the goodness of fit of five models. Except for the Elastic Net model which has higher MSE and PMSE, there are no significant differences between these models. We have not used cross-validation to reduce model overfitting.
+Although the results are relatively similar and have high R_squared across all models, we believe after using cross-validation there will be a clearer difference between the goodness of fit of each model.
+
+For a dtailed look of how the models were fitted and evaluated, please refer to the appendix.
+
 
 ```{r, warning=FALSE, echo=FALSE}
 ## model fitting
@@ -323,25 +374,8 @@ assessment_2020.final<- merge(a, b, by =c("AddressAssessorMunicipalityDesc", "Ta
 write.csv(assessment_2020.final, "../Data/Assessment/assessment_2020.final")
 write.csv(b, "../Data/assessment_2020.csv")
 ```
+##_______________________________________
 
-
-###Linear Model
-
-**Table 2: Result from Model Used**
-
-Model | Mutiple R-Squared | Adjusted R_Squared | MSE | PMSE 
-------|--------|--------|--------|--------
-      OLR full | 0.8874| 0.8707| 1.9843| 2.5902
-      OLR reduced| 0.8874| 0.8721| 1.9845| 2.5237
-      Ridge|  0.8868| NA| 1.9896| 2.5675
-      LASSO| 0.8873| NA| 1.9855| 2.5280
-      Elastic Net| 0.8625| NA| 2.2366| 2.5486
-
-
-Above is the goodness of fit of five models. Except for the Elastic Net model which has higher MSE and PMSE, there are no significant differences between these models. We have not used cross-validation to reduce model overfitting.
-Although the results are relatively similar and have high R_squared across all models, we believe after using cross-validation there will be a clearer difference between the goodness of fit of each model.
-
-For a dtailed look of how the models were fitted and evaluated, please refer to the appendix.
 
 
 

@@ -323,6 +323,10 @@ boxplot(mspe.la,
         main = "Prediction Power",
         ylab = expression(hat(MSPE)))
 ```
+##_______________________________________
+
+
+
 
 ```{r fit, echo=FALSE}
 ## choose transformed model
@@ -374,17 +378,20 @@ assessment_2020.final<- merge(a, b, by =c("AddressAssessorMunicipalityDesc", "Ta
 write.csv(assessment_2020.final, "../Data/Assessment/assessment_2020.final")
 write.csv(b, "../Data/assessment_2020.csv")
 ```
-##_______________________________________
 
 
 
 
+##_____________________________
+## TODO: delete pct change part, add prediction based on our chosen model (Peter)
 ## Conclusion
 
 
 From our exploratory data analysis, we can see that assessment total, land total, tax code, year and municipalities are all significant in our model. The client suggested that we can transform numerical factors such as assessment total into percentage change. This data transformation does not perform as well as we expected, which only yields an R^2 of around 0.2 across all of our fitted models. We believe the method that the client has suggested might leave out some important information about the housing market in each municipality. We have also found that when comparing the correlation between mill rate against features in our models, Vancouver is an outlier. We would like to further investigate Vancouver as a special case. We are also interested in the effect of different tax classes in predicting mill rate. Further analysis and prediction will be performed based on our hypothesis.
 
 All fitted linear model were able to make accurate prediction based on means squared error, but there is still a very high chance that our model is overfitted. For our next report, we are going to use cross-validation to reduce the effect of overfitting. 
+##_______________________________
+
 
 
 ## References

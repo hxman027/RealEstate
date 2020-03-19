@@ -133,8 +133,8 @@ We build the three models using all features and compare their goodness of fit, 
 ## data setup
 ## Aggregated Data
 assessment_aggregate <- read.csv(here("data","assessment_aggregate.csv"))[,-1]
-#assessment_2020 <- read.csv(here("data","assessment_2020.csv"))[,-1]
-#assessment_2020.full <- read_excel(here("data/Assessment", "2020 Only.xlsx"))
+assessment_2020 <- read.csv(here("data","assessment_2020.csv"))[,-1]
+assessment_2020.full <- read_excel(here("data/Assessment", "2020 Only.xlsx"))
 ```
 
 ```{r, echo=FALSE}
@@ -327,7 +327,9 @@ boxplot(mspe.la,
 
 
 
-
+##_______________________________________
+##TODO: make prediction work for 2020 data (Yuetong)
+##(it's missing AvgTotalAssessmentValue, looks like we need to calculate them)
 ```{r fit, echo=FALSE}
 ## choose transformed model
 linear_1<-lm(rate~factor(AddressAssessorMunicipalityDesc)+factor(TaxClassCode)+AvgTotalAssessmentValue,data=assessment_transform)

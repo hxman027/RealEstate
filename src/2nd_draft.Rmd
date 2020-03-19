@@ -147,14 +147,8 @@ assessment_transform <- assessment_aggregate
 # log transformation and take avg
 assessment_transform[,9] <- assessment_transform$assessTotal/assessment_transform$propertyCount
 names(assessment_transform)[9] <- paste("AvgTotalAssessmentValue")
-assessment_transform[,10] <- assessment_transform$landTotal/assessment_transform$propertyCount
-names(assessment_transform)[10] <- paste("AvgTotalLandValue")
-assessment_transform[,11] <- assessment_transform$improvementTotal/assessment_transform$propertyCount
-names(assessment_transform)[11] <- paste("AvgTotalImprovementValue")
 
 cor(assessment_transform$rate,assessment_transform$AvgTotalAssessmentValue)
-cor(assessment_transform$rate,assessment_transform$AvgTotalLandValue)
-cor(assessment_transform$rate,assessment_transform$AvgTotalImprovementValue)
 
 assessment_transform %>%
                    ggplot(aes(x=AvgTotalAssessmentValue,
@@ -162,22 +156,6 @@ assessment_transform %>%
                               color=AddressAssessorMunicipalityDesc)) + 
                    geom_point() + 
                    ggtitle(sprintf("mill rate vs average total assessment value")) + 
-                   geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
-
-assessment_transform %>%
-                   ggplot(aes(x=AvgTotalLandValue,
-                              y=rate,group=AddressAssessorMunicipalityDesc,
-                              color=AddressAssessorMunicipalityDesc)) + 
-                   geom_point() + 
-                   ggtitle(sprintf("mill rate vs average total land value")) + 
-                   geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
-
-assessment_transform %>%
-                   ggplot(aes(x=AvgTotalImprovementValue,
-                              y=rate,group=AddressAssessorMunicipalityDesc,
-                              color=AddressAssessorMunicipalityDesc)) + 
-                   geom_point() + 
-                   ggtitle(sprintf("mill rate vs average total improvement value")) + 
                    geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
 
 # ______________________________________________________________________________________________
@@ -205,7 +183,6 @@ x<-cbind(dummy_municipal,dummy_taxclass,assessment_transform$AvgTotalAssessmentV
 y<-assessment_transform$rate
 x<-cbind(x,y)
 # correct col name
-#assessTotal,assessment_aggregate$landTotal,assessment_aggregate$improvementTotal,assessment_aggregate$propertyCount,assessment_aggregate$tax
 colnames(x)[26]<-c("AvgTotalAssessmentValue")
 colnames(x)[27]<-c("rate")
 xm<-x[,1:(ncol(x)-1)]
@@ -233,13 +210,6 @@ for (i in 1:N) {
                       data = x.data.frame[ii != j, ])
     tmp.full <- lm(rate ~ factor(AddressAssessorMunicipalityDesc)+factor(TaxClassCode)+assessTotal+landTotal+improvementTotal+propertyCount, 
                    data = x.data.frame[ii != j, ])
-    # tmp.n<-lm(rate ~ 1, data = x.data.frame[ii != j, ])
-    
-    # tmp.elastic<-train(
-    #   rate~factor(AddressAssessorMunicipalityDesc)+factor(TaxClassCode)+AvgTotalAssessmentValue,
-    #   data = x.data.frame[ii != j, ],
-    #   method = "glmnet",
-    #   trControl = cv_10)
     
     # ~ prediction vector on train set
     pr1.ri[ii != j] <- predict(tmp.ri, s = tmp.ri$lambda.min, newx = xm[ii !=
@@ -248,13 +218,6 @@ for (i in 1:N) {
                                                                          j, ])
     pr1.reduced[ii != j] <- predict(tmp.reduced, newdata = x.data.frame[ii != j, ])
     pr1.f[ii != j] <- predict(tmp.full, newdata = x.data.frame[ii != j, ])
-    # pr1.n[ii != j] <- predict(tmp.n, newdata = x.data.frame[ii != j, ])
-
-    # index<-which.min(tmp.elastic$results$RMSE)
-    # pr1.el[ii != j] <- predict(tmp.elastic,
-    #                           alpha = tmp.elastic$results[index,1],
-    #                           lambda = tmp.elastic$results[index,2],
-    #                           newdata = xm.data.frame[ii == j, ])
     
     # ~ prediction vector on test set
     pr.ri[ii == j] <- predict(tmp.ri, s = tmp.ri$lambda.min, newx = xm[ii == 
@@ -263,12 +226,6 @@ for (i in 1:N) {
                                                                          j, ])
     pr.reduced[ii == j] <- predict(tmp.reduced, newdata = x.data.frame[ii == j, ])
     pr.f[ii == j] <- predict(tmp.full, newdata = x.data.frame[ii == j, ])
-    # pr.n[ii == j] <- predict(tmp.n, newdata = x.data.frame[ii == j, ])
-    # index<-which.min(tmp.elastic$results$RMSE)
-    # pr.el[ii == j] <- predict(tmp.elastic,
-    #                           alpha = tmp.elastic$results[index,1],
-    #                           lambda = tmp.elastic$results[index,2],
-    #                           newdata = xm.data.frame[ii == j, ])
   }
   
   # goodness of fit
@@ -276,30 +233,21 @@ for (i in 1:N) {
   mspe1.la[i]<-mean((y - pr1.la)^2)
   mspe1.reduced[i]<-mean((y - pr1.reduced)^2)
   mspe1.f[i]<-mean((y - pr1.f)^2)
-  # mspe1.n[i]<-mean((y - pr1.n)^2)
-  # mspe1.el[i]<-mean((y - pr1.el)^2)
   
   # prediction power
   mspe.ri[i]<-mean((y - pr.ri)^2)
   mspe.la[i]<-mean((y - pr.la)^2)
   mspe.reduced[i]<-mean((y - pr.reduced)^2)
   mspe.f[i]<-mean((y - pr.f)^2)
-  # mspe.n[i]<-mean((y - pr.n)^2)
-  # mspe.el[i]<-mean((y - pr.el)^2)
-  
-  
 }
 
 
 boxplot(mspe1.la, 
-        mspe1.ri,
-        # mspe1.el, 
-        # mspe1.n, 
+        mspe1.ri, 
         mspe1.reduced, 
         mspe1.f, 
         names = c("LASSO", 
-                  "Ridge", 
-                  # "Elastic Net", 
+                  "Ridge",
                   "Reduced", 
                   "Full"), 
         col = c("steelblue","gray80",
@@ -313,28 +261,21 @@ boxplot(mspe1.la,
 
 boxplot(mspe.la, 
         mspe.ri,
-        # mspe.el, 
-        # mspe.n, 
         mspe.reduced, 
         mspe.f, 
         names = c("LASSO", "Ridge", 
-                  # "Elastic Net", 
                   "Reduced", "Full"), 
-        col = c("steelblue","gray80",
-                # "pink", 
+        col = c("steelblue","gray80", 
                 "tomato", "springgreen"), 
         cex.axis = 1, 
         cex.lab = 1, 
         cex.main = 2,
         main = "Prediction Power",
         ylab = expression(hat(MSPE)))
-
-
-
 ```
 
 ```{r fit, echo=FALSE}
-## choose full model
+## choose transformed model
 linear_1<-lm(rate~factor(AddressAssessorMunicipalityDesc)+factor(TaxClassCode)+AvgTotalAssessmentValue,data=assessment_transform)
 
 ## Fit and get PMSE
@@ -342,7 +283,6 @@ assessment_2020.agg <- assessment_2020%>%
   mutate(predict_rate = predict(linear_1,newdata = .))
 resid<-assessment_2020.agg$predict_rate - assessment_2020.agg$rate
 sqrt(sum(resid^2)/nrow(assessment_2020.agg))
-
 
 ## Final result
 municipality.list = c(

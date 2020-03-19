@@ -94,6 +94,10 @@ Before any prediction on the future mill rate of Metro Vancouver’s real estate
 Mill rate is mainly affected by assessment, so scatter plots of mill rate vs. total, land, and improvement assessment were created to see the correlation between each pair of the two factors. Kruskal Wallis analysis was also performed to see the correlation between mill rate vs. tax class and mill rate vs. municipality. 
 
 
+
+## TODO modify this part based on the comment in the following link (Leonie)
+## _______________________________
+https://github.com/STAT450-550/RealEstate/blob/450/doc/Peter_Han_Individual_edit.pdf
 ### Measure of goodness of fit and prediction power
 
 
@@ -117,7 +121,7 @@ For our reduced model, we build our linear predictor using only the significant 
 Other than simple linear regression, we are also interested in the performance of Ridge Regression, Lasso, and Elastic Net. They are more advanced than simple linear regression as they reduce the variance of the model. In these three models, weights are assigned to features. Ridge regression and Lasso take penalty in sum of absolute values and sum of squared absolute values of weights respectively. Elastic net is a combination of Ridge and Lasso.
 
 We build the three models using all features and compare their goodness of fit, and then will examine their prediction power on testing data.
-
+##_____________________________________________
 
 \pagebreak
 

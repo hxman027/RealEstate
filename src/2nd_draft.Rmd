@@ -89,11 +89,9 @@ We decided to calculate the sum of TotalAssessedValue, AverageTotalAssessedValue
 ### Exploratory Analysis
 
 
-Before we made any prediction on the future mill rate of Metro Vancouver’s real estate market, we did some exploratory analysis to explore and visualize the main characteristics of our dataset and found relationships between Mill Rate vs. Assessment, Mill Rate vs. Municipal Budget, Mill Rate vs. Land Total, Mill Rate vs. Imrpovement Total and Mill Rate vs. Number of Properties.
+Before any prediction on the future mill rate of Metro Vancouver’s real estate market were made, some exploratory analysis to explore and visualize the main characteristics of our dataset and found relationships between Mill Rate vs. Assessment, Mill Rate vs. Land Total, Mill Rate vs. Imrpovement Total and Mill Rate vs. Number of Properties were performed.
 
-The municipal government wants their tax income to match their annual spending in order to balance their bedget. Given this piece of information, we want to find and model the relationship between municipal tax income and municipal budget. We plotted a graph of tax income for three different tax classes (01, 05, and 06) vs. budget through time to see the trend of tax income in different municipalities to make sure our assumption about the data is correct. We chose to illustrate such relationship using scatter plot below for Vancouver, Richmond and Burnaby as they are the most representing city in Metro Vancouver.
-
-Mill rate is mainly affected by assessment and municipal budget, so we have plotted scatter plot of mill rate vs. assessment and mil rate vs. municipal budget to see the correlation between each pair of the two factors. ANOVA analysis is also performed to see the correlation between mill rate vs. tax class, mill rate vs. year and mill rate vs. municipality. 
+Mill rate is mainly affected by assessment, so some scatter plots of mill rate vs. various assessment were created to see the correlation between each pair of the two factors. KW analysis is also performed to see the correlation between mill rate vs. tax class and mill rate vs. municipality. 
 
 
 ### Measure of goodness of fit and prediction power

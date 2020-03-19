@@ -89,9 +89,9 @@ We decided to calculate the sum of TotalAssessedValue, AverageTotalAssessedValue
 ### Exploratory Analysis
 
 
-Before any prediction on the future mill rate of Metro Vancouver’s real estate market were made, some exploratory analysis to explore and visualize the main characteristics of our dataset and found relationships between Mill Rate vs. Assessment, Mill Rate vs. Land Total, Mill Rate vs. Imrpovement Total and Mill Rate vs. Number of Properties were performed.
+Before any prediction on the future mill rate of Metro Vancouver’s real estate market was made, exploratory data analysis was performed to explore and visualize the main characteristics of our dataset and found relationships between Mill Rate vs. Assessment, Mill Rate vs. Land Total, Mill Rate vs. Improvement Total and Mill Rate vs. Number of Properties were performed. From our initial analysis, outliers in municipalities had been found. Data transformation - calculating the average total assessment, was used to reduce the effect of outliers.
 
-Mill rate is mainly affected by assessment, so some scatter plots of mill rate vs. various assessment were created to see the correlation between each pair of the two factors. KW analysis is also performed to see the correlation between mill rate vs. tax class and mill rate vs. municipality. 
+Mill rate is mainly affected by assessment, so scatter plots of mill rate vs. total, land, and improvement assessment were created to see the correlation between each pair of the two factors. Kruskal Wallis analysis was also performed to see the correlation between mill rate vs. tax class and mill rate vs. municipality. 
 
 
 ### Measure of goodness of fit and prediction power

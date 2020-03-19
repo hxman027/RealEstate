@@ -65,22 +65,31 @@ Correlation between the mill rate and each explanatory variable will be used to 
 
 ## Data Description
 
+Our client provides us the past 5 years' property assessment data in BC. Since we are only interested in predicting mill rate for metro Vancouver and specific class code, we get a subset of properties that satisfy our interest: 
 
-For exploratory data analysis and building predictive models, we used past property assessment data, which was provided by our client. It contained information about some commercial and residential properties in all cities in Metro Vancouver from 2016 to 2019. We selected variables that we believe were relevant to the property tax prediction. These selected variables are:
+- TaxClass Code in (01,05,06)
+- Municipality in Metro Vancouver
 
+Moreover, we select 5 features that could be relevant to mill rate, which are:
 
-- Mill Rates ("rate": 2016-2019)
-- Assessment ("assessTotal": 2016-2019)
-- Tax Class Code ("TaxClassCode": 01, 05, 06)
-- Municipality ("AddressAssessorMunicipalityDesc"")
+- Tax Year
+- Municipality 
+- Tax Class
+- Assessment Type
+- Assessment Value 
+
+There are 1801 missing value in mill rate. 1509 are imputed, and 292 are removed from the data frame. The imputation method is mentioned in appendix. 
+
+Oo reduce the dimension of our data, we aggregate all properties in the same region, classcode, and year are aggregate into a group, becasue these properties have same mill rate,  which is our response variable. Here is the summary statistics for these groups:
+
+- Mill rate 
+- Total Assessment 
+- Total Land Assessment 
+- Total Improvement Assessment 
+- Total number of properties 
+- Taxclasscode
+- Municipality
 - Year
-- Land Total ("landTotal": 2016 - 2019)
-- Improvement Total ("improvementTotal": 2016 - 2019)
-- Number of properties ("propertyCount")
-
-
-We decided to calculate the sum of TotalAssessedValue, AverageTotalAssessedValue, LandAssessedValue, and ImprovementAssessedValue for each combination of municipality and the tax class to reduce the dimension of our data. The mill rate is unique for each combination of municipality and tax class, so we have added this information into our data for each municipality and its tax classes.
-
 
 ## Methods
 
@@ -134,7 +143,7 @@ We build the three models using all features and compare their goodness of fit, 
 ## Aggregated Data
 assessment_aggregate <- read.csv(here("data","assessment_aggregate.csv"))[,-1]
 assessment_2020 <- read.csv(here("data","assessment_2020.csv"))[,-1]
-assessment_2020.full <- read_excel(here("data/Assessment", "2020 Only.xlsx"))
+# assessment_2020.full <- read_excel(here("data/Assessment", "2020 Only.xlsx"))
 ```
 
 ```{r, echo=FALSE}
@@ -336,50 +345,51 @@ linear_1<-lm(rate~factor(AddressAssessorMunicipalityDesc)+factor(TaxClassCode)+A
 
 ## Fit and get PMSE
 assessment_2020.agg <- assessment_2020%>%
+  mutate(AvgTotalAssessmentValue = assessTotal/propertyCount)%>%
   mutate(predict_rate = predict(linear_1,newdata = .))
 resid<-assessment_2020.agg$predict_rate - assessment_2020.agg$rate
 sqrt(sum(resid^2)/nrow(assessment_2020.agg))
 
-## Final result
-municipality.list = c(
-  "Burnaby", 
-  "Coquitlam", 
-  "Delta", 
-  "Langley - City", 
-  "Langley - Township",
-  "Maple Ridge",
-  "Maple Ridge Rural", 
-  "North Vancouver - City",
-  "North Vancouver - Dist",
-  "Pitt Meadows", 
-  "Port Coquitlam", 
-  "Port Moody", 
-  "Richmond", 
-  "Surrey", 
-  "Vancouver", 
-  "White Rock", 
-  "West Vancouver", 
-  "Bowen Island", 
-  "Anmore", 
-  "Belcarra",
-  "Lions Bay",
-  "New Westminster")
-
-## Raw Data
-a <- assessment_2020.full%>%
-  filter(TaxClassCode %in% c("01","05","06"),
-         AddressAssessorMunicipalityDesc %in% municipality.list)
+# ## Final result
+# municipality.list = c(
+#   "Burnaby", 
+#   "Coquitlam", 
+#   "Delta", 
+#   "Langley - City", 
+#   "Langley - Township",
+#   "Maple Ridge",
+#   "Maple Ridge Rural", 
+#   "North Vancouver - City",
+#   "North Vancouver - Dist",
+#   "Pitt Meadows", 
+#   "Port Coquitlam", 
+#   "Port Moody", 
+#   "Richmond", 
+#   "Surrey", 
+#   "Vancouver", 
+#   "White Rock", 
+#   "West Vancouver", 
+#   "Bowen Island", 
+#   "Anmore", 
+#   "Belcarra",
+#   "Lions Bay",
+#   "New Westminster")
+# 
+# ## Raw Data
+# a <- assessment_2020.full%>%
+#   filter(TaxClassCode %in% c("01","05","06"),
+#          AddressAssessorMunicipalityDesc %in% municipality.list)
 
 ## Aggregate Data
 b <- assessment_2020.agg%>%
-  select(-c(Year, assessTotal : rate))%>%
+  select(-c(assessTotal : propertyCount, AvgTotalAssessmentValue))%>%
   mutate(TaxClassCode = as.factor(paste0("0",TaxClassCode)))
 
-assessment_2020.final<- merge(a, b, by =c("AddressAssessorMunicipalityDesc", "TaxClassCode"), all.x = TRUE)
+# assessment_2020.final<- merge(a, b, by =c("AddressAssessorMunicipalityDesc", "TaxClassCode"), all.x = TRUE)
 
-write.csv(assessment_2020.final, "../Data/Assessment/assessment_2020.final")
-write.csv(b, "../Data/assessment_2020.csv")
-```
+# write.csv(assessment_2020.final, "../Data/Assessment/assessment_2020.final")
+write.csv(b, "../Data/assessment_2020_fit.csv")
+``` 
 
 
 
@@ -419,12 +429,11 @@ Code repository:
 ## Appendix
 
 ##__________________________
-## TODO: add one more section: (Yuetong)
+## TODO: add one more section: (Yuetong) 
 ## Include the code relevant to summarizing and aggregating the data from the client, which produces in the dataframe used for analysis.
 ##__________________________
 
 ### Missing Value:
-
 
 There are 1801 missing values in mill rate(TaxClassTaxRate). We decided to impute these missing values
 Based on client information, all properties in the same region, classcode, and year should have a unique class rate
@@ -433,12 +442,14 @@ Based on client information, all properties in the same region, classcode, and y
 
 - For entries without mill rate, we found the group they belong to and assign them mill rate in that group.
 
-###Here is some exceptions found:
+#### Here is some exceptions found:
 
 Some groups' mill rate is not unique:
 
 
 - In Delta, properties in different neighbourhoods have slightly different mill rates. Since the variance is not significant, we take the mean as the overall mill rate in groups.
+
+- In New Westminister, 2019, Class 06, one property's mill rate is different from others. It is regarded as an outlier.
 
 - In Vancouver, 2019, Class 01, one property's mill rate is different from others. It is regarded as an outlier.
 

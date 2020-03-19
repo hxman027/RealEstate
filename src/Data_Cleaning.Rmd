@@ -194,15 +194,15 @@ assessment.aggregate <- assessment.final%>%
             rate = unique(TaxClassTaxRate))
 
 ## Transform into percentage change
-assessment.pct <- assessment.aggregate%>%
-  group_by(AddressAssessorMunicipalityDesc, TaxClassCode)%>%
-  arrange(Year, .by_group = TRUE) %>%
-  mutate(assessTotal_pct = (assessTotal/lag(assessTotal) - 1) * 100,
-         landTotal_pct = (landTotal/lag(landTotal) - 1) * 100,
-         improvementTotal_pct = (improvementTotal/lag(improvementTotal) - 1) * 100,
-         propertyCount_pct = (propertyCount/lag(propertyCount) - 1) * 100,
-         rate_pct = (rate/lag(rate) - 1) * 100)%>%
-  select(-c(assessTotal,landTotal, improvementTotal, propertyCount, rate))
+# assessment.pct <- assessment.aggregate%>%
+#   group_by(AddressAssessorMunicipalityDesc, TaxClassCode)%>%
+#   arrange(Year, .by_group = TRUE) %>%
+#   mutate(assessTotal_pct = (assessTotal/lag(assessTotal) - 1) * 100,
+#          landTotal_pct = (landTotal/lag(landTotal) - 1) * 100,
+#          improvementTotal_pct = (improvementTotal/lag(improvementTotal) - 1) * 100,
+#          propertyCount_pct = (propertyCount/lag(propertyCount) - 1) * 100,
+#          rate_pct = (rate/lag(rate) - 1) * 100)%>%
+#   select(-c(assessTotal,landTotal, improvementTotal, propertyCount, rate))
 ```
 ## Export Data
 
@@ -212,5 +212,5 @@ write.csv(assessment.aggregate%>%
             filter(Year != 2020), "../Data/assessment_aggregate.csv")
 write.csv(assessment.aggregate%>%
             filter(Year == 2020), "../Data/assessment_2020.csv")
-write.csv(assessment.pct, "../Data/assessment_pct.csv")
+# write.csv(assessment.pct, "../Data/assessment_pct.csv")
 ```

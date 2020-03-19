@@ -1,5 +1,3 @@
 - **assessment_aggregate.csv** contains aggregated assessment value and mill rate from 2016 to 2019 for all 22 municipalities in Metro Vancouver
-- **assessment_pct.csv** contains percentage change of assessment value and mill rate from 2016 to 2019 for all 22 municipalities in Metro Vancouver
-- **data_final.csv** contains aggreagted all percentage change of assessment, mil rate and tax(municipal budget) from 2016-70 to 2018-19 (percentage change) for all 22 municipalities in Metro Vancouver
-- **tax_final.csv** contains all municipal budget from 2016 to 2018, these are found on Government of British Columbia website (Schedule 706)
-- **tax_pct.csv** contains all percentage of municipal budget from 2016-19
+- **assessment_2020.csv** contains aggregated assessment value and mill rate in 2020 for all 22 municipalities in Metro Vancouver
+- **assessment_2020_fit.csv** contains predicted 2020 mill rate for all 22 municipalities in Metro Vancouver

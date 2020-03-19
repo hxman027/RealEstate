@@ -27,40 +27,59 @@ library(dummies)
 ## Summary
 
 
-Our client is a real estate property tax analyst who analyzes the market trend and makes market predictions for his company and future clients. The main objective of our project is to accurately predict future mill rate (property tax) in metro Vancouver for the following 3 property tax classes: Tax class 1: Residential, Tax class 5: Light industry and Tax class 6: Business and other. Data cleaning, exploratory data analysis are used in this project to analyze the relationship between mill rate and other factors. Data cleaning is performed to aggregate our data into summary statistics. Exploratory analysis has shown there is a linear trend in mill rates over the years; it has also shown there is a fairly strong correlation between mill rate and average assessment per property in different municipalities. Ordinary Linear Model and a variety of its variants are used to predict the mill rate. A full assessment of the performance of these models is shown below.
+The main objective of our project is to accurately predict future mill rate (property tax) in metro Vancouver for the following 3 property tax classes: Tax class 1: Residential, Tax class 5: Light industry and Tax class 6: Business and other. Data cleaning, exploratory data analysis are used in this project to analyze the relationship between mill rate and other factors. Data cleaning is performed to aggregate our data into summary statistics. Exploratory analysis has shown there are strong relationships between mill rate and tax class and mill rate and municipalities; it has also shown there is a fairly strong correlation between mill rate and average assessment per property in different municipalities. Ordinary linear model, reduced ordinary linear model, Ridge Regression and LASSO are used to predict the mill rate. A full assessment of the performance - prediction power and goodness of fit of these models, is shown below.
 
 
 ## Introduction
 
-Our goal is to predict mill rates in 2020. We also seek to identify which explanatory variables are the most important in determining mill rates. Every year, the assessment value of each property is released at the beginning of the year, however, the mill rate is still unknown until Spring. Prediction of mill rate is a focus of interest because it gives an approximate property tax to pay for property owners. It is also important because it might affect future buyers’ purchasing incentives. The property tax rate has a fairly small margin to change. Mill rate is adjusted based on the total assessment in each city so the municipal government can use tax earning (total assessment * mill rate) to match their annual expense in order to balance the city’s budget. 
+Our goal is to predict mill rates in 2020 in the following 22 municipalities:
 
-Correlation between the mill rate and each explanatory variable will be asses to pick the essential variables in our model. Then, a variety of linear models will be fitted using our selected variable. The best model is selected based on its prediction power and goodness of fit.
+- Burnaby
+- Coquitlam
+- Delta
+- Langley - City
+- Langley - Township
+- Maple Ridge
+- Maple Ridge Rural
+- New Westminster
+- North Vancouver - City
+- North Vancouver - Dist
+- Pitt Meadows
+- Port Coquitlam
+- Port Moody
+- Richmond
+- Surrey
+- Vancouver
+- White Rock
+- West Vancouver
+- Bowen Island
+- Anmore
+- Belcarra
+- Lions Bay.
+
+We also seek to identify which explanatory variables are the most important in determining mill rates. Every year, the assessment value of each property is released at the beginning of the year, however, the mill rate is still unknown until Spring. Prediction of mill rate is a focus of interest because it gives an approximate property tax to pay for property owners. It is also important because it might affect future buyers’ purchasing incentives. The property tax rate has a fairly small margin to change. Mill rate is adjusted based on the total assessment in each city so the municipal government can use tax earning (total assessment * mill rate) to match their annual expense to balance the city’s budget. 
+
+Correlation between the mill rate and each explanatory variable will be used to pick the essential variables in our model. Then, a variety of linear models will be fitted using our selected variable. The best model is selected based on its prediction power and goodness of fit.
 
 
 
 ## Data Description
 
 
-For exploratory data analysis and building predictive model, we used past property assessment data, which is provided by our client. It contains information about some commercial and residential properties in all cities in Metro Vancouver from 2016 to 2019. We selected variables that we believe were relevant to the property tax prediction. These selected variables are:
+For exploratory data analysis and building predictive models, we used past property assessment data, which was provided by our client. It contained information about some commercial and residential properties in all cities in Metro Vancouver from 2016 to 2019. We selected variables that we believe were relevant to the property tax prediction. These selected variables are:
 
 
-- Mill Rates (2016-2019)
-- Assessment (2016-2019)
-- Tax Class Code (01, 05, 06)
-- Area Code (Municipality)
+- Mill Rates ("rate": 2016-2019)
+- Assessment ("assessTotal": 2016-2019)
+- Tax Class Code ("TaxClassCode": 01, 05, 06)
+- Municipality ("AddressAssessorMunicipalityDesc"")
 - Year
-- Land Total (2016 - 2019)
-- Improvement Total (2016 - 2019)
-- Number of properties
+- Land Total ("landTotal": 2016 - 2019)
+- Improvement Total ("improvementTotal": 2016 - 2019)
+- Number of properties ("propertyCount")
 
 
-As the client suggested, we have also collected external data from the Government of British Columbia which could be associated with the tax rate:
-
-
-- Municipal Budget of Cities in Metro Vancouver (Taxes Imposed & Collected, Schedule 706)
-
-
-We decided to calculate the sum of TotalAssessedValue, LandAssessedValue, ImprovementAssessedValue, and Budget for each combination of municipality and the tax class to reduce the dimension of our data. The mill rate is unique for each combination of municipality and tax class, so we have added this information into our data for each municipality and its tax classes.
+We decided to calculate the sum of TotalAssessedValue, AverageTotalAssessedValue, LandAssessedValue, and ImprovementAssessedValue for each combination of municipality and the tax class to reduce the dimension of our data. The mill rate is unique for each combination of municipality and tax class, so we have added this information into our data for each municipality and its tax classes.
 
 
 ## Methods

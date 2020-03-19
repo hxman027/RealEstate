@@ -108,19 +108,16 @@ We build the three models using all features and compare their goodness of fit, 
 
 ###Exploratory Analysis
 
-We assume that the government aims to match its budget and its income by adjusting the mill rates
-1. data processing
 ```{r, warning=F, message=F, echo=FALSE}
+## data setup
 ## Aggregated Data
 assessment_aggregate <- read.csv(here("data","assessment_aggregate.csv"))[,-1]
 #assessment_2020 <- read.csv(here("data","assessment_2020.csv"))[,-1]
 #assessment_2020.full <- read_excel(here("data/Assessment", "2020 Only.xlsx"))
 ```
 
-We calculated the total tax income of each municipality by summing the product of assessment total and mill rate of all tax class. Then we plotted the computed tax income vs municipal budget into line-chart to visualize their relationship. We chose Vancoouver, Richmond and Burnaby as representative because they are the three largest municipalities in Metro Vancouver. The plots showed that the computed tax amount was positively and approximatly linearly related to municipal budget through time. 
-
-2. Test correlations between past mill rates and other features.
 ```{r, echo=FALSE}
+## Test correlations between past mill rates and other features.
 # ______________________________________________________________________________________________
 # CONTINUS variables
 assessment_transform <- assessment_aggregate
@@ -152,17 +149,18 @@ kruskal.test(assessment_transform$rate~assessment_transform$TaxClassCode,data=as
 kruskal.test(assessment_transform$rate~assessment_transform$AddressAssessorMunicipalityDesc,data=assessment_transform)
 ```
 
-
-3.model fitting
-
 ```{r, warning=FALSE, echo=FALSE}
+## model fitting
+set.seed(123)
 lambdas <- 10^seq(2, -3, by = -.1)
 dummy_municipal<-dummy(assessment_transform$AddressAssessorMunicipalityDesc)
 dummy_taxclass<-dummy(assessment_transform$TaxClassCode)
+
 # build x matrix
 x<-cbind(dummy_municipal,dummy_taxclass,assessment_transform$AvgTotalAssessmentValue)
 y<-assessment_transform$rate
 x<-cbind(x,y)
+
 # correct col name
 colnames(x)[26]<-c("AvgTotalAssessmentValue")
 colnames(x)[27]<-c("rate")
@@ -173,10 +171,10 @@ y.data.frame<-assessment_transform$rate
 n <- nrow(xm)
 k <- 10
 ii <- (1:n)%%k + 1
-set.seed(123)
 N <- 50
 mspe1.n<-mspe1.el<-mspe1.la <- mspe1.f <- mspe1.ri <- mspe1.reduced <- rep(0, N)
 mspe.n<-mspe.el<-mspe.la <- mspe.f <- mspe.ri <- mspe.reduced <- rep(0, N)
+
 for (i in 1:N) {
   ii <- sample(ii)
   pr1.n<-pr1.el<-pr1.la <- pr1.f <- pr1.ri <- pr1.reduced <- rep(0, n)
@@ -221,7 +219,6 @@ for (i in 1:N) {
   mspe.reduced[i]<-mean((y - pr.reduced)^2)
   mspe.f[i]<-mean((y - pr.f)^2)
 }
-
 
 boxplot(mspe1.la, 
         mspe1.ri, 

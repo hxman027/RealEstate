@@ -215,17 +215,24 @@ kruskal.test(assessment_transform$rate~assessment_transform$AddressAssessorMunic
 
 **Table 2: Result from Model Used**
 
-Model | Mutiple R-Squared | Adjusted R_Squared | MSE | PMSE 
-------|--------|--------|--------|--------
-      OLR full | 0.8874| 0.8707| 1.9843| 2.5902
-      OLR reduced| 0.8874| 0.8721| 1.9845| 2.5237
-      Ridge|  0.8868| NA| 1.9896| 2.5675
-      LASSO| 0.8873| NA| 1.9855| 2.5280
-      Elastic Net| 0.8625| NA| 2.2366| 2.5486
+<!-- Model | Mutiple R-Squared | Adjusted R_Squared | MSE | PMSE  -->
+<!-- ------|--------|--------|--------|-------- -->
+<!--       OLR full | 0.8874| 0.8707| 1.9843| 2.5902 -->
+<!--       OLR reduced| 0.8874| 0.8721| 1.9845| 2.5237 -->
+<!--       Ridge|  0.8868| NA| 1.9896| 2.5675 -->
+<!--       LASSO| 0.8873| NA| 1.9855| 2.5280 -->
+<!--       Elastic Net| 0.8625| NA| 2.2366| 2.5486 -->
 
 
-Above is the goodness of fit of five models. Except for the Elastic Net model which has higher MSE and PMSE, there are no significant differences between these models. We have not used cross-validation to reduce model overfitting.
-Although the results are relatively similar and have high R_squared across all models, we believe after using cross-validation there will be a clearer difference between the goodness of fit of each model.
+Below is a comparison of the five models (Lasso, Ridge, OLR reduced, OLR full and OLR null) as for goodness of fit and predcition power. Goodness of fit is measured by MSE of the training data, whereas prediction power is measured by MSPE of the testing data. Generally, smaller MSEs and MSPEs indicate better fit and prediction power respectively.
+
+To examine the fit and prediciton power, a 50-run of 10-fold cross validation was performed. For each run, a 10-fold corss validation was used to train the five models and make predictions on training and testing data respectively. Then, the MSEs calculated from the training data and MSPEs calculated from the testing data were stored in vectors of corresponding mdoels. After the 50 runs, a vector of MSEs and a vectors of MSPEs for each model were therefore constructed successfully. 
+
+As for goodness of fit, Lasso, Ridge and OLR reduced have a similar performance; MSEs are around 4.6, but OLR reduced perform slightly better and has a smaller spread (variance) of MSE. OLR full performs worse than the the three, around 5.4, and OLR null has the greatest MSE, around 35.   
+
+Similarly, as for prediction power, Lasso, Ridge and OLR reduced perform roughly the same; MSPEs are close to 6. OLR full is worse with MSPE around 6.9. OLR Null performs the worst with MSPE over 35. 
+
+Therefore, we conclude that from the results of a 50-run of 10-fold cross validation, Lasso, Ridge and OLR reduced have the best goodness of fit and prediction power. OLR null perfroms much worse than all the other four models. 
 
 For a dtailed look of how the models were fitted and evaluated, please refer to the appendix.
 
@@ -317,7 +324,8 @@ boxplot(mspe1.la,
                   "Ridge",
                   "Reduced", 
                   "Full",
-                  "Null"), 
+                  "Null"
+                  ), 
         col = c("steelblue","gray80",
                 "pink", 
                 "tomato", "springgreen"), 
@@ -331,12 +339,14 @@ boxplot(mspe.la,
         mspe.ri,
         mspe.reduced, 
         mspe.f, 
-        mspe.n,
+       mspe.n,
         names = c("LASSO", "Ridge", 
                   "Reduced", 
                   "Full",
-                  "Null"), 
-        col = c("steelblue","gray80", "pink",
+                  "Null"
+                  ), 
+        col = c("steelblue","gray80", 
+                "pink",
                 "tomato", "springgreen"), 
         cex.axis = 1, 
         cex.lab = 1, 

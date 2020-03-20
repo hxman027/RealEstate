@@ -10,9 +10,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
-libraries
-```{r, message=F, warning=F}
+```{r, message=F, warning=F, echo=FALSE}
 library(tidyverse)
 library(ggplot2)
 library(dplyr)
@@ -21,6 +19,7 @@ library(readxl)
 library(broom)
 library(glmnet)
 library(dummies)
+set.seed(123)
 ```
 
 
@@ -146,7 +145,6 @@ After the 50 runs, a vector of MSEs and a vectors of MSPEs for each model were t
 ## Aggregated Data
 assessment_aggregate <- read.csv(here("data","assessment_aggregate.csv"))[,-1]
 assessment_2020 <- read.csv(here("data","assessment_2020.csv"))[,-1]
-# assessment_2020.full <- read_excel(here("data/Assessment", "2020 Only.xlsx"))
 ```
 
 
@@ -265,7 +263,7 @@ A statistical test called Kruskal-Wallis Test is also performed to test their di
 The results of Kruskal-Wallis Test is shown in Table 1.
 
 
-**Table 1: Kruskal-Wallis Test of Mill Rate across Municipality and Tax Class**
+        Table 1: Kruskal-Wallis Test of Mill Rate across Municipality and Tax Class
 
 Distribution  | p-value
 ------|--------
@@ -285,27 +283,22 @@ kruskal.test(assessment_transform$rate~assessment_transform$AddressAssessorMunic
 
 
 \pagebreak
+
+
 ###Linear Model
 
 
 Below is a comparison of the five models (Lasso, Ridge, OLR transformed, OLR full and OLR null) as for goodness of fit and predcition power. Goodness of fit is measured by MSE of the training data, whereas prediction power is measured by MSPE of the testing data. Generally, smaller MSEs and MSPEs indicate better fit and prediction power respectively.
 
 
-As for goodness of fit, Lasso, Ridge and OLR reduced have a similar performance; MSEs are around 4.6, but OLR transformed perform slightly better and has a smaller spread (variance) of MSE. OLR full performs worse than the the three, around 5.4, and OLR null has the greatest MSE, around 35.   
+The distributions of goodness of fit and prediction power across models are displyed in Figure 7 and Figure 8, respectively, the distribution of null model is removed since it has larger values compared to all other models.
 
 
-Similarly, as for prediction power, Lasso, Ridge and OLR transformed perform roughly the same; MSPEs are close to 6. OLR full is worse with MSPE around 6.9. OLR Null performs the worst with MSPE over 35. 
-
-
-Therefore, we conclude that from the results of a 50-run of 10-fold cross validation, Lasso, Ridge and OLR transformed have the best goodness of fit and prediction power. OLR null perfroms much worse than all the other four models. 
-
-
-For a dtailed look of how the models were fitted and evaluated, please refer to the **Appendix**.
+The distributions of MSPE across models are also displayed in Table 2.
 
 
 ```{r, warning=FALSE, echo=FALSE}
 ## model fitting
-set.seed(123)
 lambdas <- 10^seq(2, -3, by = -.1)
 dummy_municipal<-dummy(assessment_transform$AddressAssessorMunicipalityDesc)
 dummy_taxclass<-dummy(assessment_transform$TaxClassCode)
@@ -339,9 +332,16 @@ for (i in 1:N) {
                         nfolds = 10, alpha = 0, family = "gaussian")
     tmp.la <- cv.glmnet(x = xm[ii != j, ], y = y[ii != j], lambda = lambdas, 
                         nfolds = 10, alpha = 1, family = "gaussian")
-    tmp.reduced <- lm(rate ~ factor(TaxClassCode)+factor(AddressAssessorMunicipalityDesc)+AvgTotalAssessmentValue, 
+    tmp.reduced <- lm(rate ~ factor(TaxClassCode)+
+                        factor(AddressAssessorMunicipalityDesc)+
+                        AvgTotalAssessmentValue, 
                       data = x.data.frame[ii != j, ])
-    tmp.full <- lm(rate ~ factor(AddressAssessorMunicipalityDesc)+factor(TaxClassCode)+assessTotal+landTotal+improvementTotal+propertyCount, 
+    tmp.full <- lm(rate ~ factor(AddressAssessorMunicipalityDesc)+
+                     factor(TaxClassCode)+
+                     assessTotal+
+                     landTotal+
+                     improvementTotal+
+                     propertyCount, 
                    data = x.data.frame[ii != j, ])
     tmp.n <- lm(rate ~ 1, 
                       data = x.data.frame[ii != j, ])
@@ -385,43 +385,61 @@ boxplot(mspe1.la,
         mspe1.ri, 
         mspe1.reduced, 
         mspe1.f, 
-        mspe1.n,
         names = c("LASSO", 
                   "Ridge",
                   "Transformed", 
-                  "Full",
-                  "Null"
+                  "Full"
                   ), 
         col = c("steelblue","gray80",
                 "pink", 
-                "tomato", "springgreen"), 
+                "tomato"), 
         cex.axis = 1, 
         cex.lab = 1, 
         cex.main = 2,
-        main = "Goodness of Fit",
+        main = " Figure 7: Goodness of Fit",
         ylab = expression(hat(MSE)))
 
 boxplot(mspe.la, 
         mspe.ri,
         mspe.reduced, 
-        mspe.f, 
-       mspe.n,
+        mspe.f,
         names = c("LASSO", 
                   "Ridge", 
                   "Transformed", 
-                  "Full",
-                  "Null"
+                  "Full"
                   ), 
         col = c("steelblue","gray80", 
                 "pink",
-                "tomato", "springgreen"), 
+                "tomato"), 
         cex.axis = 1, 
         cex.lab = 1, 
         cex.main = 2,
-        main = "Prediction Power",
+        main = "Figure 8: Prediction Power",
         ylab = expression(hat(MSPE)))
 ```
 
+                Table 2: Prediction Power of All Models
+
+Model | PMSE:Min | PMSE:Mean | PMSE:Max
+-----|-----|-----|-----|
+Full Model | 6.50 | 6.97 | 7.59 |
+Transformed Model | 5.60 | 5.92 | 6.51 |
+Null Model | 36.67 | 36.87 | 37.26 |
+The Lasso for Full Model | 5.58 | 5.91 | 6.40 |
+Ridge Regression for Full Model | 5.53 | 5.88 | 6.39 |
+
+
+
+As for goodness of fit, Lasso, Ridge and OLR reduced have a similar performance; MSEs are around 4.6, but OLR transformed perform slightly better and has a smaller spread (variance) of MSE. OLR full performs worse than the the three, around 5.4, and OLR null has the greatest MSE, around 35.   
+
+
+Similarly, as for prediction power, Lasso, Ridge and OLR transformed perform roughly the same; MSPEs are close to 6. OLR full is worse with MSPE around 6.9. OLR Null performs the worst with MSPE over 35.
+
+
+Therefore, we conclude that from the results of a 50-run of 10-fold cross validation, Lasso, Ridge and OLR transformed have the best goodness of fit and prediction power. OLR null perfroms much worse than all the other four models. 
+
+
+For a detailed look of how the models were fitted and evaluated, please refer to the **Appendix**.
 
 
 
@@ -434,46 +452,13 @@ assessment_2020.agg <- assessment_2020%>%
   mutate(AvgTotalAssessmentValue = assessTotal/propertyCount)%>%
   mutate(predict_rate = predict(linear_1,newdata = .))
 resid<-assessment_2020.agg$predict_rate - assessment_2020.agg$rate
-sqrt(sum(resid^2)/nrow(assessment_2020.agg))
-
-# ## Final result
-# municipality.list = c(
-#   "Burnaby", 
-#   "Coquitlam", 
-#   "Delta", 
-#   "Langley - City", 
-#   "Langley - Township",
-#   "Maple Ridge",
-#   "Maple Ridge Rural", 
-#   "North Vancouver - City",
-#   "North Vancouver - Dist",
-#   "Pitt Meadows", 
-#   "Port Coquitlam", 
-#   "Port Moody", 
-#   "Richmond", 
-#   "Surrey", 
-#   "Vancouver", 
-#   "White Rock", 
-#   "West Vancouver", 
-#   "Bowen Island", 
-#   "Anmore", 
-#   "Belcarra",
-#   "Lions Bay",
-#   "New Westminster")
-# 
-# ## Raw Data
-# a <- assessment_2020.full%>%
-#   filter(TaxClassCode %in% c("01","05","06"),
-#          AddressAssessorMunicipalityDesc %in% municipality.list)
+#sqrt(sum(resid^2)/nrow(assessment_2020.agg))
 
 ## Aggregate Data
 b <- assessment_2020.agg%>%
   select(-c(assessTotal : propertyCount, AvgTotalAssessmentValue))%>%
   mutate(TaxClassCode = as.factor(paste0("0",TaxClassCode)))
 
-# assessment_2020.final<- merge(a, b, by =c("AddressAssessorMunicipalityDesc", "TaxClassCode"), all.x = TRUE)
-
-# write.csv(assessment_2020.final, "../Data/Assessment/assessment_2020.final")
 write.csv(b, "../Data/assessment_2020_fit.csv")
 ``` 
 
@@ -492,21 +477,6 @@ All fitted linear model were able to make accurate prediction based on means squ
 
 
 \pagebreak
-## References
-
-
-Links to source of data: 
-
-
-- Schedule 706 (https://www2.gov.bc.ca/gov/content/governments/local-governments/facts-framework/statistics/statistics)
-
-
-Code repository:
-
-
-- Data Cleaning (https://github.com/STAT450-550/RealEstate/blob/450/src/Data_Cleaning.Rmd)
-
-- Exploratory Data Analysis and Model Fitting (https://github.com/STAT450-550/RealEstate/blob/450/src/EDA%26mode_fitting.Rmd)
 
 
 
@@ -539,7 +509,7 @@ Some groups' mill rate is not unique:
 
 - In some groups, all entries' mill rates are missing. Entries in these groups are removed. Here is the list of the groups:
 
-**Table 3: Data with missing mill rate**
+                    Table 3: Data with missing mill rate
 
 Year  | Region | Class |Number of Properties
 ------|--------|-------|----------
@@ -553,3 +523,16 @@ Year  | Region | Class |Number of Properties
 2017 | Maple Ridge Rural | 05 | 36 
 2018 | Maple Ridge Rural | 05 | 36 
 2019 | Maple Ridge Rural | 05 | 38
+
+
+\pagebreak
+
+## References
+
+
+Code repository:
+
+
+- Data Cleaning (https://github.com/STAT450-550/RealEstate/blob/450/src/Data_Cleaning.Rmd)
+
+- Exploratory Data Analysis and Model Fitting (https://github.com/STAT450-550/RealEstate/blob/450/src/EDA%26mode_fitting.Rmd)

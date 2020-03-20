@@ -1,9 +1,9 @@
 ---
-title: "2nd_draft"
+title: 'STAT 450 Project: Real Estate'
 author: "Xuechun Lu, Yuting Wen, Peter Han, Yuetong Liu"
 date: "15/03/2020"
 output:
-  github_document
+  pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -80,7 +80,7 @@ Moreover, we select 5 features that could be relevant to mill rate, which are:
 
 There are 1801 missing value in mill rate. 1509 are imputed, and 292 are removed from the data frame. The imputation method is mentioned in appendix. 
 
-Oo reduce the dimension of our data, we aggregate all properties in the same region, classcode, and year are aggregate into a group, becasue these properties have same mill rate,  which is our response variable. Here is the summary statistics for these groups:
+To reduce the dimension of our data, we aggregate all properties in the same region, tax class code, and year are aggregate into a group, becasue these properties have same mill rate,  which is our response variable. Here is the summary statistics for these groups:
 
 - Mill rate 
 - Total Assessment 
@@ -104,9 +104,6 @@ Mill rate is mainly affected by assessment, so scatter plots of mill rate vs. to
 
 
 
-## TODO modify this part based on the comment in the following link (Leonie)
-## _______________________________
-https://github.com/STAT450-550/RealEstate/blob/450/doc/Peter_Han_Individual_edit.pdf
 ### Measure of goodness of fit and prediction power
 
 
@@ -127,20 +124,22 @@ TaxClassCode, Municipalities, Assess Total, Land Assessment Total, Improvement A
 
 Other than ordinary linear regressions, we are also interested in the performance of more advanced linear regressions like Ridge and Lasso. Ridge and Lasso have a different objective function to optimize; they take penalty in sum of absolute values and sum of squared absolute values of weights respectively. These models have an interesting characteristic, that is, a weight is assigned to each feature. This might be relevant to our study as mill rate can be affected by each feature to a different extent. Also, another advantage of these model is that MSPE is more stable as the variance of MSPE is reduced. 
 
+
 ### Cross Validation
+
+
 To examine the goodness of fit and prediciton power, a 50-run of 10-fold cross validation would be performed in this study. For each run, a 10-fold corss validation was used to train the five models and make predictions on training and testing data respectively. Then, the MSEs calculated from the training data and MSPEs calculated from the testing data were stored in vectors of corresponding mdoels. 
 
 After the 50 runs, a vector of MSEs and a vectors of MSPEs for each model were therefore constructed successfully. Based on these vectors, boxplots would be used to show the mean and spread of MSE and MSPE aross all models respectively. 
-
-
-
-##_____________________________________________
 
 \pagebreak
 
 ## Results
 
 ###Exploratory Analysis
+
+
+#### Continuous Variables
 
 ```{r, warning=F, message=F, echo=FALSE}
 ## data setup
@@ -150,82 +149,143 @@ assessment_2020 <- read.csv(here("data","assessment_2020.csv"))[,-1]
 # assessment_2020.full <- read_excel(here("data/Assessment", "2020 Only.xlsx"))
 ```
 
+
+
+Since mill rate is mainly affected by total assessment, which is sum of total land assessment and total improvement assessment, scatter plots between mill rate and all kinds of assessment among different municipalities are created to show the relationship in Figure 1, Figure 2, Figure 3
+
+
+
 ```{r, echo=FALSE}
 ## Test correlations between past mill rates and other features.
 # ______________________________________________________________________________________________
 # CONTINUS variables
 assessment_transform <- assessment_aggregate
 
-# log transformation and take avg
+# transformation: taking avg
 assessment_transform[,9] <- assessment_transform$assessTotal/assessment_transform$propertyCount
 names(assessment_transform)[9] <- paste("AvgTotalAssessmentValue")
 
-cor(assessment_transform$rate,assessment_transform$AvgTotalAssessmentValue)
+# rename column for better visulization
+assessment_eda <- assessment_transform
+names(assessment_eda)[2] <- paste("Municipality")
+names(assessment_eda)[3] <- paste("Tax Class")
+names(assessment_eda)[4] <- paste("Total Assessment")
+names(assessment_eda)[5] <- paste("Total Land Assessment")
+names(assessment_eda)[6] <- paste("Total Improvement Assessment")
+names(assessment_eda)[8] <- paste("Mill Rate")
+names(assessment_eda)[9] <- paste("Average Total Assessment")
 
-assessment_transform %>%
-                   ggplot(aes(x=assessTotal,
-                              y=rate,group=AddressAssessorMunicipalityDesc,
-                              color=AddressAssessorMunicipalityDesc)) + 
-                   geom_point() + 
-                   ggtitle(sprintf("mill rate vs total assessment value")) + 
-                   geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+assessment_eda %>%
+   ggplot(aes(x=`Total Assessment`,
+              y=`Mill Rate`,group=Municipality,
+              color=Municipality)) + 
+   geom_point() + 
+   ggtitle(sprintf("Figure 1: Mill Rate vs Total Assessment")) + 
+   geom_smooth(aes(group = 1), size = 0.5, method = "glm", se = FALSE, colour = "black") +
+   theme(plot.background = element_rect(fill = "darkgrey"), legend.key.size = unit(0.2, "cm"))
 
-assessment_transform %>%
-                   ggplot(aes(x=landTotal,
-                              y=rate,group=AddressAssessorMunicipalityDesc,
-                              color=AddressAssessorMunicipalityDesc)) + 
-                   geom_point() + 
-                   ggtitle(sprintf("mill rate vs total land assessment value")) + 
-                   geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
-assessment_transform %>%
-                   ggplot(aes(x=improvementTotal,
-                              y=rate,group=AddressAssessorMunicipalityDesc,
-                              color=AddressAssessorMunicipalityDesc)) + 
-                   geom_point() + 
-                   ggtitle(sprintf("mill rate vs total improvement assessment value")) + 
-                   geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+assessment_eda %>%
+   ggplot(aes(x=`Total Land Assessment`,
+              y=`Mill Rate`,group=Municipality,
+              color=Municipality)) + 
+   geom_point() + 
+   ggtitle(sprintf("Figure 2: Mill Rate vs Total Land Assessment")) + 
+   geom_smooth(aes(group = 1), size = 0.5, method = "glm", se = FALSE, colour = "black") +
+   theme(plot.background = element_rect(fill = "darkgrey"), legend.key.size = unit(0.2, "cm"))
 
-assessment_transform %>%
-                   ggplot(aes(x=AvgTotalAssessmentValue,
-                              y=rate,group=AddressAssessorMunicipalityDesc,
-                              color=AddressAssessorMunicipalityDesc)) + 
-                   geom_point() + 
-                   ggtitle(sprintf("mill rate vs average total assessment value")) + 
-                   geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+assessment_eda %>%
+   ggplot(aes(x=`Total Improvement Assessment`,
+              y=`Mill Rate`,group=Municipality,
+              color=Municipality)) + 
+   geom_point() + 
+   ggtitle(sprintf("Figure 3: Mill Rate vs Total Improvement Assessment")) + 
+   geom_smooth(aes(group = 1), size = 0.5, method = "glm", se = FALSE, colour = "black") +
+   theme(plot.background = element_rect(fill = "darkgrey"), legend.key.size = unit(0.2, "cm"))
+```
 
+
+
+There is no clear trend between mill rate and any kind of assessment. Plots also have shown that most points are condensed on the left horizontal axis, since some municipalities have large assessment.
+
+To reduce the effect of large assessment of some municipalities, total assessment across municipalities are transformed by taking total assessment dividing by number of properties of each municipality and tax class. The transformed data is named **"Average Total Assessment"**. A scatter plot between mill rate and average total assessment is showed in Figure 4.
+
+
+
+```{r, echo=FALSE}
+assessment_eda %>%
+ ggplot(aes(x=`Average Total Assessment`,
+            y=`Mill Rate`,group=Municipality,
+            color=Municipality)) + 
+ geom_point() + 
+ ggtitle(sprintf("Figure 4: Mill rate v.s. Average Total Assessment")) + 
+ geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black") +
+theme(plot.background = element_rect(fill = "darkgrey"), legend.key.size = unit(0.2, "cm"))
+```
+
+
+Plot from Figure 4 has shown that mill rate tends to decrease as average total assessment increase. Also they have moderately strong linear correlation. 
+
+
+
+#### Categorical Variables
+
+
+Here categorical variables were taken into account, boxplots of mill rate across municipalities and tax classes are plotted to display the distributions in Figure 5 and Figure 6.
+
+
+
+```{r, echo=FALSE}
 # ______________________________________________________________________________________________
 # CATEGORICAL variables
-for(i in colnames(assessment_transform)[2:3]){
-  print(ggplot(assessment_aggregate, aes(x=as.factor(!!as.name(i)),y=rate, fill=as.factor(!!as.name(i)))) + 
-  geom_boxplot()+ 
-  theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none"))
-}
+assessment_eda %>%
+     ggplot(aes(x=Municipality,
+                y=`Mill Rate`,fill=Municipality)) + 
+     geom_boxplot() + 
+     ggtitle(sprintf("Figure 5: Mill rate across Municipalities")) +
+     theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none")
 
+assessment_eda %>%
+     ggplot(aes(x=as.factor(`Tax Class`),
+                y=`Mill Rate`,fill=`Tax Class`)) + 
+     geom_boxplot() + 
+     ggtitle(sprintf("Figure 6: Mill rate across Tax Classes")) +
+     theme(legend.position = "none") +
+     labs(x="Tax Class") +
+     scale_x_discrete(labels=c("1", "5", "6"))
+```
+
+
+
+Figure 5 has shown that most municipalities have different mean and variance in terms of mill rates.
+
+Figure 6 also supports that there is unequal mean and variance across tax classes.
+
+A statistical test called Kruskal-Wallis Test is also performed to test their distribution. It is used to decide if population distributions are identical, and the corresponding p-value which is smaller than 0.05 can indicate that the data has nonidentical distributions.
+
+The results of Kruskal-Wallis Test is shown in Table 1.
+
+
+**Table 1: Kruskal-Wallis Test of Mill Rate across Municipality and Tax Class**
+
+Distribution  | p-value
+------|--------
+Mill Rate across Municipality | 0.00675
+Mill Rate across Tax Class | < 2.2e-16
+
+
+The p-values in Table 1 supports that there is nonidentical distributions of mill rates across municipalities and tax classes.
+
+
+```{r, echo=FALSE, results='hide'}
 # kruskal.test
 kruskal.test(assessment_transform$rate~assessment_transform$TaxClassCode,data=assessment_transform)
 kruskal.test(assessment_transform$rate~assessment_transform$AddressAssessorMunicipalityDesc,data=assessment_transform)
 ```
 
 
-## ___________________________
-## TODO KW result table, explanation of all plots (Yuting)
-## ___________________________
 
-
-
-##_____________________________
-## TODO modify this part using boxplot and tables, change desrciptions (Leonie)
+\pagebreak
 ###Linear Model
-
-**Table 2: Result from Model Used**
-
-<!-- Model | Mutiple R-Squared | Adjusted R_Squared | MSE | PMSE  -->
-<!-- ------|--------|--------|--------|-------- -->
-<!--       OLR full | 0.8874| 0.8707| 1.9843| 2.5902 -->
-<!--       OLR reduced| 0.8874| 0.8721| 1.9845| 2.5237 -->
-<!--       Ridge|  0.8868| NA| 1.9896| 2.5675 -->
-<!--       LASSO| 0.8873| NA| 1.9855| 2.5280 -->
-<!--       Elastic Net| 0.8625| NA| 2.2366| 2.5486 -->
 
 
 Below is a comparison of the five models (Lasso, Ridge, OLR transformed, OLR full and OLR null) as for goodness of fit and predcition power. Goodness of fit is measured by MSE of the training data, whereas prediction power is measured by MSPE of the testing data. Generally, smaller MSEs and MSPEs indicate better fit and prediction power respectively.
@@ -233,11 +293,14 @@ Below is a comparison of the five models (Lasso, Ridge, OLR transformed, OLR ful
 
 As for goodness of fit, Lasso, Ridge and OLR reduced have a similar performance; MSEs are around 4.6, but OLR transformed perform slightly better and has a smaller spread (variance) of MSE. OLR full performs worse than the the three, around 5.4, and OLR null has the greatest MSE, around 35.   
 
+
 Similarly, as for prediction power, Lasso, Ridge and OLR transformed perform roughly the same; MSPEs are close to 6. OLR full is worse with MSPE around 6.9. OLR Null performs the worst with MSPE over 35. 
+
 
 Therefore, we conclude that from the results of a 50-run of 10-fold cross validation, Lasso, Ridge and OLR transformed have the best goodness of fit and prediction power. OLR null perfroms much worse than all the other four models. 
 
-For a dtailed look of how the models were fitted and evaluated, please refer to the appendix.
+
+For a dtailed look of how the models were fitted and evaluated, please refer to the **Appendix**.
 
 
 ```{r, warning=FALSE, echo=FALSE}
@@ -358,13 +421,10 @@ boxplot(mspe.la,
         main = "Prediction Power",
         ylab = expression(hat(MSPE)))
 ```
-##_______________________________________
 
 
 
-##_______________________________________
-##TODO: make prediction work for 2020 data (Yuetong)
-##(it's missing AvgTotalAssessmentValue, looks like we need to calculate them)
+
 ```{r fit, echo=FALSE}
 ## choose transformed model
 linear_1<-lm(rate~factor(AddressAssessorMunicipalityDesc)+factor(TaxClassCode)+AvgTotalAssessmentValue,data=assessment_transform)
@@ -449,15 +509,9 @@ Code repository:
 - Exploratory Data Analysis and Model Fitting (https://github.com/STAT450-550/RealEstate/blob/450/src/EDA%26mode_fitting.Rmd)
 
 
-##——————————————————————————
-##TODO: more styling (Yuting)
-##___________________________
+
 ## Appendix
 
-##__________________________
-## TODO: add one more section: (Yuetong) 
-## Include the code relevant to summarizing and aggregating the data from the client, which produces in the dataframe used for analysis.
-##__________________________
 
 ### Missing Value:
 

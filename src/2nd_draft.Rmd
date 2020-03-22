@@ -284,7 +284,7 @@ kruskal.test(assessment_transform$rate~assessment_transform$AddressAssessorMunic
 \pagebreak
 
 
-###Linear Model
+#### Linear Model
 
 
 Below is a comparison of the five models (Lasso, Ridge, OLR transformed, OLR full and OLR null) using the goodness of fit and prediction power. The goodness of fit was measured by MSE of the training data, whereas prediction power was measured by MSPE of the testing data. Generally, smaller MSEs and MSPEs indicate better fit and prediction power respectively.

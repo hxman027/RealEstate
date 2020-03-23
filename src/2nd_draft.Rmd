@@ -85,9 +85,11 @@ Mill rate was mainly affected by assessment, so scatter plots of mill rate vs. t
 
 In this study,  linear models were built and the performance of each model was evaluated by the goodness of fit and prediction power, that is, how well the model explains the data and how well it can predict future values. The definition of the goodness of fit and prediction power is given below.
 
- - **Goodness of fit** is defined as the extent to which the sample data are consistent with the model, which examines how well the model explains the data. R-squared and adjusted R-squared are the most well-known measures of goodness of fit and higher R-squared and adjusted R squares indicate better goodness of fit. 
+ - **Goodness of fit** is defined as the extent to which the sample data are consistent with the model, which examines how well the model explains the data. MSE (Mean Squared Error) is a measure of goodness of fit and a smaller MSE indicates better goodness of fit. 
 
- - **Prediction power** measures how well models can predict future values. Mean squared prediction power was used to compare the prediction performance across all of our fitted linear predictive models. To do that, the data set was divided into training data - used to build our models, and testing data - used to evaluate the prediction power of our models.  
+ - **Prediction power** measures how well models can predict future values. Mean squared prediction power was used to compare the prediction performance across all of our fitted linear predictive models. Prior to examine the prediction power, the data set was divided into training data - used to build our models, and testing data - used to evaluate the prediction power of our models. MSPE (Mean Squared Predction Error) on testing set is used to measure the prediction power in this study. 
+ 
+Refer to **Appendix** for forumlas of MSE and MSPE.
 
 
 ### Ordinary Linear models
@@ -98,7 +100,7 @@ The full linear model (*ORL full*) was built first. TaxClassCode, Municipalities
 ### Ridge and Lasso
 
 
-Other than ordinary linear regressions, we are also interested in the performance of more advanced linear regressions like *Ridge* and *Lasso*. *Ridge* and *Lasso* have a different objective function to optimize; they take a penalty in the sum of absolute values and sum of squared absolute values of weights respectively. These models have an interesting characteristic, that is, a weight is assigned to each feature. This might be relevant to our study as the mill rate can be affected by each feature to a different extent. Also, another advantage of these models is that MSPE is more stable as the variance of MSPE is reduced. For more detials about the two models, please refer to the **References**.
+Other than ordinary linear regressions, we are also interested in the performance of more advanced linear regressions like *Ridge* and *Lasso*. *Ridge* and *Lasso* have a different objective function to optimize; they take a penalty in the sum of absolute values and sum of squared absolute values of weights respectively. These models have an interesting characteristic, that is, a weight is assigned to each feature. This might be relevant to our study as the mill rate can be affected by each feature to a different extent. Also, another advantage of these models is that MSPE is more stable as the variance of MSPE is reduced. For more detials about the two models, please refer to **Appendix**.
 
 
 ### Cross Validation
@@ -106,7 +108,7 @@ Other than ordinary linear regressions, we are also interested in the performanc
 
 To examine the goodness of fit and prediction power, a 50-run of 10-fold cross-validation was performed in this study. For each run, a 10-fold cross-validation was used to train the five models and make predictions on training and testing data respectively. Then, the MSEs calculated from the training data and MSPEs calculated from the testing data were stored in vectors of corresponding models. 
 
-After the 50 runs, a vector of MSEs and a vector of MSPEs for each model were therefore constructed successfully. Based on these vectors, side-by-side boxplots were used to show the mean and the spread of MSE and MSPE across all models respectively. For more details about cross-validation, please refer to the **References**.
+After the 50 runs, a vector of MSEs and a vector of MSPEs for each model were therefore constructed successfully. Based on these vectors, side-by-side boxplots were used to show the mean and the spread of MSE and MSPE across all models respectively. For more details about cross-validation, please refer to **Appendix**.
 
 \pagebreak
 
@@ -417,8 +419,6 @@ Similarly, as for prediction power, *Lasso*, *Ridge*, and *OLR transformed* perf
 Therefore, we conclude that from the results of a 50-run of 10-fold cross-validation, *Lasso*, *Ridge*, and *OLR transformed* had the best goodness of fit and prediction power. *OLR null* perfromed much worse than all the other four models. 
 
 
-For a detailed look at how the models were fitted and evaluated, please refer to the **Appendix**.
-
 
 
 ```{r fit, echo=FALSE}
@@ -511,6 +511,9 @@ Code repository:
 - Data Cleaning (https://github.com/STAT450-550/RealEstate/blob/450/src/Data_Cleaning.Rmd)
 
 - Exploratory Data Analysis and Model Fitting (https://github.com/STAT450-550/RealEstate/blob/450/src/EDA%26mode_fitting.Rmd)
+
+Measure of Goodness of Fit and Prediction Power:
+https://channabasavagola.github.io/2018-01-09-metrics/
 
 Lasso and Ridge:
 https://web.stanford.edu/class/stats202/content/lec14-cond.pdf

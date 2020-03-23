@@ -31,30 +31,7 @@ The main objective of our project is to accurately predict future mill rate (pro
 
 ## Introduction
 
-Our goal is to predict mill rates in 2020 in the following 22 municipalities:
-
-- Burnaby
-- Coquitlam
-- Delta
-- Langley - City
-- Langley - Township
-- Maple Ridge
-- Maple Ridge Rural
-- New Westminster
-- North Vancouver - City
-- North Vancouver - Dist
-- Pitt Meadows
-- Port Coquitlam
-- Port Moody
-- Richmond
-- Surrey
-- Vancouver
-- White Rock
-- West Vancouver
-- Bowen Island
-- Anmore
-- Belcarra
-- Lions Bay.
+Our goal is to predict mill rates in 2020 in Metro Vancouver.
 
 We also seek to identify which explanatory variables are the most important in determining mill rates. Every year, the assessment value of each property is released at the beginning of the year, however, the mill rate is still unknown until Spring. Prediction of mill rate is a focus of interest because it gives an approximate property tax to pay for property owners. It is also important because it might affect future buyers’ purchasing incentives. The property tax rate has a fairly small margin to change. Mill rate is adjusted based on the total assessment in each city so the municipal government can use tax earning (total assessment * mill rate) to match their annual expense to balance the city’s budget. 
 
@@ -67,7 +44,7 @@ Correlation between the mill rate and each explanatory variable will be used to 
 Our client provides us the past 5 years' property assessment data in BC. Since the only interest is in predicting mill rate for metro Vancouver and specific class code, a subset of properties that satisfy our interest have been selected: 
 
 - TaxClass Code in (01,05,06)
-- Municipality in Metro Vancouver
+- Municipality in (Burnaby, Coquitlam, Delta, Langley - City, Langley - Township, Maple Ridge, Maple Ridge Rural, New Westminster, North Vancouver - City, North Vancouver - Dist, Pitt Meadows, Port Coquitlam, Port Moody, Richmond, Surrey, Vancouver, White Rock, West Vancouver,  Bowen Island, Anmore, Belcarra, Lions Bay)
 
 Moreover, 5 features have been selected that could be relevant to the mill rate:
 
@@ -77,17 +54,17 @@ Moreover, 5 features have been selected that could be relevant to the mill rate:
 - Assessment Type
 - Assessment Value 
 
-There are 1801 missing value in mill rate. 1509 are imputed, and 292 are removed from the data frame. The imputation method is mentioned in appendix. 
+There are 1801 missing value in mill rate. 1509 are imputed, and 292 are removed from the data frame. The imputation method is mentioned in **Appendix**. 
 
 To reduce the dimension of our data, all properties in the same region, tax class code, and year are aggregated into a group because these properties have the same mill rate,  which is our response variable. Here is the summary statistics for these groups:
 
-- Mill rate ("rate": 2016-2019)
-- Total Assessment ("assessTotal": 2016-2019)
-- Total Land Assessment ("landTotal": 2016 - 2019)
-- Total Improvement Assessment ("improvementTotal": 2016 - 2019)
-- Total number of properties ("propertyCount")
-- Taxclasscode ("TaxClassCode": 01, 05, 06)
-- Municipality ("AddressAssessorMunicipalityDesc")
+- Mill rate (rate)
+- Total Assessment (assessTotal)
+- Total Land Assessment (landTotal)
+- Total Improvement Assessment (improvementTotal)
+- Total number of properties (propertyCount)
+- Taxclasscode (TaxClassCode)
+- Municipality (AddressAssessorMunicipalityDesc)
 - Year
 
 ## Methods
@@ -135,7 +112,7 @@ After the 50 runs, a vector of MSEs and a vector of MSPEs for each model were th
 
 ## Results
 
-###Exploratory Analysis
+### Exploratory Analysis
 
 
 #### Continuous Variables

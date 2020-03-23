@@ -26,7 +26,7 @@ set.seed(123)
 ## Summary
 
 
-The main objective of our project is to accurately predict future mill rate (property tax) in metro Vancouver for the following 3 property tax classes: Tax class 1: Residential, Tax class 5: Light industry and Tax class 6: Business and other. Data cleaning, exploratory data analysis are used in this project to analyze the relationship between mill rate and other factors. Data cleaning is performed to aggregate our data into summary statistics. Exploratory analysis has shown there are strong relationships between mill rate and tax class and mill rate and municipalities; it has also shown there is a fairly strong correlation between mill rate and average assessment per property in different municipalities. Ordinary linear model, reduced ordinary linear model, Ridge Regression and LASSO are used to predict the mill rate. A full assessment of the performance - prediction power and goodness of fit of these models, is shown below.
+The main objective of our project is to accurately predict future mill rate (property tax) in metro Vancouver for the following 3 property tax classes: Tax class 1: Residential, Tax class 5: Light industry and Tax class 6: Business and other. Data cleaning, exploratory data analysis are used in this project to analyze the relationship between mill rate and other factors. Data cleaning is performed to aggregate our data into summary statistics. Exploratory analysis has shown there are strong relationships between mill rate and tax class and mill rate and municipalities; it has also shown there is a fairly strong correlation between mill rate and average assessment per property in different municipalities. *Ordinary linear model*, *reduced ordinary linear model*, *Ridge Regression* and *the LASSO* are used to predict the mill rate. A full assessment of the performance - prediction power and goodness of fit of these models, is shown below.
 
 
 ## Introduction
@@ -41,9 +41,9 @@ Correlation between the mill rate and each explanatory variable will be used to 
 
 ## Data Description
 
-Our client provides us the past 5 years' property assessment data in BC. Since the only interest is in predicting mill rate for metro Vancouver and specific class code, a subset of properties that satisfy our interest have been selected: 
+Our client provides us the past 5 years' property assessment data in BC. Since the only interest is in predicting mill rate for metro Vancouver and specific tax class code, a subset of properties that satisfy our interest have been selected: 
 
-- TaxClass Code in (01,05,06)
+- Tax Class in (01,05,06)
 - Municipality in (Burnaby, Coquitlam, Delta, Langley - City, Langley - Township, Maple Ridge, Maple Ridge Rural, New Westminster, North Vancouver - City, North Vancouver - Dist, Pitt Meadows, Port Coquitlam, Port Moody, Richmond, Surrey, Vancouver, White Rock, West Vancouver,  Bowen Island, Anmore, Belcarra, Lions Bay)
 
 Moreover, 5 features have been selected that could be relevant to the mill rate:
@@ -63,7 +63,7 @@ To reduce the dimension of our data, all properties in the same region, tax clas
 - Total Land Assessment (landTotal)
 - Total Improvement Assessment (improvementTotal)
 - Total number of properties (propertyCount)
-- Taxclasscode (TaxClassCode)
+- Tax Class Code (TaxClassCode)
 - Municipality (AddressAssessorMunicipalityDesc)
 - Year
 
@@ -93,12 +93,12 @@ In this study,  linear models were built and the performance of each model was e
 ### Ordinary Linear models
 
 
-The full linear model (ORL full) was built first. TaxClassCode, Municipalities, Assess Total, Land Assessment Total, Improvement Assessment total and Number of properties were considered in this model. Based on the results of EDA, we selected a list of significant variables and included them in another linear model (OLR transformed). To compare the effect of linear models with and without features, a null model (OLR null) with no features used, was also constructed.
+The full linear model (*ORL full*) was built first. TaxClassCode, Municipalities, assessTotal, landTotal, improvementTotal and propertyCount were considered in this model. Based on the results of EDA, we selected a list of significant variables and included them in another linear model (*OLR transformed*). To compare the effect of linear models with and without features, a null model (*OLR null*) with no features used, was also constructed.
 
 ### Ridge and Lasso
 
 
-Other than ordinary linear regressions, we are also interested in the performance of more advanced linear regressions like Ridge and Lasso. Ridge and Lasso have a different objective function to optimize; they take a penalty in the sum of absolute values and sum of squared absolute values of weights respectively. These models have an interesting characteristic, that is, a weight is assigned to each feature. This might be relevant to our study as the mill rate can be affected by each feature to a different extent. Also, another advantage of these models is that MSPE is more stable as the variance of MSPE is reduced. For more detials about the two models, please refer to the **Appendix**.
+Other than ordinary linear regressions, we are also interested in the performance of more advanced linear regressions like *Ridge* and *Lasso*. *Ridge* and *Lasso* have a different objective function to optimize; they take a penalty in the sum of absolute values and sum of squared absolute values of weights respectively. These models have an interesting characteristic, that is, a weight is assigned to each feature. This might be relevant to our study as the mill rate can be affected by each feature to a different extent. Also, another advantage of these models is that MSPE is more stable as the variance of MSPE is reduced. For more detials about the two models, please refer to the **References**.
 
 
 ### Cross Validation
@@ -106,7 +106,7 @@ Other than ordinary linear regressions, we are also interested in the performanc
 
 To examine the goodness of fit and prediction power, a 50-run of 10-fold cross-validation was performed in this study. For each run, a 10-fold cross-validation was used to train the five models and make predictions on training and testing data respectively. Then, the MSEs calculated from the training data and MSPEs calculated from the testing data were stored in vectors of corresponding models. 
 
-After the 50 runs, a vector of MSEs and a vector of MSPEs for each model were therefore constructed successfully. Based on these vectors, side-by-side boxplots were used to show the mean and the spread of MSE and MSPE across all models respectively. Refer to the **Appendix** for algorithms.
+After the 50 runs, a vector of MSEs and a vector of MSPEs for each model were therefore constructed successfully. Based on these vectors, side-by-side boxplots were used to show the mean and the spread of MSE and MSPE across all models respectively. For more details about cross-validation, please refer to the **References**.
 
 \pagebreak
 
@@ -115,7 +115,7 @@ After the 50 runs, a vector of MSEs and a vector of MSPEs for each model were th
 ### Exploratory Analysis
 
 
-#### Continuous Variables
+#### - Continuous Variables
 
 ```{r, warning=F, message=F, echo=FALSE}
 ## data setup
@@ -126,7 +126,7 @@ assessment_2020 <- read.csv(here("data","assessment_2020.csv"))[,-1]
 
 
 
-Since the mill rate is mainly affected by the total assessment, which is the sum of total land assessment and total improvement assessment, scatter plots between mill rate and all kinds of assessment among different municipalities are created to show the relationship in Figure 1, Figure 2, Figure 3
+Since the mill rate is mainly affected by the total assessment, which is the sum of total land assessment and total improvement assessment, scatter plots between mill rate and all kinds of assessment among different municipalities are created to show the relationship in Figure 1, Figure 2, Figure 3. Each color in the figures belongs to three tax classes of one municipality.
 
 
 
@@ -201,10 +201,10 @@ theme(plot.background = element_rect(fill = "darkgrey"), legend.key.size = unit(
 The plot from Figure 4 has shown that the mill rate tends to decrease as the average total assessment increase. Also, they have a moderately strong linear correlation. 
 
 
-#### Categorical Variables
+#### - Categorical Variables
 
 
-Here categorical variables were taken into account, boxplots of mill rate across municipalities and tax classes are plotted to display the distributions in Figure 5 and Figure 6.
+Here categorical variables are taken into account, boxplots of mill rate across municipalities and tax classes are plotted to display the distributions in Figure 5 and Figure 6.
 
 
 
@@ -217,7 +217,9 @@ assessment_eda %>%
      geom_boxplot() + 
      ggtitle(sprintf("Figure 5: Mill rate across Municipalities")) +
      theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none")
+```
 
+```{r, echo=FALSE}
 assessment_eda %>%
      ggplot(aes(x=as.factor(`Tax Class`),
                 y=`Mill Rate`,fill=`Tax Class`)) + 
@@ -264,7 +266,7 @@ kruskal.test(assessment_transform$rate~assessment_transform$AddressAssessorMunic
 #### Linear Model
 
 
-Below is a comparison of the five models (Lasso, Ridge, OLR transformed, OLR full and OLR null) using the goodness of fit and prediction power. The goodness of fit was measured by MSE of the training data, whereas prediction power was measured by MSPE of the testing data. Generally, smaller MSEs and MSPEs indicate better fit and prediction power respectively.
+Below is a comparison of the five models (*Lasso*, *Ridge*, *OLR transformed*, *OLR full* and *OLR null*) using the goodness of fit and prediction power. The goodness of fit was measured by MSE of the training data, whereas prediction power was measured by MSPE of the testing data. Generally, smaller MSEs and MSPEs indicate better fit and prediction power respectively.
 
 
 The distributions of the goodness of fit and prediction power across models are displayed in Figure 7 and Figure 8, respectively, the distribution of null model is removed since it has larger values compared to all other models.
@@ -394,7 +396,7 @@ boxplot(mspe.la,
         ylab = expression(hat(MSPE)))
 ```
 
-                Table 2: Prediction Power of All Models
+                    Table 2: Prediction Power of All Models
 
 Model | PMSE:Min | PMSE:Mean | PMSE:Max
 -----|-----|-----|-----|
@@ -406,13 +408,13 @@ Ridge Regression for Full Model | 5.53 | 5.88 | 6.39 |
 
 
 
-As for goodness of fit, Lasso, Ridge, and OLR transformed have similar performance; MSEs across these models were around 4.6, but OLR transformed performed slightly better and had a smaller spread (variance) of MSE. OLR full performed worse than the other three, around 5.4, and OLR null had the greatest MSE, around 35.   
+As for goodness of fit, *Lasso*, *Ridge*, and *OLR transformed* have similar performance; MSEs across these models were around 4.6, but *OLR transformed* performed slightly better and had a smaller spread (variance) of MSE. *OLR full* performed worse than the other three, around 5.4, and *OLR null* had the greatest MSE, around 35.   
 
 
-Similarly, as for prediction power, Lasso, Ridge, and OLR transformed performed roughly the same; MSPEs across these models were close to 6. OLR full was worse with MSPE around 6.9. OLR Null performed the worst with MSPE over 35.
+Similarly, as for prediction power, *Lasso*, *Ridge*, and *OLR transformed* performed roughly the same; MSPEs across these models were close to 6. *OLR full* was worse with MSPE around 6.9. *OLR Null* performed the worst with MSPE over 35.
 
 
-Therefore, we conclude that from the results of a 50-run of 10-fold cross-validation, Lasso, Ridge, and OLR transformed had the best goodness of fit and prediction power. OLR null perfromed much worse than all the other four models. 
+Therefore, we conclude that from the results of a 50-run of 10-fold cross-validation, *Lasso*, *Ridge*, and *OLR transformed* had the best goodness of fit and prediction power. *OLR null* perfromed much worse than all the other four models. 
 
 
 For a detailed look at how the models were fitted and evaluated, please refer to the **Appendix**.
@@ -446,8 +448,7 @@ write.csv(b, "../Data/assessment_2020_fit.csv")
 
 From the exploratory data analysis, we have found that Total Assessments contain outliers in major municipalities such as Vancouver and Burnaby. In order to reduce the effect of outliers, the Total Assessments were transformed by taking their average over the number of properties in each municipality. The correlation analyses had shown that the transformed assessment total is the only continuous variable that has a relatively strong correlation with the mill rate. The Kruskal-Wallis had suggested that mill rates in each municipality and tax class are significantly different. From these results, we have decided to use Average Assessment Total, TaxClassCode and Municipality to fit our reduced model.
 
-Transformed OLR, Ridge Regression, and LASSO were able to make good predictions based on mean squared error and mean squared prediction error from cross-validation. Since the client prefers a simpler model, we choose the transformed model to make our 2020 prediction.  
-##_______________________________
+*Transformed OLR*, *Ridge Regression*, and *the LASSO* were able to make good predictions based on mean squared error and mean squared prediction error from cross-validation. Since the client prefers a simpler model, we choose the *transformed model* to make our 2020 prediction.  
 
 
 \pagebreak

@@ -1,0 +1,639 @@
+---
+title: "EDA"
+author: "Xuechun Lu, Yuting Wen, Peter Han, Yuetong Liu"
+date: "25/02/2020"
+output:
+  github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+libraries
+```{r, message=F, warning=F}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(here)
+library(readxl)
+require(neuralnet)
+```
+
+```{r}
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  library(grid)
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+  numPlots = length(plots)
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+ if (numPlots==1) {
+    print(plots[[1]])
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+
+```
+
+1. data processing
+```{r, warning=F, message=F}
+# all municipalities
+municipality.list = c(
+  "Burnaby", 
+  "Coquitlam", 
+  "Delta", 
+  "Langley - City", 
+  "Langley - Township",
+  "Maple Ridge",
+  "Maple Ridge Rural", 
+  "North Vancouver - City",
+  "North Vancouver - Dist",
+  "Pitt Meadows", 
+  "Port Coquitlam", 
+  "Port Moody", 
+  "Richmond", 
+  "Surrey", 
+  "Vancouver", 
+  "White Rock", 
+  "West Vancouver", 
+  "Bowen Island", 
+  "Anmore", 
+  "Belcarra",
+  "Lions Bay")
+
+# budget and assessment data import and process
+tax_pct<-read_csv(here("data", "tax_pct.csv"))
+assessment_pct<-read_csv(here("data", "assessment_pct.csv"))
+# omit 2016
+assessment_pct<-na.omit(assessment_pct)
+assessment_pct<-assessment_pct[,-c(1)]
+names(assessment_pct)[2]<-paste("Municipalities")
+tax_pct<-tax_pct[,-c(1)]
+#head(tax_pct)
+
+assessment_aggregate <- read.csv(here("data","assessment_aggregate.csv"))
+assessment_final <- read.csv(here("data","assessment_final.csv"))
+assessment_final <- assessment_final[,-1]
+assessment_final <- assessment_final[complete.cases(assessment_final),]
+assessment_final <- assessment_final[,-4]
+```
+Note: tax_pct doesn't have Maple Ridge Rural. We decide to treat Maple Ridge Rural and Maple Ridge with the same tax. 
+
+
+2019 tax pct is missing, we imputed 2019 tax by the average of previous tax pct
+```{r}
+tax_pct[,4]<-(tax_pct$pct_2017+tax_pct$pct_2018)/2
+#tax_pct
+names(tax_pct)[4]<-paste("pct_2019")
+tax_pct<-rbind(tax_pct,c("Maple Ridge Rural", 6.195736, 5.6949567,5.945346))
+
+#head(tax_pct)
+```
+
+aggregate tax and assessment
+```{r}
+assessment2017<-assessment_pct  %>%  filter(Year=="2017")
+tax2017<-tax_pct[,1:2]
+assessment2017<-assessment2017 %>% left_join(tax2017, by = c("Municipalities"))
+names(assessment2017)[9]<-paste("tax")
+
+assessment2018<-assessment_pct  %>%  filter(Year=="2018")
+tax2018<-tax_pct[,c(1,3)]
+assessment2018<-assessment2018 %>% left_join(tax2018, by = c("Municipalities"))
+names(assessment2018)[9]<-paste("tax")
+
+assessment2019<-assessment_pct  %>%  filter(Year=="2019")
+tax2019<-tax_pct[,c(1,4)]
+assessment2019<-assessment2019 %>% left_join(tax2019, by = c("Municipalities"))
+names(assessment2019)[9]<-paste("tax")
+
+pct_final<-assessment2017 %>% full_join(assessment2018) %>% full_join(assessment2019)
+pct_final$tax<-as.numeric(pct_final$tax)
+write.csv(pct_final, here("data","data_final.csv"))
+
+# all pct data aggregated
+#head(pct_final)
+
+```
+
+2019 tax is missing, we imputed 2019 tax using previous values
+```{r}
+tax_final <- read.csv(here("data","tax_final.csv"))
+#head(tax_final)
+
+# tax_final is the budget
+tax_modified <- tax_final  %>% mutate(X2019=tax_final$X2018*(1+(((tax_final$X2017-tax_final$X2016)/tax_final$X2016 + (tax_final$X2018-tax_final$X2017)/tax_final$X2017)/2)))
+
+# tax_modified contains all the budget values from 2016 to 2019
+#head(tax_modified)
+```
+
+global variables
+```{r}
+# all pct aggregated
+pct_final
+# all budget values
+tax_modified
+```
+
+check match between budget and assessTotal*mill_rate
+```{r}
+# get predicted tax income for all tax classes and each municipality
+assessment_aggregate[,10] <- assessment_aggregate$assessTotal*assessment_aggregate$rate/1000
+names(assessment_aggregate)[10] <- paste("predTaxIncome")
+
+dat_pred_income <- assessment_aggregate %>% select(Year,AddressAssessorMunicipalityDesc,TaxClassCode,predTaxIncome)
+dat_pred_income <- aggregate(dat_pred_income$predTaxIncome,by=list(Year=dat_pred_income$Year,Municipalities=dat_pred_income$AddressAssessorMunicipalityDesc),FUN=sum)
+names(dat_pred_income)[3] <- paste("predTaxIncome")
+
+tax_refactored <- tax_modified
+names(tax_refactored)[3] <- paste("2016")
+names(tax_refactored)[4] <- paste("2017")
+names(tax_refactored)[5] <- paste("2018")
+names(tax_refactored)[6] <- paste("2019")
+dat_true_income <- gather(tax_refactored, Year, TaxAmount, "2016":"2019", factor_key=TRUE)
+dat_true_income <- dat_true_income[,-1]
+
+income_budget_compare <- merge(dat_true_income,dat_pred_income,by=c("Municipalities","Year"))
+income_budget_compare <- gather(income_budget_compare, TaxType, Amount, TaxAmount:predTaxIncome, factor_key=TRUE)
+
+compare_full_plot <- income_budget_compare %>% filter(Municipalities!="Vancouver") %>% ggplot(aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),color=Municipalities)) + geom_line()
+
+compare_plot1 <- income_budget_compare %>% filter(Municipalities=="Vancouver") %>% ggplot(aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),color=TaxType)) + geom_line() + ggtitle("budget v.s taxIncome for Vancouver")
+compare_plot2 <- income_budget_compare %>% filter(Municipalities=="Surrey") %>% ggplot(aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),color=TaxType)) + geom_line() + ggtitle("budget v.s taxIncome for Surrey")
+compare_plot3 <- income_budget_compare %>% filter(Municipalities=="Burnaby") %>% ggplot(aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),color=TaxType)) + geom_line() + ggtitle("budget v.s taxIncome for Burnaby")
+compare_plot4 <- income_budget_compare %>% filter(Municipalities=="Richmond") %>% ggplot(aes(x=Year,y=Amount,group=interaction(Municipalities,TaxType),color=TaxType)) + geom_line() + ggtitle("budget v.s taxIncome for Richmond")
+multiplot(compare_plot1,compare_plot2,compare_plot3,compare_plot4,cols=2)
+```
+
+
+2. plots of mill rate v.s assessments for each tax class
+```{r}
+# mill rate vesus year for each municipality and tax class
+dat_rate <- assessment_aggregate %>% select(Year, AddressAssessorMunicipalityDesc, TaxClassCode, rate)
+#head(dat_rate)
+
+dat_rate_1 <- dat_rate %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="1") 
+dat_rate_5 <- dat_rate %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="5") 
+dat_rate_6 <- dat_rate %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="6") 
+
+# plot assessed value vesus year for each municipality and tax class
+dat_assess <- assessment_aggregate %>% select(Year, AddressAssessorMunicipalityDesc, TaxClassCode, assessTotal)
+
+dat_assess_1 <- dat_assess %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="1") 
+dat_assess_5 <- dat_assess %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="5") 
+dat_assess_6 <- dat_assess %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list) %>% filter(TaxClassCode=="6") 
+
+# plot budgets vesus year
+dat_tax_long <- gather(tax_modified, Year, TaxAmount, X2016:X2019, factor_key=TRUE)
+
+# Vancouver/West Vancouver are special cases for assessment, we omit them for taxClass 1 and 6
+rate_class1 <- dat_rate_1 %>% filter(AddressAssessorMunicipalityDesc != "Vancouver" & AddressAssessorMunicipalityDesc != "West Vancouver") %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate for taxClass 1 and all municipalities") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+assess_class1 <- dat_assess_1 %>% filter(AddressAssessorMunicipalityDesc != "Vancouver" & AddressAssessorMunicipalityDesc != "West Vancouver") %>% ggplot(aes(x=Year,y=assessTotal,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("assessTotal for taxClass 1 and all municipalities") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+multiplot(rate_class1 + theme(legend.position = "none"), assess_class1 + theme(legend.position = "none"))
+
+rate_class5 <- dat_rate_5 %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate for taxClass 5") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+assess_class5 <- dat_assess_5 %>% ggplot(aes(x=Year,y=assessTotal,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("assessTotal for taxClass 5") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+multiplot(rate_class5 + theme(legend.position = "none"),assess_class5 + theme(legend.position = "none"))
+
+rate_class6 <- dat_rate_6 %>% filter(AddressAssessorMunicipalityDesc != "Vancouver" & AddressAssessorMunicipalityDesc != "West Vancouver") %>% ggplot(aes(x=Year,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate for taxClass 6 and all municipalities") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+assess_class6 <- dat_assess_6 %>% filter(AddressAssessorMunicipalityDesc != "Vancouver" & AddressAssessorMunicipalityDesc != "West Vancouver") %>% ggplot(aes(x=Year,y=assessTotal,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("assessTotal for taxClass 6 and all municipalities") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+multiplot(rate_class6 + theme(legend.position = "none"),assess_class6 + theme(legend.position = "none"))
+
+budget_plot <- dat_tax_long %>% filter(Municipalities != "Vancouver" & Municipalities != "West Vancouver") %>% ggplot(aes(x=Year,y=TaxAmount,group=Municipalities,color=Municipalities)) + geom_point() + ggtitle("Tax v.s Year") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+budget_plot
+```
+
+
+3. plots of mill rate pct change v.s assessment pct change for each tax class
+```{r}
+pct_rate1 <- pct_final %>% 
+  filter(Municipalities %in% municipality.list) %>%
+  filter(TaxClassCode == "01") %>%
+  ggplot(aes(x=Year, y=rate_pct, group=Municipalities, color=Municipalities)) +
+    geom_point() + ggtitle("taxClass1 pct rate v.s year") + theme(legend.position = "none") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+pct_rate5 <- pct_final %>% 
+  filter(Municipalities %in% municipality.list) %>%
+  filter(TaxClassCode == "05") %>%
+  ggplot(aes(x=Year, y=rate_pct, group=Municipalities, color=Municipalities)) +
+    geom_point() + ggtitle("taxClass5 pct rate v.s year") + theme(legend.position = "none") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+pct_rate6 <- pct_final %>% 
+  filter(Municipalities %in% municipality.list) %>%
+  filter(TaxClassCode == "06") %>%
+  ggplot(aes(x=Year, y=rate_pct, group=Municipalities, color=Municipalities)) +
+    geom_point() + ggtitle("taxClass6 pct rate v.s year") + theme(legend.position = "none") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+pct_assess1 <- pct_final %>% 
+  filter(Municipalities %in% municipality.list) %>%
+  filter(TaxClassCode == "01") %>%
+  ggplot(aes(x=Year, y=assessTotal_pct, group=Municipalities, color=Municipalities)) +
+    geom_point() + ggtitle("taxClass1 pct assessment v.s year") + theme(legend.position = "none") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+pct_assess5 <- pct_final %>% 
+  filter(Municipalities %in% municipality.list) %>%
+  filter(TaxClassCode == "05") %>%
+  ggplot(aes(x=Year, y=assessTotal_pct, group=Municipalities, color=Municipalities)) +
+    geom_point() + ggtitle("taxClass5 pct assessment v.s year") + theme(legend.position = "none") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+pct_assess6 <- pct_final %>% 
+  filter(Municipalities %in% municipality.list) %>%
+  filter(TaxClassCode == "06") %>%
+  ggplot(aes(x=Year, y=assessTotal_pct, group=Municipalities, color=Municipalities)) +
+    geom_point() + ggtitle("taxClass6 pct assessment v.s year") + theme(legend.position = "none") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+
+multiplot(pct_rate1,pct_assess1)
+multiplot(pct_rate5,pct_assess5)
+multiplot(pct_rate6,pct_assess6)
+```
+
+4. pct change of mill rate and assessment for each municipality
+```{r}
+# for each municipality
+tax.list <- c("01","05","06")
+for (i in 1:21){
+  if (municipality.list[i] != "Lions Bay") {
+    plot_rate_pct <- pct_final %>% filter(Municipalities == municipality.list[i]) %>% 
+    filter(TaxClassCode %in% tax.list) %>% 
+    ggplot(aes(x=Year, y=rate_pct, group=TaxClassCode, color=TaxClassCode)) +
+      geom_line() + ggtitle(municipality.list[i])
+    
+    plot_assess_pct <- pct_final %>% filter(Municipalities == municipality.list[i]) %>% 
+    filter(TaxClassCode %in% tax.list) %>% 
+    ggplot(aes(x=Year, y=assessTotal_pct, group=TaxClassCode, color=TaxClassCode)) +
+      geom_line() + ggtitle(municipality.list[i])
+    
+    plot_tax_pct <- pct_final %>% filter(Municipalities == municipality.list[i]) %>% 
+  filter(TaxClassCode %in% tax.list) %>% 
+  ggplot(aes(x=Year, y=tax, group=TaxClassCode, color=TaxClassCode)) +
+    geom_line() + ggtitle(municipality.list[i])
+    
+    multiplot(plot_rate_pct,plot_assess_pct,plot_tax_pct)
+  }
+}
+```
+
+5. box plots of mill rates, grouped by region
+```{r}
+rate_boxes <- ggplot(dat_rate, aes(x=AddressAssessorMunicipalityDesc,y=rate,fill=TaxClassCode)) + geom_boxplot() + facet_wrap(~TaxClassCode) + theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none")
+rate_boxes 
+```
+
+6. Test correlations between past mill rates and assessed values and government budget.
+```{r}
+# aggregate tax and mill rate & assessment
+colnames(tax_modified) <- c("X","Municipalities","2016","2017","2018","2019")
+dat_tax_long <- gather(tax_modified, Year, TaxAmount, "2016":"2019", factor_key=TRUE)
+
+tax_modified1 <- gather(tax_modified, Year, tax, '2016':'2019', factor_key = TRUE)%>%
+  rename(AddressAssessorMunicipalityDesc = Municipalities)
+
+assessment_aggregate <- merge(assessment_aggregate, tax_modified1, by = c("AddressAssessorMunicipalityDesc","Year"))
+assessment_aggregate <- assessment_aggregate[,-c(3,11)]
+names(assessment_aggregate)[10] <- paste("tax")
+
+# correlation between mill rate and budget for each municipality
+rate_tax_correlation <- assessment_aggregate %>%
+  group_by(AddressAssessorMunicipalityDesc,TaxClassCode)%>%
+  summarise(cor(rate, tax))
+rate_tax_correlation
+# correlation between mill rate and assessment
+rate_assess_correlation2 <- assessment_aggregate %>%
+  group_by(AddressAssessorMunicipalityDesc,TaxClassCode)%>%
+  summarise(cor(assessTotal, rate))
+rate_assess_correlation2
+
+
+
+
+
+## Correlation for continuous variables
+assess_class <- assessment_aggregate %>% ggplot(aes(x=assessTotal,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and assess - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+cor(assessment_aggregate$assessTotal, assessment_aggregate$rate)
+
+tax_class <- assessment_aggregate %>% ggplot(aes(x=tax,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and tax - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+cor(assessment_aggregate$tax, assessment_aggregate$rate)
+
+land_class<-assessment_aggregate %>% ggplot(aes(x=landTotal,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and landTotal - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+cor(assessment_aggregate$landTotal, assessment_aggregate$rate)
+
+improvementTotal_class<-assessment_aggregate %>% ggplot(aes(x=improvementTotal,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and improvementTotal - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+cor(assessment_aggregate$improvementTotal, assessment_aggregate$rate)
+
+propertyCount_class<-assessment_aggregate %>% ggplot(aes(x=propertyCount,y=rate,group=AddressAssessorMunicipalityDesc,color=AddressAssessorMunicipalityDesc)) + geom_point() + ggtitle("mill rate and propertyCount - cor") + geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black")
+cor(assessment_aggregate$propertyCount, assessment_aggregate$rate)
+
+library(plotly)
+ggplotly(assess_class)
+ggplotly(tax_class)
+ggplotly(land_class)
+ggplotly(improvementTotal_class)
+ggplotly(propertyCount_class)
+
+
+
+## Correlation for categorical variables
+TaxClassCode <- aov(rate ~ factor(TaxClassCode), data = assessment_aggregate)
+summary(TaxClassCode)
+
+
+Year <- aov(rate_pct ~ factor(Year), data = pct_final)
+summary(Year)
+
+Municipalities <- aov(rate ~ factor(AddressAssessorMunicipalityDesc), data = assessment_aggregate)
+summary(Municipalities)
+```
+
+7. Compute autocorrelations of past mill rates to test the independence of mill rates. 
+```{r}
+# all white noise
+for (i in 1:21) {
+  print(municipality.list[i])
+  dat_tmp <- dat_rate %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list[i] & TaxClassCode %in% "1") %>% select(rate)
+  if (municipality.list[i] != "Maple Ridge Rural") {
+    as.ts(dat_tmp)
+    acf(dat_tmp)
+  }
+}
+for (i in 1:21) {
+  print(municipality.list[i])
+  dat_tmp <- dat_rate %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list[i] & TaxClassCode %in% "5") %>% select(rate)
+  if (municipality.list[i] != "Maple Ridge Rural" & municipality.list[i] != "White Rock" & municipality.list[i] != "Anmore" & municipality.list[i] != "Belcarra" & municipality.list[i] != "Lions Bay") {
+    as.ts(dat_tmp)
+    acf(dat_tmp)
+  }
+}
+for (i in 1:21) {
+  print(municipality.list[i])
+  dat_tmp <- dat_rate %>% filter(AddressAssessorMunicipalityDesc %in% municipality.list[i] & TaxClassCode %in% "6") %>% select(rate)
+  if (municipality.list[i] != "Maple Ridge Rural") {
+    as.ts(dat_tmp)
+    acf(dat_tmp)
+  }
+}
+```
+
+model fitting
+(i) linear model
+```{r}
+linear1<-lm(rate_pct~factor(Year)+factor(TaxClassCode)+factor(Municipalities)+assessTotal_pct+tax,data=pct_final)
+summary(linear1)
+
+colnames(assessment_aggregate)
+linear_full<-lm(rate~factor(AddressAssessorMunicipalityDesc)+factor(Year)+factor(TaxClassCode)+assessTotal+landTotal+improvementTotal+propertyCount+tax,data=assessment_aggregate)
+summary(linear_full)
+
+
+library(broom)
+
+linear_full_fit<-augment(linear_full)
+sqrt(sum((linear_full_fit$.resid)^2)/nrow(assessment_aggregate)) 
+```
+Multiple R-squared:  0.8874,	Adjusted R-squared:  0.8707 
+MSPE =  1.984285
+
+Next: variable selection
+with only significant variables
+```{r}
+reduced<-lm(rate~factor(Year)+factor(TaxClassCode)+factor(AddressAssessorMunicipalityDesc)+assessTotal+landTotal, data=assessment_aggregate)
+summary(reduced)
+
+reduced_fit<-augment(reduced)
+sqrt(sum((reduced_fit$.resid)^2)/nrow(assessment_aggregate))
+```
+Multiple R-squared:  0.8874,	Adjusted R-squared:  0.8721 
+MSPE = 1.984541
+
+
+
+
+
+(ii) Ridge, Lasso and elastic net.
+
+Ridge Regression
+reference: https://www.pluralsight.com/guides/linear-lasso-and-ridge-regression-with-r
+```{r}
+library(glmnet)
+library(dummies)
+dummy_year<-dummy(assessment_aggregate$Year)
+dummy_municipal<-dummy(assessment_aggregate$AddressAssessorMunicipalityDesc)
+dummy_taxclass<-dummy(assessment_aggregate$TaxClassCode)
+# build x matrix
+x<-cbind(dummy_municipal,dummy_year,dummy_taxclass,assessment_aggregate$assessTotal,assessment_aggregate$landTotal,assessment_aggregate$improvementTotal,assessment_aggregate$propertyCount,assessment_aggregate$tax)
+
+y<-assessment_aggregate$rate
+lambdas <- 10^seq(2, -3, by = -.1)
+dim(x)
+
+
+lambdas <- 10^seq(2, -3, by = -.1)
+ridge_reg = glmnet(x, y, nlambda = 25, alpha = 0, family = 'gaussian', lambda = lambdas)
+set.seed(450)
+cv_ridge <- cv.glmnet(x, y, alpha = 0, lambda = lambdas, nfolds=10)
+optimal_lambda <- cv_ridge$lambda.min
+optimal_lambda
+predictions_train <- predict(ridge_reg, s = optimal_lambda, newx = x)
+
+# Compute R^2 from true and predicted values
+eval_results <- function(true, predicted) {
+  SSE <- sum((predicted - true)^2)
+  SST <- sum((true - mean(true))^2)
+  R_square <- 1 - SSE / SST
+  MSPE = sqrt(SSE/nrow(predicted))
+# Model performance metrics
+data.frame(
+  MSPE = MSPE,
+  Rsquare = R_square
+)
+  
+}
+
+predictions_train <- predict(ridge_reg, s = optimal_lambda, newx = x)
+ridge_r <- eval_results(y, predictions_train)
+
+
+```
+MSPE = 1.989583
+Rsquare=	0.8868242	
+
+
+Lasso 
+```{r}
+# Setting alpha = 1 implements lasso regression
+set.seed(450)
+lasso_reg <- cv.glmnet(x, y, alpha = 1, lambda = lambdas, standardize = TRUE, nfolds = 10)
+
+# Best 
+lambda_best <- lasso_reg$lambda.min;lambda_best
+
+lasso_model <- glmnet(x, y, alpha = 1, lambda = lambda_best, standardize = TRUE)
+
+predictions_train <- predict(lasso_model, s = lambda_best, newx = x)
+lasso_r <- eval_results(y, predictions_train)
+```
+MSPE = 1.985463	
+Rsquare=0.8872924	
+
+
+Elastic net: 
+reference: https://daviddalpiaz.github.io/r4sl/elastic-net.html
+```{r}
+library(caret)
+tibble::as_tibble(assessment_aggregate)
+cv_10 = trainControl(method = "cv", number = 10)
+elastic_net = train(
+  rate~factor(AddressAssessorMunicipalityDesc)+factor(Year)+factor(TaxClassCode)+assessTotal+landTotal+improvementTotal+propertyCount, data = assessment_aggregate,
+  method = "glmnet",
+  trControl = cv_10
+)
+
+elastic_net
+
+```
+The final values used for the model were alpha = 0.1 and lambda = 0.007102922.
+   alpha  lambda       RMSE      Rsquared   MAE     
+  0.10   0.007102922  2.236598  0.8625398  1.708885
+
+
+Prediction power
+train/test
+```{r}
+set.seed(450)
+train_ind<-sample(218,218-50)
+train<-assessment_aggregate[train_ind,]
+test<-assessment_aggregate[-train_ind,]
+```
+
+Full linear model
+```{r}
+
+newx<-test[,-c(8,9)]
+y<-test[,c(8)]
+linear_1<-lm(rate~factor(AddressAssessorMunicipalityDesc)+factor(Year)+factor(TaxClassCode)+assessTotal+landTotal+improvementTotal+propertyCount+tax,data=train)
+resid<-predict(linear_1,newdata = newx) - y
+sqrt(sum(resid^2)/nrow(test))
+```
+MSPE =  2.590233
+
+Reduced model
+```{r}
+# reduced variable
+linear_2<-lm(rate~factor(Year)+factor(TaxClassCode)+factor(AddressAssessorMunicipalityDesc)+assessTotal+landTotal,data=train)
+resid<-predict(linear_2,newdata = newx) - y
+sqrt(sum(resid^2)/nrow(test))
+```
+MSPE = 2.523658
+
+Lasso
+```{r}
+# create the whole matrix
+y<-as.matrix(assessment_aggregate$rate)
+dim(x) # 165  29
+dim(y)
+# creat x_train matrix and y_train
+x_train<-x[train_ind,]
+y_train<-y[train_ind,]
+# create x_test matrix
+x_test<-x[-train_ind,]
+y_test<-y[-train_ind,]
+
+# Setting alpha = 1 implements lasso regression
+set.seed(450)
+lasso_reg <- cv.glmnet(x_train, y_train, alpha = 1, lambda = lambdas, standardize = TRUE, nfolds = 10)
+
+# Best 
+lambda_best <- lasso_reg$lambda.min;lambda_best
+
+lasso_model <- glmnet(x_train, y_train, alpha = 1, lambda = lambda_best, standardize = TRUE)
+
+predictions_test <- predict(lasso_model, s = lambda_best, newx = x_test)
+eval_results(y_test, predictions_test)
+```
+MSPE = 2.528047	
+
+
+Ridge
+```{r}
+ridge_reg = glmnet(x_train, y_train, nlambda = 25, alpha = 0, family = 'gaussian', lambda = lambdas)
+set.seed(450)
+cv_ridge <- cv.glmnet(x_train, y_train, alpha = 0, lambda = lambdas, nfolds=10)
+optimal_lambda <- cv_ridge$lambda.min
+optimal_lambda
+predictions_test <- predict(ridge_reg, s = optimal_lambda, newx = x_test)
+eval_results(y_test, predictions_test)
+```
+MSPE = 2.567499	
+
+Elastic Net
+```{r}
+tibble::as_tibble(assessment_aggregate[train_ind,])
+cv_10 = trainControl(method = "cv", number = 10)
+elastic_net = train(
+ rate~factor(AddressAssessorMunicipalityDesc)+factor(Year)+factor(TaxClassCode)+assessTotal+landTotal+improvementTotal+propertyCount+tax, 
+ data = assessment_aggregate[train_ind,],
+  method = "glmnet",
+  trControl = cv_10
+)
+elastic_net
+
+# RMSE was used to select the optimal model using the smallest value.
+# The final values used for the model were alpha = 1 and lambda = 0.06549203.
+
+elastic_reg = glmnet(x_train, y_train, nlambda = 25, alpha = 1, family = 'gaussian', lambda =  0.06549203)
+predictions_test <- predict(elastic_reg, newx = x_test)
+eval_results(y_test, predictions_test)
+```
+MSPE = 2.54861	
+
+Summary on GOF
+```{r}
+
+GOF_table <- rbind(
+      c("OLR full", 0.8874, 0.8707, 1.9843, 2.5902),
+      c("OLR reduced", 0.8874, 0.8721, 1.9845, 2.5237),
+      c("Ridge", 0.8868, 0.8707, 1.9896, 2.5675),
+      c("LASSO", 0.8873, 0.8707, 1.9855, 2.5280),
+      c("Elastic Net", 0.8625, 0.8707, 2.2366, 2.5486))
+colnames(GOF_table) <- c("Model", "Mutiple R-Squared","Adjusted R_Squared", "MSE", "PMSE")
+
+```
+
+## neural network
+```{r}
+nn=neuralnet(TaxClassTaxRate~Year+TaxClassCode+AssessorAreaCode+AddressAssessorMunicipalityCode+AssessedValueAmt+CurrentYearTotal+TaxOwingAmountTotalCalculated,data=assessment_final, hidden=20, act.fct = "logistic", linear.output = FALSE)
+plot(nn)
+```
+
+```{r}
+# in progress
+#library(keras)
+#nn_dat <- to_categorical(assessment_final, 10)
+#train_data <- scale(assessment_final)
+
+```
+

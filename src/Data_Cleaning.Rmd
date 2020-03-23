@@ -16,21 +16,18 @@ knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
 library(here)
 library(readxl)
+library(here)
 ```
 
-# Load Data
+## Load Data
 
 ```{r load}
 assessment.1620 <- read.csv(here("data/Assessment", "2016 - 2020 Raw.csv"),header = F)
 col.name <- read_excel(here("data/Assessment", "2020 Only.xlsx"))
-
 colnames(assessment.1620) <- colnames(col.name)
-
 ```
 
-# Data Cleaning
-
-## Select features relevent to MillRate, city around Vancouver, and TaxClass in 01,05,06
+## Filter Data
 ```{r filter}
 municipality.list = c(
   "Burnaby", 
@@ -53,75 +50,167 @@ municipality.list = c(
   "Bowen Island", 
   "Anmore", 
   "Belcarra",
-  "Lions Bay")
-
+  "Lions Bay",
+  "New Westminster")
 
 # Select only relevent features
-assessment.thin <- assessment.1620 %>%
+assessment.thin <- distinct(assessment.1620) %>%
   select(PIC,Year,AssessorAreaCode:AddressAssessorMunicipalityDesc, TaxClassCode:TaxClassTaxRate)%>% 
-  filter(TaxClassCode %in% c("01","05","06"))%>%
-  filter(AddressAssessorMunicipalityDesc %in% municipality.list)
+  filter(TaxClassCode %in% c("01","05","06"),
+         AddressAssessorMunicipalityDesc %in% municipality.list,
+         Year %in% c(2016,2017,2018,2019,2020))
 
+# Overview
 head(assessment.thin)
 dim(assessment.thin)
+str(assessment.thin)
 
+assessment.thin[assessment.thin == "NULL"] <- NA
+assessment.thin$TaxClassTaxRate <- as.numeric(as.character(assessment.thin$TaxClassTaxRate))
 ```
-**TODO: Confirm with Hurry if the list of cities is correct**
 
-## Find Missing Values in Data
+## Missing Value
 ```{r missing}
 # Check Missing Value 
 for (feature in colnames(assessment.thin)){
   variable = eval(parse(text = paste0("assessment.thin$",feature)))
-  null.count = sum(variable == "NULL")
+  null.count = sum(is.na(variable))
   print(paste(feature,null.count, sep = ":"))
 } 
 ```
 
-TaxOwingAmountTotalCalculated has 2229 missing values
-
-TaxClassTaxRate has 3658 missing values 
-
-**TODO: Impute TaxClassTaxRate and TaxOwingAmountTotalCalculated**
-
-
-
-## Check if the Data Structure is same as Hurry's description
-
-### Assumption1: CurrentYearTotal = sum(AssessedValuedAmount)
+## Check if TaxClassTaxRate is constant at same Year, AddressAssessorMunicipalityDesc, TaxClassCode
 ```{r}
-CurrentYearTotal.test <- assessment.thin%>%
-  group_by(PIC, Year, TaxClassCode)%>%
-  summarise(test = sum(AssessedValueAmt))
-
-total.conflict.set <- merge(assessment.thin, CurrentYearTotal.test, by = c("PIC", "Year", "TaxClassCode"))%>%
-  filter(CurrentYearTotal != test)
-
-head(total.conflict.set)
-
-```
-
-Above is the list properties that their CurrentYearTotal != Improvment Assessment + Land Assessment
-
-**TODO: DISCUSSION **
-
-- Is it because of missing rows?
-
-- Otherwise, shoud then be ignored or imputed?
-
-### Assumpetion2: TaxClassTaxRate is constant at same Year, AddressAssessorMunicipalityDesc, TaxClassCode
-```{r}
-
 (TaxClassTaxRate.text <- assessment.thin%>%
-  group_by(Year, AddressAssessorMunicipalityDesc, AssetTypeDesc,TaxClassCode)%>%
-  filter(TaxClassTaxRate != "NULL")%>%
-  summarise(test = var(as.numeric(TaxClassTaxRate)))%>%
-  filter(test !=0))
+   group_by(Year, AddressAssessorMunicipalityDesc,TaxClassCode)%>%
+   filter(!is.na(TaxClassTaxRate))%>%
+   summarise(test = var(as.numeric(as.character(TaxClassTaxRate))))%>%
+   filter(test !=0))
 
-  
+
+Langley <- assessment.thin%>%
+  filter(Year %in% c(2019, 2020),
+         AddressAssessorMunicipalityDesc == "Langley - City",
+         TaxClassCode == "06")
+cat("Langley:")
+table(Langley$TaxClassTaxRate)
+
+Burnaby <- assessment.thin%>%
+  filter(Year == 2019,
+         AddressAssessorMunicipalityDesc == "Burnaby",
+         TaxClassCode == "06")
+cat("Burnaby:")
+table(Burnaby$TaxClassTaxRate)
+
+Vancouver <- assessment.thin%>%
+  filter(Year == 2019,
+         AddressAssessorMunicipalityDesc == "Vancouver",
+         TaxClassCode == "01")
+cat("Vancouver:")
+table(Vancouver$TaxClassTaxRate)
+
+NewWest <- assessment.thin%>%
+  filter(Year == 2019,
+         AddressAssessorMunicipalityDesc == "New Westminster",
+         TaxClassCode == "06")
+cat("New Westminster:")
+table(NewWest$TaxClassTaxRate)
+
 ```
-New finding: TaxClassTaxRate also associates with AssetTypeDesc.
+Langley: TaxClassTaxRate also associates with AssetTypeDesc.-> assign 11.8916 due to client request
+Delta: tax rate also associate with neighborhood -> Take Mean
+Burnaby, Vancovuer and New West: Less that 10 cases are different from others -> Take mode 
 
-Above is the list of blocks that doesn't have a constant TaxClassCode and 90% of them are in Delta. One possible reason is the TaxClassTaxRate associates with neighborhood.
+```{r}
+assessment.rate <- assessment.thin%>%
+  mutate(TaxClassTaxRate = case_when(Year %in% c(2019,2020) &
+                                       AddressAssessorMunicipalityDesc == "Langley - City" &
+                                       TaxClassCode == "06" ~ 11.8916,
+                                       Year ==2019 &
+                                       AddressAssessorMunicipalityDesc == "Burnaby" &
+                                       TaxClassCode == "06" ~ 10.0987,
+                                     Year == 2019 &
+                                       AddressAssessorMunicipalityDesc == "Vancouver" &
+                                       TaxClassCode == "01" ~ 2.56116,
+                                     Year == 2019 &
+                                       AddressAssessorMunicipalityDesc == "New Westminster" &
+                                       TaxClassCode == "06" ~ 14.2158,
+                                     TRUE ~ TaxClassTaxRate))
+Delta <- assessment.rate%>%
+  filter(!is.na(TaxClassTaxRate),
+         AddressAssessorMunicipalityDesc == "Delta")%>%
+  group_by(AddressAssessorMunicipalityDesc, Year, TaxClassCode)%>%
+  summarise(rate = mean(TaxClassTaxRate))
 
-**TODO: DISCUSSION**
+assessment.rate <- merge(assessment.rate, Delta,
+                         by = c("AddressAssessorMunicipalityDesc", "Year", "TaxClassCode"), all = TRUE)%>%
+  mutate(TaxClassTaxRate = case_when(AddressAssessorMunicipalityDesc == "Delta" ~ rate,
+                                     TRUE ~ TaxClassTaxRate))%>%
+  select(-rate)
+
+## Check if there is still inconsistancy
+(TaxClassTaxRate.text2 <- assessment.rate%>%
+    group_by(Year, AddressAssessorMunicipalityDesc,TaxClassCode)%>%
+    filter(!is.na(TaxClassTaxRate))%>%
+    summarise(test = var(TaxClassTaxRate))%>%
+    filter(test !=0))
+```
+## Impute NA in TaxClassTaxRate
+```{r}
+assessment.agg <- assessment.rate%>%
+  group_by(Year, AddressAssessorMunicipalityDesc,TaxClassCode)%>%
+  filter(!is.na(TaxClassTaxRate))%>%
+  summarise(rate = unique(TaxClassTaxRate))
+assessment.impute <- merge(assessment.rate, assessment.agg,
+                           by = c("AddressAssessorMunicipalityDesc", "Year", "TaxClassCode"), all = TRUE)%>%
+  mutate(TaxClassTaxRate = rate)%>%
+  select(-rate)
+
+
+(TaxClassTaxRate.text3 <- assessment.impute%>%
+    group_by(Year, AddressAssessorMunicipalityDesc,TaxClassCode)%>%
+    summarise(test = var(TaxClassTaxRate))%>%
+    filter(test !=0))
+
+# List of region that don't have TaxRate
+(assessment.miss <- assessment.impute%>%
+    filter(is.na(TaxClassTaxRate))%>%
+    group_by(Year, AddressAssessorMunicipalityDesc,TaxClassCode)%>%
+    summarise(propertyCount = length(unique(PIC))))
+
+# Cleaned data table
+assessment.final <- assessment.impute%>%
+  filter(!is.na(TaxClassTaxRate))
+```
+## Aggregate
+```{r}
+## Aggrehate by Year, AddressAssessorMunicipalityDesc,TaxClassCode
+assessment.aggregate <- assessment.final%>%
+  group_by(Year, AddressAssessorMunicipalityDesc,TaxClassCode)%>%
+  summarise(assessTotal = sum(AssessedValueAmt),
+            landTotal = sum(AssessedValueAmt[AssetTypeDesc=="Land"]),
+            improvementTotal = sum(AssessedValueAmt[AssetTypeDesc=="Improvement"]),
+            propertyCount = length(unique(PIC)),
+            rate = unique(TaxClassTaxRate))
+
+## Transform into percentage change
+# assessment.pct <- assessment.aggregate%>%
+#   group_by(AddressAssessorMunicipalityDesc, TaxClassCode)%>%
+#   arrange(Year, .by_group = TRUE) %>%
+#   mutate(assessTotal_pct = (assessTotal/lag(assessTotal) - 1) * 100,
+#          landTotal_pct = (landTotal/lag(landTotal) - 1) * 100,
+#          improvementTotal_pct = (improvementTotal/lag(improvementTotal) - 1) * 100,
+#          propertyCount_pct = (propertyCount/lag(propertyCount) - 1) * 100,
+#          rate_pct = (rate/lag(rate) - 1) * 100)%>%
+#   select(-c(assessTotal,landTotal, improvementTotal, propertyCount, rate))
+```
+## Export Data
+
+```{r}
+write.csv(assessment.final, "../Data/Assessment/assessment_final.csv")
+write.csv(assessment.aggregate%>%
+            filter(Year != 2020), "../Data/assessment_aggregate.csv")
+write.csv(assessment.aggregate%>%
+            filter(Year == 2020), "../Data/assessment_2020.csv")
+# write.csv(assessment.pct, "../Data/assessment_pct.csv")
+```

@@ -1,0 +1,107 @@
+---
+title: "tax"
+author: "Xuechun Lu"
+date: "25/02/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+library(tidyverse)
+library(dplyr)
+library(here)
+library(readxl)
+```
+
+```{r}
+schedule2016<-read_excel(here("data/tax", "schedule706_2016.xls"))
+schedule2017<-read_excel(here("data/tax", "schedule706_2017.xls"))
+schedule2018<-read_excel(here("data/tax", "schedule706_2018.xls"))
+
+colnames(schedule2016) <- schedule2016[1,]
+schedule2016<-schedule2016[-c(1),]
+colnames(schedule2017) <- schedule2017[1,]
+schedule2017<-schedule2017[-c(1),]
+colnames(schedule2018) <- schedule2018[1,]
+schedule2018<-schedule2018[-c(1),]
+
+municipality.list = c(
+  "Burnaby", 
+  "Coquitlam", 
+  "Delta", 
+  "Langley", 
+  #"Langley - Township",
+  "Maple Ridge",
+  #"Maple Ridge Rural", 
+  "North Vancouver",
+  #"North Vancouver - Dist",
+  "Pitt Meadows", 
+  "Port Coquitlam", 
+  "Port Moody", 
+  "Richmond", 
+  "Surrey", 
+  "Vancouver", 
+  "White Rock", 
+  "West Vancouver", 
+  "Bowen Island", 
+  "Anmore", 
+  "Belcarra",
+  "Lions Bay")
+
+tax.2016<-schedule2016 %>% filter(Municipalities %in% municipality.list) %>% 
+  select("Municipalities","Type","Current Year Taxes Collected")
+tax.2017<-schedule2017 %>% filter(Municipalities %in% municipality.list) %>% 
+  select("Municipalities","Type","Current Year Taxes Collected")
+tax.2018<-schedule2018 %>% filter(Municipalities %in% municipality.list) %>% 
+  select("Municipalities","Type","Current Year Taxes Collected")
+
+# rename
+tax.2016[7,1]<-"Langley - City"
+tax.2016[8,1]<-"Langley - Township"
+tax.2016[11,1]<-"North Vancouver - City"
+tax.2016[12,1]<-"North Vancouver - Dist"
+
+tax.2017[7,1]<-"Langley - City"
+tax.2017[8,1]<-"Langley - Township"
+tax.2017[11,1]<-"North Vancouver - City"
+tax.2017[12,1]<-"North Vancouver - Dist"
+
+tax.2018[7,1]<-"Langley - City"
+tax.2018[8,1]<-"Langley - Township"
+tax.2018[11,1]<-"North Vancouver - City"
+tax.2018[12,1]<-"North Vancouver - Dist"
+
+tax.2016<-tax.2016 %>% select("Municipalities","Current Year Taxes Collected")
+tax.2017<-tax.2017 %>% select("Municipalities","Current Year Taxes Collected")
+tax.2018<-tax.2018 %>% select("Municipalities","Current Year Taxes Collected")
+
+names(tax.2016)[2]<-paste("2016")
+names(tax.2017)[2]<-paste("2017")
+names(tax.2018)[2]<-paste("2018")
+tax.full<-tax.2016 %>% left_join(tax.2017, by = "Municipalities") %>% 
+   left_join(tax.2018, by = "Municipalities")
+
+# convert chr to numeric
+tax.full[,2]<-as.numeric(tax.full$`2016`)
+tax.full[,3]<-as.numeric(tax.full$`2017`)
+tax.full[,4]<-as.numeric(tax.full$`2018`)
+
+# compute percentage change
+
+Municipalities<-tax.full$Municipalities
+pct_2017<-(tax.full$`2017`-tax.full$`2016`)/tax.full$`2016`*100
+pct_2018<-tax.pct[,3]<-(tax.full$`2018`-tax.full$`2017`)/tax.full$`2017`*100
+tax.pct<-data.frame(Municipalities,pct_2017,pct_2018)
+
+write.csv(tax.full, here("data","tax_final.csv"))
+write.csv(tax.pct, here("data","tax_pct.csv"))
+```
+
+Note: 
+- tax.full contains tax from 2016-2018 for 20 municipalities
+- tax.pct contains percentage change of tax from 2017-2018.

@@ -1,0 +1,56 @@
+---
+title: "draft"
+author: "Xuechun Lu"
+date: "25/02/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+```{r}
+library(tidyverse)
+library(dplyr)
+library(here)
+library(readxl)
+```
+
+1. read the data and aggregate them
+```{r}
+tax_pct<-read_csv(here("data", "tax_pct.csv"))
+assessment_pct<-read_csv(here("data", "assessment_pct.csv"))
+# omit 2016
+assessment_pct<-na.omit(assessment_pct)
+assessment_pct<-assessment_pct[,-c(1)]
+names(assessment_pct)[2]<-paste("Municipalities")
+tax_pct<-tax_pct[,-c(1)]
+
+```
+Note: tax_pct doesn't have Maple Ridge Rural. We decide to treat Maple Ridge Rural and Maple Ridge with the same tax. 
+
+
+```{r}
+assessment2017<-assessment_pct  %>%  filter(Year=="2017")
+tax2017<-tax_pct[,1:2]
+assessment2017<-assessment2017 %>% left_join(tax2017, by = c("Municipalities"))
+names(assessment2017)[9]<-paste("tax")
+
+assessment2018<-assessment_pct  %>%  filter(Year=="2018")
+tax2018<-tax_pct[,c(1,3)]
+assessment2018<-assessment2018 %>% left_join(tax2018, by = c("Municipalities"))
+names(assessment2018)[9]<-paste("tax")
+
+assessment2019<-assessment_pct  %>%  filter(Year=="2019")
+
+data_final<-assessment2017 %>% full_join(assessment2018) %>% full_join(assessment2019)
+write.csv(data_final, here("data","data_final.csv"))
+```
+
+2. plots
+```{r}
+
+```
+
+

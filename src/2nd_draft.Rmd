@@ -78,6 +78,8 @@ Before any prediction on the future mill rate of Metro Vancouver’s real estate
 
 Mill rate was mainly affected by assessment, so scatter plots of mill rate vs. total, land, and improvement assessment were created to see the correlation between each pair of the two factors. Kruskal Wallis analysis was also performed to see the correlation between mill rate vs. tax class and mill rate vs. municipality. 
 
+Refer to **Reference** for more information on the Kruskal Wallis Test.
+
 
 
 ### Measure of goodness of fit and prediction power
@@ -252,7 +254,6 @@ Mill Rate across Tax Class | < 2.2e-16
 
 
 The p-values in Table 1 support that there is nonidentical distributions of mill rates across municipalities and tax classes.
-Refer to **Reference** for more information on the Kruskal Wallis Test.
 
 
 

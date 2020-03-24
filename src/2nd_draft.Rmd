@@ -89,7 +89,7 @@ In this study,  linear models were built and the performance of each model was e
 
  - **Prediction power** measures how well models can predict future values. Mean squared prediction power was used to compare the prediction performance across all of our fitted linear predictive models. Prior to examine the prediction power, the data set was divided into training data - used to build our models, and testing data - used to evaluate the prediction power of our models. MSPE (Mean Squared Predction Error) on testing set is used to measure the prediction power in this study. 
  
-Refer to **Appendix** for forumlas of MSE and MSPE.
+Refer to **Reference** for forumlas of MSE and MSPE.
 
 
 ### Ordinary Linear models
@@ -100,7 +100,7 @@ The full linear model (*ORL full*) was built first. TaxClassCode, Municipalities
 ### Ridge and Lasso
 
 
-Other than ordinary linear regressions, we are also interested in the performance of more advanced linear regressions like *Ridge* and *Lasso*. *Ridge* and *Lasso* have a different objective function to optimize; they take a penalty in the sum of absolute values and sum of squared absolute values of weights respectively. These models have an interesting characteristic, that is, a weight is assigned to each feature. This might be relevant to our study as the mill rate can be affected by each feature to a different extent. Also, another advantage of these models is that MSPE is more stable as the variance of MSPE is reduced. For more detials about the two models, please refer to **Appendix**.
+Other than ordinary linear regressions, we are also interested in the performance of more advanced linear regressions like *Ridge* and *Lasso*. *Ridge* and *Lasso* have a different objective function to optimize; they take a penalty in the sum of absolute values and sum of squared absolute values of weights respectively. These models have an interesting characteristic, that is, a weight is assigned to each feature. This might be relevant to our study as the mill rate can be affected by each feature to a different extent. Also, another advantage of these models is that MSPE is more stable as the variance of MSPE is reduced. For more detials about the two models, please refer to **Reference**.
 
 
 ### Cross Validation
@@ -108,7 +108,7 @@ Other than ordinary linear regressions, we are also interested in the performanc
 
 To examine the goodness of fit and prediction power, a 50-run of 10-fold cross-validation was performed in this study. For each run, a 10-fold cross-validation was used to train the five models and make predictions on training and testing data respectively. Then, the MSEs calculated from the training data and MSPEs calculated from the testing data were stored in vectors of corresponding models. 
 
-After the 50 runs, a vector of MSEs and a vector of MSPEs for each model were therefore constructed successfully. Based on these vectors, side-by-side boxplots were used to show the mean and the spread of MSE and MSPE across all models respectively. For more details about cross-validation, please refer to **Appendix**.
+After the 50 runs, a vector of MSEs and a vector of MSPEs for each model were therefore constructed successfully. Based on these vectors, side-by-side boxplots were used to show the mean and the spread of MSE and MSPE across all models respectively. For more details about cross-validation, please refer to **Reference**.
 
 \pagebreak
 
@@ -252,6 +252,8 @@ Mill Rate across Tax Class | < 2.2e-16
 
 
 The p-values in Table 1 support that there is nonidentical distributions of mill rates across municipalities and tax classes.
+Refer to **Reference** for more information on the Kruskal Wallis Test.
+
 
 
 ```{r, echo=FALSE, results='hide'}
@@ -520,3 +522,6 @@ https://web.stanford.edu/class/stats202/content/lec14-cond.pdf
 
 Cross Validation:
 https://github.com/msalibian/STAT406/tree/master/Lecture2
+
+Kruskal Wallis:
+http://www.biostathandbook.com/kruskalwallis.html

@@ -130,7 +130,9 @@ assessment_2020 <- read.csv(here("data","assessment_2020.csv"))[,-1]
 
 
 
-Since the mill rate is mainly affected by the total assessment, which is the sum of total land assessment and total improvement assessment, scatter plots between mill rate and all kinds of assessment among different municipalities are created to show the relationship in Figure 1, Figure 2, Figure 3. Each color in the figures belongs to three tax classes of one municipality.
+Since the mill rate is mainly affected by the total assessment, which is the sum of total land assessment and total improvement assessment, scatter plots between mill rate and total assessment among different municipalities is created to show the relationship in Figure 1. Each color in the figure belongs to three tax classes of one municipality.
+
+Scatter plots between mill rate and total land assessment, mill rate and total improvement assessment are similar to Figure 1. For more details about them, please refer to **Appendix**.
 
 
 
@@ -162,31 +164,13 @@ assessment_eda %>%
    ggtitle(sprintf("Figure 1: Mill Rate vs Total Assessment")) + 
    geom_smooth(aes(group = 1), size = 0.5, method = "glm", se = FALSE, colour = "black") +
    theme(plot.background = element_rect(fill = "darkgrey"), legend.key.size = unit(0.2, "cm"))
-
-assessment_eda %>%
-   ggplot(aes(x=`Total Land Assessment`,
-              y=`Mill Rate`,group=Municipality,
-              color=Municipality)) + 
-   geom_point() + 
-   ggtitle(sprintf("Figure 2: Mill Rate vs Total Land Assessment")) + 
-   geom_smooth(aes(group = 1), size = 0.5, method = "glm", se = FALSE, colour = "black") +
-   theme(plot.background = element_rect(fill = "darkgrey"), legend.key.size = unit(0.2, "cm"))
-
-assessment_eda %>%
-   ggplot(aes(x=`Total Improvement Assessment`,
-              y=`Mill Rate`,group=Municipality,
-              color=Municipality)) + 
-   geom_point() + 
-   ggtitle(sprintf("Figure 3: Mill Rate vs Total Improvement Assessment")) + 
-   geom_smooth(aes(group = 1), size = 0.5, method = "glm", se = FALSE, colour = "black") +
-   theme(plot.background = element_rect(fill = "darkgrey"), legend.key.size = unit(0.2, "cm"))
 ```
 
 
 
-There is no clear trend between the mill rate and any kind of assessment. Plots have shown that most points are condensed on the left horizontal axis since some municipalities have larger assessment values than others.
+There is no clear trend between the mill rate and total assessment. Plot has shown that most points are condensed on the left horizontal axis since some municipalities have larger assessment values than others. 
 
-To reduce the effect of large assessment in some municipalities, total assessment across all municipalities is transformed by taking total assessment dividing by the number of properties of each municipality and tax class. The transformed data is named **"Average Total Assessment"**. A scatter plot between mill rates and average total assessments is shown in Figure 4.
+To reduce the effect of large assessment in some municipalities, total assessment across all municipalities is transformed by taking total assessment dividing by the number of properties of each municipality and tax class. The transformed data is named **"Average Total Assessment"**. A scatter plot between mill rates and average total assessments is shown in Figure 2.
 
 
 
@@ -196,19 +180,19 @@ assessment_eda %>%
             y=`Mill Rate`,group=Municipality,
             color=Municipality)) + 
  geom_point() + 
- ggtitle(sprintf("Figure 4: Mill rate v.s. Average Total Assessment")) + 
+ ggtitle(sprintf("Figure 2: Mill rate v.s. Average Total Assessment")) + 
  geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black") +
 theme(plot.background = element_rect(fill = "darkgrey"), legend.key.size = unit(0.2, "cm"))
 ```
 
 
-The plot from Figure 4 has shown that the mill rate tends to decrease as the average total assessment increase. Also, they have a moderately strong linear correlation. 
+The plot from Figure 2 has shown that the mill rate tends to decrease as the average total assessment increase. Also, they have a moderately strong linear correlation. 
 
 
 #### - Categorical Variables
 
 
-Here categorical variables are taken into account, boxplots of mill rate across municipalities and tax classes are plotted to display the distributions in Figure 5 and Figure 6.
+Here categorical variables are taken into account, boxplots of mill rate across municipalities and tax classes are plotted to display the distributions in Figure 3 and Figure 4.
 
 
 
@@ -219,7 +203,7 @@ assessment_eda %>%
      ggplot(aes(x=Municipality,
                 y=`Mill Rate`,fill=Municipality)) + 
      geom_boxplot() + 
-     ggtitle(sprintf("Figure 5: Mill rate across Municipalities")) +
+     ggtitle(sprintf("Figure 3: Mill rate across Municipalities")) +
      theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none")
 ```
 
@@ -228,7 +212,7 @@ assessment_eda %>%
      ggplot(aes(x=as.factor(`Tax Class`),
                 y=`Mill Rate`,fill=`Tax Class`)) + 
      geom_boxplot() + 
-     ggtitle(sprintf("Figure 6: Mill rate across Tax Classes")) +
+     ggtitle(sprintf("Figure 4: Mill rate across Tax Classes")) +
      theme(legend.position = "none") +
      labs(x="Tax Class") +
      scale_x_discrete(labels=c("1", "5", "6"))
@@ -236,9 +220,9 @@ assessment_eda %>%
 
 
 
-Figure 5 shows that most municipalities have different mean and variance in terms of mill rates.
+Figure 3 shows that most municipalities have different mean and variance in terms of mill rates.
 
-Figure 6 also supports that there is unequal mean and variance across tax classes.
+Figure 4 also supports that there is unequal mean and variance across tax classes.
 
 A statistical test called the Kruskal-Wallis Test was performed to test their distribution. It was used to decide if population distributions were identical, and the corresponding p-value which is smaller than 0.05 indicated that the data have nonidentical distributions.
 
@@ -274,7 +258,7 @@ kruskal.test(assessment_transform$rate~assessment_transform$AddressAssessorMunic
 Below is a comparison of the five models (*Lasso*, *Ridge*, *OLR transformed*, *OLR full* and *OLR null*) using the goodness of fit and prediction power. The goodness of fit was measured by MSE of the training data, whereas prediction power was measured by MSPE of the testing data. Generally, smaller MSEs and MSPEs indicate better fit and prediction power respectively.
 
 
-The distributions of the goodness of fit and prediction power across models are displayed in Figure 7 and Figure 8, respectively, the distribution of null model is removed since it has larger values compared to all other models.
+The distributions of the goodness of fit and prediction power across models are displayed in Figure 5 and Figure 6, respectively, the distribution of null model is removed since it has larger values compared to all other models.
 
 
 The distributions of MSPE across models are also displayed in Table 2.
@@ -379,7 +363,7 @@ boxplot(mspe1.la,
         cex.axis = 1, 
         cex.lab = 1, 
         cex.main = 1,
-        main = " Figure 7: Goodness of Fit",
+        main = " Figure 5: Goodness of Fit",
         ylab = expression(hat(MSE)))
 
 boxplot(mspe.la, 
@@ -397,7 +381,7 @@ boxplot(mspe.la,
         cex.axis = 1, 
         cex.lab = 1, 
         cex.main = 1,
-        main = "Figure 8: Prediction Power",
+        main = "Figure 6: Prediction Power",
         ylab = expression(hat(MSPE)))
 ```
 
@@ -459,6 +443,39 @@ From the exploratory data analysis, we have found that Total Assessments contain
 
 
 ## Appendix
+
+
+### Scatter plots: 
+
+
+#### - mill rate v.s. total land assessment
+
+
+```{r, echo=FALSE}
+assessment_eda %>%
+   ggplot(aes(x=`Total Land Assessment`,
+              y=`Mill Rate`,group=Municipality,
+              color=Municipality)) + 
+   geom_point() + 
+   ggtitle(sprintf("Figure 7: Mill Rate vs Total Land Assessment")) + 
+   geom_smooth(aes(group = 1), size = 0.5, method = "glm", se = FALSE, colour = "black") +
+   theme(plot.background = element_rect(fill = "darkgrey"), legend.key.size = unit(0.2, "cm"))
+```
+
+
+#### - mill rate v.s. total improvement assessment
+
+
+```{r, echo=FALSE}
+assessment_eda %>%
+   ggplot(aes(x=`Total Improvement Assessment`,
+              y=`Mill Rate`,group=Municipality,
+              color=Municipality)) + 
+   geom_point() + 
+   ggtitle(sprintf("Figure 8: Mill Rate vs Total Improvement Assessment")) + 
+   geom_smooth(aes(group = 1), size = 0.5, method = "glm", se = FALSE, colour = "black") +
+   theme(plot.background = element_rect(fill = "darkgrey"), legend.key.size = unit(0.2, "cm"))
+```
 
 
 ### Missing Value:

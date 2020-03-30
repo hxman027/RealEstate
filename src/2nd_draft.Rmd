@@ -87,9 +87,9 @@ Refer to **Reference** for more information on the Kruskal Wallis Test.
 
 In this study,  linear models were built and the performance of each model was evaluated by the goodness of fit and prediction power, that is, how well the model explains the data and how well it can predict future values. The definition of the goodness of fit and prediction power is given below.
 
- - **Goodness of fit** is defined as the extent to which the sample data are consistent with the model, which examines how well the model explains the data. MSE (Mean Squared Error) is a measure of goodness of fit and a smaller MSE indicates better goodness of fit. 
+ - **Goodness of fit** is defined as the extent to which the sample data are consistent with the model, which examines how well the model explains the data. MSPE (Mean Squared Prediction Error) on training sets is a measure of goodness of fit and a smaller MSPE indicates better goodness of fit. 
 
- - **Prediction power** measures how well models can predict future values. Mean squared prediction power was used to compare the prediction performance across all of our fitted linear predictive models. Prior to examine the prediction power, the data set was divided into training data - used to build our models, and testing data - used to evaluate the prediction power of our models. MSPE (Mean Squared Predction Error) on testing set is used to measure the prediction power in this study. 
+ - **Prediction power** measures how well models can predict future values. Mean squared prediction power was used to compare the prediction performance across all of our fitted linear predictive models. Prior to examine the prediction power, the data set was divided into training data - used to build our models, and testing data - used to evaluate the prediction power of our models. MSPE (Mean Squared Predction Error) on testing sets is used to measure the prediction power in this study. 
  
 Refer to **Reference** for forumlas of MSE and MSPE.
 
@@ -102,7 +102,9 @@ The full linear model (*ORL full*) was built first. TaxClassCode, Municipalities
 ### Ridge and Lasso
 
 
-Other than ordinary linear regressions, we are also interested in the performance of more advanced linear regressions like *Ridge* and *Lasso*. *Ridge* and *Lasso* have a different objective function to optimize; they take a penalty in the sum of absolute values and sum of squared absolute values of weights respectively. These models have an interesting characteristic, that is, a weight is assigned to each feature. This might be relevant to our study as the mill rate can be affected by each feature to a different extent. Also, another advantage of these models is that MSPE is more stable as the variance of MSPE is reduced. For more detials about the two models, please refer to **Reference**.
+Other than ordinary linear regressions, we are also interested in the performance of more advanced linear regressions like *Ridge* and *Lasso*. *Ridge* and *Lasso* have a different objective function to optimize; they take a penalty in the sum of absolute values and sum of squared absolute values of weights respectively. A reason to consider Ridge Regression is that it helps deal with multicollinearity of the explanatory variables. This might be relevant to our study as some features used in this study are correlated. Lasso Regression is also included in this study because it does variable selections automatically by imposing a constraint on model parameters that causes some regression coefficients to shrink to zero.
+
+Also, another advantage of these models is that MSPE is more stable as the variance of MSPE is reduced. For more detials about the two models, please refer to **Reference**.
 
 
 ### Cross Validation
@@ -364,7 +366,7 @@ boxplot(mspe1.la,
         cex.lab = 1, 
         cex.main = 1,
         main = " Figure 5: Goodness of Fit",
-        ylab = expression(hat(MSE)))
+        ylab = expression(hat(MSPE)))
 
 boxplot(mspe.la, 
         mspe.ri,
@@ -397,7 +399,7 @@ Ridge Regression for Full Model | 5.53 | 5.88 | 6.39 |
 
 
 
-As for goodness of fit, *Lasso*, *Ridge*, and *OLR transformed* have similar performance; MSEs across these models were around 4.6, but *OLR transformed* performed slightly better and had a smaller spread (variance) of MSE. *OLR full* performed worse than the other three, around 5.4, and *OLR null* had the greatest MSE, around 35.   
+As for goodness of fit, *Lasso*, *Ridge*, and *OLR transformed* have similar performance; MSPEs across these models were around 4.6, but *OLR transformed* performed slightly better and had a smaller spread (variance) of MSPE. *OLR full* performed worse than the other three, around 5.4, and *OLR null* had the greatest MSPE, around 35.   
 
 
 Similarly, as for prediction power, *Lasso*, *Ridge*, and *OLR transformed* performed roughly the same; MSPEs across these models were close to 6. *OLR full* was worse with MSPE around 6.9. *OLR Null* performed the worst with MSPE over 35.

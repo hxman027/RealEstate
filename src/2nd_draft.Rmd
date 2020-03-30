@@ -80,6 +80,14 @@ Mill rate was mainly affected by assessment, so scatter plots of mill rate vs. t
 
 Refer to **Reference** for more information on the Kruskal Wallis Test.
 
+### Assumption of Linear Regression
+Models used in this study are mainly linear regressions. Before model construction, it is important to test the two assumptions of linear regression, i.e. normality of data and equal variance across groups for each categorical variables. If the two assumptions are satisfied, then the test results can be trusted. 
+
+A histogram of Mill Rate and Normal Q-Q Plot were used to test the normality assumption. If the data is normally distributed, the histogram would be symmetric with peak in the middle and decreasing frequency as approaching the two tails and the data in the Normal Q-Q Plot would mostly fall on a 45 degree line. 
+
+
+Fligner-Killeen Test was used to test the homogeneity of variances. The test does not rely on the assumption of normality and thus it is more robust to non-normal data. We applied the test to each categorical variable to test if there is a equal variance aross all sub-groups in each variable. If p-value is less than 5\% for one categorical variable, then at 5\% significane level, there is a significant difference of variance aross groups for that variable. 
+
 
 
 ### Measure of goodness of fit and prediction power
@@ -248,6 +256,39 @@ The p-values in Table 1 support that there is nonidentical distributions of mill
 kruskal.test(assessment_transform$rate~assessment_transform$TaxClassCode,data=assessment_transform)
 kruskal.test(assessment_transform$rate~assessment_transform$AddressAssessorMunicipalityDesc,data=assessment_transform)
 ```
+#### Assumptions of Linear Regression
+
+1. Normality Assumption
+
+```{r,echo=F, warning=F}
+hist(assessment_transform$rate, main = "Figure 5: Histogram of rate", xlab="Mill Rate")
+qqnorm(assessment_transform$rate, main = "Figure 6: Normal Q-Q Plot of rate", ylab = "Mill Rate")
+
+```
+Figure 5 exhibits the distribution of mill rates and it is observed that rate is not normal and it has heavy tails on both ends, especially on the left hand side.
+
+Figure 6 shows that most of data do not fall on the 45 degree line and curve away from the line at each end in opposite directions due to the “heavy tails” at the each end of the histogram. This, again, verifies that rate is not normally distributed. 
+
+2. Equal variance
+
+```{r, echo=F, results='hide'}
+attach(assessment_transform)
+fligner.test(rate~Year) # p-value = 0.004907
+fligner.test(rate~TaxClassCode) # p-value < 2.2e-16
+fligner.test(rate~AddressAssessorMunicipalityDesc) # p-value = 0.1299
+```
+
+        Table 2: Fligner Killeen Test of Mill Rate across Municipality, Tax Class and Year
+
+Distribution  | p-value
+------|--------
+Mill Rate across Municipality | 0.1299
+Mill Rate across Tax Class | < 2.2e-16
+Mill Rate across Year | 0.004907
+
+Table 2 shows a non-significant difference between the group variances of Municipality, but a significant difference of variances in Year and Tax Class since p-values for Tax Class and Year are less than 5\%. Therefore, the equal variance assumption is not satisfied for Tax Class and Year. This finding is also consistent with Figure 4 where it is clear that variance (spread) is not identical across all three tax classes.
+
+Hence, assumptions of linear regression are not met in this study. This means the test results, for example, t-statisitcs and p-values, are biased and thus cannot be trusted. Since this study only focuses on prediction accuracy, the failure of linear regression assumptions might not matter much. 
 
 
 
@@ -263,7 +304,7 @@ Below is a comparison of the five models (*Lasso*, *Ridge*, *OLR transformed*, *
 The distributions of the goodness of fit and prediction power across models are displayed in Figure 5 and Figure 6, respectively, the distribution of null model is removed since it has larger values compared to all other models.
 
 
-The distributions of MSPE across models are also displayed in Table 2.
+The distributions of MSPE across models are also displayed in Table 3.
 
 
 ```{r, warning=FALSE, echo=FALSE}
@@ -365,7 +406,7 @@ boxplot(mspe1.la,
         cex.axis = 1, 
         cex.lab = 1, 
         cex.main = 1,
-        main = " Figure 5: Goodness of Fit",
+        main = " Figure 7: Goodness of Fit",
         ylab = expression(hat(MSPE)))
 
 boxplot(mspe.la, 
@@ -383,11 +424,11 @@ boxplot(mspe.la,
         cex.axis = 1, 
         cex.lab = 1, 
         cex.main = 1,
-        main = "Figure 6: Prediction Power",
+        main = "Figure 8: Prediction Power",
         ylab = expression(hat(MSPE)))
 ```
 
-                    Table 2: Prediction Power of All Models
+                    Table 3: Prediction Power of All Models
 
 Model | PMSE:Min | PMSE:Mean | PMSE:Max
 -----|-----|-----|-----|

@@ -457,6 +457,8 @@ From the exploratory data analysis, we have found that Total Assessments contain
 
 *Transformed OLR*, *Ridge Regression*, and *LASSO* were able to make good predictions based on mean squared prediction error on the training sets and test sets from cross-validation. Since the client prefers a simpler model, we choose the *transformed model* to make our 2020 prediction.  
 
+For predicted mill rate in 2020, please refer to **Appendix** Table 4.
+
 
 \pagebreak
 
@@ -498,6 +500,41 @@ assessment_eda %>%
 ```
 
 
+### 2020 Mill Rate prediction
+
+```{r, echo=FALSE, warning=FALSE}
+mill_rate_pre_2020 <- read.csv(here("data","assessment_2020_fit.csv"))[,-c(1,2,5)]
+```
+
+
+                Table 4: Predicted Mill Rate in 2020 based on transformed model (%)
+
+Municipality | Residential (%) | Light industry (%) | Business (%)                      
+------|------|------|------
+Anmore | 0.98 | NA | 9.91
+Belcarra | 1.19 | NA | 12.31
+Bowen Island | 1.63 | 14.69 | 11.15
+Burnaby | -2.76 | 12.80 | 10.88
+Coquitlam | 1.72 | 17.70 | 12.84
+Delta | 5.50 | 12.98 | 13.65
+Langley - City | 1.73 | 15.12 | 12.25
+Langley - Township | 3.77 | 12.46 | 12.49
+Lions Bay | 2.19 | NA | 11.66
+Maple Ridge | 5.11 | 16.88 | 13.60
+New Westminster | 4.65 | 18.04 | 15.78
+North Vancouver - City | -2.17 | 15.51 | 11.90
+North Vancouver - Dist | 1.29 | 13.68 | 11.82
+Pitt Meadows | 6.06 | 17.00 | 13.78
+Port Coquitlam | 4.91 | 17.58 | 14.50
+Port Moody | 4.16 | 17.66 | 13.44
+Richmond | 1.14 | 10.42 | 10.29
+Surrey | 0.82 | 12.47 | 10.53
+Vancouver | 2.69 | 12.38 | 8.79
+West Vancouver | 4.92 | 17.05 | 12.62
+White Rock | 1.88 | 16.33 | 12.17
+
+
+
 ### Missing Value:
 
 There are 1801 missing values in mill rate(TaxClassTaxRate). We decided to impute these missing values
@@ -524,7 +561,7 @@ Some groups' mill rate is not unique:
 
 - In some groups, all entries' mill rates are missing. Entries in these groups are removed. Here is the list of the groups:
 
-                    Table 4: Data with missing mill rate
+                          Table 5: Data with missing mill rate
 
 Year  | Region | Class |Number of Properties
 ------|--------|-------|----------

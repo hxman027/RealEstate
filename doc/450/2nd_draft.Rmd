@@ -444,7 +444,7 @@ b <- assessment_2020.agg%>%
   select(-c(assessTotal : propertyCount, AvgTotalAssessmentValue))%>%
   mutate(TaxClassCode = as.factor(paste0("0",TaxClassCode)))
 
-write.csv(b, "../Data/assessment_2020_fit.csv")
+write.csv(b, "../../Data/assessment_2020_fit.csv")
 ``` 
 
 

@@ -1,7 +1,7 @@
 ---
 title: 'STAT 450 Project: Real Estate'
-author: "Xuechun Lu, Yuting Wen, Peter Han, Yuetong Liu"
-date: "15/03/2020"
+author: "Peter Han, Xuechun Lu, Yuetong Liu, Yuting Wen"
+date: "30/03/2020"
 output:
   pdf_document
 ---
@@ -379,7 +379,7 @@ Model | PMSE:Min | PMSE:Mean | PMSE:Max
 Full Model | 5.23 | 5.43 | 5.52 |
 Transformed Model | 4.45 | 4.59 | 4.64 |
 Null Model | 36.33 | 36.52 | 36.64 |
-The Lasso for Full Model | 4.52 | 4.63 | 4.73 |
+Lasso for Full Model | 4.52 | 4.63 | 4.73 |
 Ridge Regression for Full Model | 4.50 | 4.63 | 4.72 |
 
 
@@ -412,7 +412,7 @@ Model | PMSE:Min | PMSE:Mean | PMSE:Max
 Full Model | 6.50 | 6.97 | 7.59 |
 Transformed Model | 5.60 | 5.92 | 6.51 |
 Null Model | 36.67 | 36.87 | 37.26 |
-The Lasso for Full Model | 5.58 | 5.91 | 6.40 |
+Lasso for Full Model | 5.58 | 5.91 | 6.40 |
 Ridge Regression for Full Model | 5.53 | 5.88 | 6.39 |
 
 

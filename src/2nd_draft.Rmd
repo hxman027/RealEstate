@@ -90,7 +90,7 @@ Prior to examine the goodness of fit and prediction power, the dataset was divid
 
  - **Goodness of fit** is defined as the extent to which the sample data are consistent with the model, which examines how well the model explains the data. MSPE (Mean Squared Prediction Error) on training sets is a measure of goodness of fit and a smaller MSPE indicates better goodness of fit. 
 
- - **Prediction power** measures how well models can predict future values. Mean squared prediction power is used to compare the prediction performance across all of our fitted linear predictive models.  MSPE (Mean Squared Predction Error) on test sets is used to measure the prediction power in this study and a smaller MSPE indicates better prediction power. 
+ - **Prediction power** measures how well models can predict future values. Mean squared prediction power is used to compare the prediction performance across all of our fitted linear predictive models.  MSPE (Mean Squared Prediction Error) on test sets is used to measure the prediction power in this study and a smaller MSPE indicates better prediction power. 
  
 Refer to **Reference** for forumlas of MSPE.
 
@@ -106,7 +106,7 @@ The full linear model (*ORL full*) was built first. TaxClassCode, Municipalities
 
 Other than ordinary linear regressions, we are also interested in the performance of more advanced linear regressions like *Ridge* and *Lasso*. *Ridge* and *Lasso* have different objective functions to optimize; they take penalties in the sum of absolute values and sum of squared absolute values of weights respectively. A reason to consider Ridge Regression is that it helps deal with multicollinearity of the explanatory variables. This might be relevant to our study as some features used in this study are correlated (assessTotal, landTotal and improvementTotal). Lasso Regression is also included in this study because it does variable selections automatically by imposing a constraint on model parameters that may possibably causes some regression coefficients to shrink to zero.
 
-Also, another advantage of these models is that they help reduce the variance of MSPE, so that MSPE is more stable. For more detials about the two models, please refer to **Reference**.
+Also, another advantage of these models is that they help reduce the variance of MSPE, so that MSPE is more stable. For more details about the two models, please refer to **Reference**.
 
 
 ### Cross Validation
@@ -243,7 +243,7 @@ Mill Rate across Municipality | 0.00675
 Mill Rate across Tax Class | < 2.2e-16
 
 
-The p-values in Table 1 have supported that there is nonidentical distributions of mill rates across municipalities and tax classes.
+The p-values in Table 1 have supported that there are nonidentical distributions of mill rates across municipalities and tax classes.
 
 
 

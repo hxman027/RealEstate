@@ -1,5 +1,6 @@
-# exclude everything in data folder except README
+# exclude everything in data folder except README and test/train data
 data/*
 !data/README.md
+!data/test_train_data.txt
 .Rproj.user
 .Rhistory

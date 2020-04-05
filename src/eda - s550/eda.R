@@ -186,11 +186,15 @@ ggsave("RealEstate/src/eda - s550/plots/4. scatter average year.png")
     dplyr::filter(!is.na(total.assessment), !is.na(mill.rate), year == 2020) %>% 
     dplyr::group_by(PIC, tax.class) %>% 
     dplyr::summarise(total.assessment = mean(total.assessment), mill.rate = mean(mill.rate)) %>% 
-    ggplot(aes(x = tax.class, y = log(mill.rate))) +
-    geom_violin() +
+    ggplot(aes(x = tax.class, y = log(mill.rate), fill = tax.class)) +
+    geom_violin(alpha = 0.5, width = 1) +
+    geom_boxplot(alpha = 0.75, width = 0.1) +
     labs(x = "tax class",
          y = "log mill rate",
-         title = "Mill rates accross tax classes")
+         title = "Mill rates accross tax classes") +
+    #scale_fill_viridis_d(begin=0, end=1) +
+    scale_fill_manual(values = c("#3E4A89FF", "#26828EFF","#B4DE2CFF" )) +
+    theme(legend.position = "none")
   ggsave("RealEstate/src/eda - s550/plots/7. violin mill rates.pdf")
   ggsave("RealEstate/src/eda - s550/plots/7. violin mill rates.png")
   
@@ -207,6 +211,22 @@ ggsave("RealEstate/src/eda - s550/plots/4. scatter average year.png")
          title = "Mill rates accross tax classes")
   ggsave("RealEstate/src/eda - s550/plots/8. boxplot mill rates.pdf")
   ggsave("RealEstate/src/eda - s550/plots/8. boxplot mill rates.png")
+  
+# export data set
+set.seed(2303)
+train <- re %>% 
+  dplyr::select(PIC) %>% 
+  dplyr::distinct() %>% 
+  dplyr::sample_frac(0.75) %>% 
+  dplyr::pull()
+
+re.out <- re %>% 
+  dplyr::mutate(test.train = ifelse(PIC %in% train, "train", "test"))
+
+readr::write_delim(re.out, "test_train_data.txt", delim = ",")
+# read for test
+dataset <- readr::read_delim("test_train_data.txt", delim = ",",
+                             col_types = "ciccdddddc")
 
 ## S450 data ####
 re.450 <- read_csv("RealEstate/data/assessment_aggregate.csv")

@@ -1,0 +1,33 @@
+---
+title: "random forest"
+output: github_document
+---
+
+```{r}
+suppressPackageStartupMessages(library(randomForest))
+suppressPackageStartupMessages(library(tidyverse))
+```
+
+```{r}
+dat <- readr::read_delim("test_train_data.txt", delim = ",", col_types = "ciccdddddc")
+dat <- dat %>% 
+  mutate(next.assess = lead(total.assessment, order_by = year)) %>%
+  arrange(year)
+train1 <- dat %>%  filter(test.train == "train" & tax.class == "01") 
+test1 <- dat %>%  filter(test.train == "test" & tax.class == "01")
+train5 <- dat %>%  filter(test.train == "train" & tax.class == "05")
+test5 <- dat %>%  filter(test.train == "test" & tax.class == "05")
+train6 <- dat %>%  filter(test.train == "train" & tax.class == "06")
+test6 <- dat %>%  filter(test.train == "test" & tax.class == "06")
+```
+
+```{r}
+rf1.mill <- randomForest(
+  mill.rate ~ tax + municipality + total.assessment + year,
+  data=na.omit(train1)
+)
+```
+
+
+
+

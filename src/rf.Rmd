@@ -10,9 +10,10 @@ suppressPackageStartupMessages(library(tidyverse))
 
 ```{r}
 dat <- readr::read_delim("test_train_data.txt", delim = ",", col_types = "ciccdddddc")
-dat <- dat %>% 
+dat <- dat %>% group_by(PIC) %>% 
   mutate(next.assess = lead(total.assessment, order_by = year)) %>%
-  arrange(year)
+  arrange(PIC)
+filter(dat, PIC == "CA-BC-003-6500000")
 train1 <- dat %>%  filter(test.train == "train" & tax.class == "01") 
 test1 <- dat %>%  filter(test.train == "test" & tax.class == "01")
 train5 <- dat %>%  filter(test.train == "train" & tax.class == "05")

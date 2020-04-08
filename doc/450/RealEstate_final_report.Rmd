@@ -1,0 +1,634 @@
+---
+title: 'STAT 450 Project: Real Estate'
+author: "Peter Han, Xuechun Lu, Yuetong Liu, Yuting Wen"
+date: "07/04/2020"
+output: 
+  rmarkdown::pdf_document:
+    fig_caption: yes        
+    includes:  
+      in_header: my_header.tex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, message=F, warning=F, echo=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(here)
+library(readxl)
+library(broom)
+library(glmnet)
+library(dummies)
+library(scales)
+set.seed(123)
+```
+
+
+## Summary
+
+
+The main objective of our project is to accurately predict future mill rate (property tax) in metro Vancouver for the following 3 property tax classes: Tax class 1: Residential, Tax class 5: Light industry and Tax class 6: Business and other. Data cleaning, exploratory data analysis are used in this project to analyze the relationship between mill rate and other factors. Data cleaning is performed to aggregate our data into summary statistics. Exploratory analysis shows that there are strong relationships between mill rate and tax class and mill rate and municipalities; it also shows there is a fairly strong correlation between mill rate and average assessment per property in different municipalities. *Ordinary linear model*, *reduced ordinary linear model*, *Ridge Regression* and *LASSO* are used to predict the mill rate. A full assessment of the performance --- prediction power and goodness of fit of these models, is shown below.
+
+
+## Introduction
+
+Our goal is to predict mill rates in 2020 in Metro Vancouver.
+
+We also seek to identify which explanatory variables are the most important in determining mill rates. Every year, the assessment value of each property is released at the beginning of the year; however, the mill rate is still unknown until Spring. Prediction of mill rate is a focus of interest because it gives an approximate property tax to pay for property owners. It is also important because it might affect future buyers’ purchasing incentives. The property tax rate has a fairly small margin to change. Mill rate is adjusted based on the total assessment in each city so the municipal government can use tax earning (total assessment * mill rate) to match their annual expense to balance the city’s budget. 
+
+Correlations between the mill rate and each explanatory variable are used to pick the essential variables in our model. Then, a variety of linear models are fitted using our selected variables. The best model is selected based on its prediction power and goodness of fit.
+
+
+
+## Data Description
+
+Our client provided us with the past 5 years' property assessment data in BC. Since the only interest is in predicting mill rate for metro Vancouver and specific tax classes, a subset of properties that satisfy our interest have been selected: 
+
+- Tax Class in (01,05,06)
+- Municipality in (Burnaby, Coquitlam, Delta, Langley - City, Langley - Township, Maple Ridge, Maple Ridge Rural, New Westminster, North Vancouver - City, North Vancouver - Dist, Pitt Meadows, Port Coquitlam, Port Moody, Richmond, Surrey, Vancouver, White Rock, West Vancouver,  Bowen Island, Anmore, Belcarra, Lions Bay)
+
+Moreover, 5 features have been selected that could be relevant to the mill rate:
+
+- Tax Year
+- Municipality 
+- Tax Class
+- Assessment Type
+- Assessment Value 
+
+There are 1801 missing value in mill rate. 1509 are imputed, and 292 are removed from the data frame. The imputation method is mentioned in **Appendix**. 
+
+To reduce the dimension of our data, all properties in the same region, tax class code, and year are aggregated into a group because these properties have the same mill rate,  which is our response variable. Here are the summary statistics for these groups:
+
+- Mill rate (rate)
+- Total Assessment (assessTotal)
+- Total Land Assessment (landTotal)
+- Total Improvement Assessment (improvementTotal)
+- Total Number of Properties (propertyCount)
+- Tax Class Code (TaxClassCode)
+- Municipality (AddressAssessorMunicipalityDesc)
+
+
+## Methods
+
+
+
+### Exploratory Analysis
+
+
+Before any prediction on the future mill rate of Metro Vancouver’s real estate market was made, exploratory data analysis was performed to explore and visualize the main characteristics of our dataset. Correlation analyses between Mill Rate and Total Assessment, Mill Rate and Total Land Assessment, and Mill Rate and Total Improvement Assessment were performed. From our initial analysis, outliers in municipalities were found. Data transformation --- calculating the average total assessment, was used to reduce the effect of outliers.
+
+Mill rate was mainly affected by assessment, so scatter plots of mill rate vs. total, land, and improvement assessment were created to see the correlation between each pair of the two factors. Kruskal Wallis analysis was also performed to see the correlation between mill rate and tax class and mill rate and municipality. 
+
+Refer to **Reference** for more information on the Kruskal Wallis Test.
+
+
+### Measure of goodness of fit and prediction power
+
+
+In this study, linear models were built and the performance of each model was evaluated by the goodness of fit and prediction power, that is, how well the model explains the data and how well it can predict future values, respectively. The definitions of the goodness of fit and prediction power are given below.
+
+Prior to examine the goodness of fit and prediction power, the dataset was divided into training sets - used to build our models, and test sets - used to evaluate the prediction power of our models.
+
+ - **Goodness of fit** is defined as the extent to which the sample data are consistent with the model, which examines how well the model explains the data. MSPE (Mean Squared Prediction Error) on training sets is a measure of goodness of fit and a smaller MSPE indicates better goodness of fit. 
+
+ - **Prediction power** measures how well models can predict future values. Mean squared prediction power is used to compare the prediction performance across all of our fitted linear predictive models.  MSPE (Mean Squared Prediction Error) on test sets is used to measure the prediction power in this study and a smaller MSPE indicates better prediction power. 
+ 
+Refer to **Reference** for forumlas of MSPE.
+
+
+### Ordinary Linear models
+
+
+The full linear model (*OLR full*) was built first. TaxClassCode, Municipalities, assessTotal, landTotal, improvementTotal and propertyCount were considered in this model. Based on the results of EDA, a list of significant variables were selected and included in another linear model (*OLR transformed*), as shown in **Table 2**. To compare the effect of linear models with and without features, a null model (*OLR null*) with no features used, was also constructed.
+
+Refer to **Appendix** for variables selected in both *OLR full* and *OLR transformed* models.
+
+
+### Ridge and Lasso
+
+
+Other than ordinary linear regressions, we are also interested in the performance of more advanced linear regressions like *Ridge* and *Lasso*. *Ridge* and *Lasso* have different objective functions to optimize; they take penalties in the sum of absolute values and sum of squared absolute values of weights respectively. A reason to consider Ridge Regression is that it helps deal with multicollinearity of the explanatory variables. This might be relevant to our study as some features used in this study are correlated (assessTotal, landTotal and improvementTotal). Lasso Regression is also included in this study because it does variable selections automatically by imposing a constraint on model parameters that may possibly cause some regression coefficients to shrink to zero.
+
+Also, another advantage of these models is that they help reduce the variance of MSPE, so that MSPE is more stable. For more details about the two models, please refer to **Reference**.
+
+
+### Cross Validation
+
+
+To examine the goodness of fit and prediction power, a 50-run of 10-fold cross-validation was performed in this study. For each run, a 10-fold cross-validation was used to train the five models and make predictions on training and test sets respectively. Then, the MSPEs calculated from the training sets and MSPEs calculated from the test sets were stored in vectors of corresponding models. 
+
+After the 50 runs, a vector of MSPEs on the training sets and a vector of MSPEs on the test sets for each model were therefore constructed successfully. Based on these vectors, side-by-side boxplots were used to show the mean and the spread of MSPEs on the training sets and test sets across all models respectively. 
+
+For more details about cross-validation, please refer to **Reference**.
+
+\pagebreak
+
+## Results
+
+### Exploratory Analysis
+
+
+#### - Continuous Variables
+
+```{r, warning=F, message=F, echo=FALSE}
+## data setup
+## Aggregated Data
+assessment_aggregate <- read.csv(here("data","assessment_aggregate.csv"))[,-1]
+assessment_2020 <- read.csv(here("data","assessment_2020.csv"))[,-1]
+```
+
+
+
+Since the mill rate is mainly affected by the total assessment, which is the sum of total land assessment and total improvement assessment, scatter plots between mill rate and total assessment among different municipalities is created to show the relationship in **Figure 1**. Each color in the figure belongs to three tax classes of one municipality.
+
+Scatter plots between mill rate and total land assessment, mill rate and total improvement assessment are similar to **Figure 1**. For more details about them, please refer to **Appendix**.
+
+
+
+```{r, echo=FALSE}
+## Test correlations between past mill rates and other features.
+# ______________________________________________________________________________________________
+# CONTINUS variables
+assessment_transform <- assessment_aggregate
+
+# transformation: taking avg
+assessment_transform[,9] <- assessment_transform$assessTotal/assessment_transform$propertyCount
+names(assessment_transform)[9] <- paste("AvgTotalAssessmentValue")
+
+# rename column for better visulization
+assessment_eda <- assessment_transform
+names(assessment_eda)[2] <- paste("Municipality")
+names(assessment_eda)[3] <- paste("Tax Class")
+names(assessment_eda)[4] <- paste("Total Assessment")
+names(assessment_eda)[5] <- paste("Total Land Assessment")
+names(assessment_eda)[6] <- paste("Total Improvement Assessment")
+names(assessment_eda)[8] <- paste("Mill Rate")
+names(assessment_eda)[9] <- paste("Average Total Assessment")
+```
+
+```{r, echo=FALSE, fig.cap="Mill Rate vs Total Assessment"}
+assessment_eda %>%
+   ggplot(aes(x=`Total Assessment`,
+              y=`Mill Rate`,group=Municipality,
+              color=Municipality)) + 
+   geom_point() + 
+  xlab("Total Assessment (in Billion)") +
+   geom_smooth(aes(group = 1), size = 0.5, method = "glm", se = FALSE, colour = "black") +
+  scale_x_continuous(labels = unit_format(unit = "Billion", scale = 1e-9))
+```
+
+
+
+There is no clear trend between the mill rate and total assessment from **Figure 1**. The plot has also shown that most points are condensed on the left horizontal axis since some municipalities have larger assessment values than others. 
+
+To reduce the effect of large assessment in some municipalities, total assessment across all municipalities is transformed by taking total assessment dividing by the number of properties of each municipality and tax class. The transformed data is named **"Average Total Assessment"**. A scatter plot between mill rates and average total assessments is shown in **Figure 2**.
+
+
+
+```{r, echo=FALSE, fig.cap="Mill rate v.s. Average Total Assessment"}
+assessment_eda %>%
+ ggplot(aes(x=`Average Total Assessment`,
+            y=`Mill Rate`,group=Municipality,
+            color=Municipality)) + 
+ geom_point() + 
+  xlab("Average Total Assessment (in Million)") +
+ geom_smooth(aes(group = 1), size = 0.5, method = "lm", se = FALSE, colour = "black") +
+  scale_x_continuous(labels = unit_format(unit = "Million", scale = 1e-6))
+```
+
+
+The plot from **Figure 2** has shown that the mill rate tends to decrease as the average total assessment increase. Also, they have a moderately strong linear correlation. 
+
+
+#### - Categorical Variables
+
+
+Here categorical variables are taken into account, boxplots of mill rate across municipalities and tax classes are plotted to display the distributions in **Figure 3** and **Figure 4**, respectively.
+
+
+
+```{r, echo=FALSE,fig.cap="Mill rate across Municipalities"}
+# ______________________________________________________________________________________________
+# CATEGORICAL variables
+assessment_eda %>%
+     ggplot(aes(x=Municipality,
+                y=`Mill Rate`,fill=Municipality)) + 
+     geom_boxplot() + 
+     theme(axis.text.x = element_text(angle = 90, hjust = 1), legend.position = "none", axis.title.x=element_blank())
+```
+
+```{r, echo=FALSE, fig.cap="Mill rate across Tax Classes", fig.width=6,fig.height=3}
+assessment_eda %>%
+     ggplot(aes(x=as.factor(`Tax Class`),
+                y=`Mill Rate`,fill=`Tax Class`)) + 
+     geom_boxplot() + 
+     theme(legend.position = "none", axis.title.x=element_blank()) +
+     scale_x_discrete(labels=c("Residential (1)", "Light industry (5)", "Business and other (6)"))
+```
+
+
+
+**Figure 3** has shown that most municipalities have different mean and variance in terms of mill rates.
+
+**Figure 4** has also supported that there is unequal mean and variance across tax classes.
+
+A statistical test called the Kruskal-Wallis Test was performed to test their distribution. It was used to decide if population distributions were identical, and the corresponding p-value which is smaller than 0.05 indicated that the data have nonidentical distributions.
+
+The results of Kruskal-Wallis Test is shown in **Table 1**.
+
+
+| Distribution  | p-value |
+| :------------ | :-----------: | 
+| Mill Rate across Municipality | 0.00675 |
+| Mill Rate across Tax Class | < 2.2e-16 |
+
+Table: Kruskal-Wallis Test of Mill Rate across Municipality and Tax Class
+
+
+The p-values in **Table 1** have supported that there are nonidentical distributions of mill rates across municipalities and tax classes.
+
+
+
+```{r, echo=FALSE, results='hide'}
+# kruskal.test
+kruskal.test(assessment_transform$rate~assessment_transform$TaxClassCode,data=assessment_transform)
+kruskal.test(assessment_transform$rate~assessment_transform$AddressAssessorMunicipalityDesc,data=assessment_transform)
+```
+
+In conclusion, Average Total Assessment, Tax Class Code and Municipality are selected to fit another linear model, named **OLR transformed**. Refer to **Appendix** for more detail.
+
+\pagebreak
+
+
+#### Linear Models
+
+
+Below is a comparison of the five models (*OLR full*, *OLR transformed*, *Lasso*, *Ridge* and *OLR null*) using the goodness of fit and prediction power. The goodness of fit was measured by MSPE on the training sets, whereas prediction power was measured by MSPE on the test sets. Generally, smaller MSPEs on the training sets and test sets indicate better fit and prediction power respectively.
+
+
+The distributions of the goodness of fit and prediction power across models are displayed in **Figure 5** and **Figure 6**, respectively, the distribution of null model is removed since it has larger values compared to all other models.
+
+
+The distributions of MSPE on the training sets and test sets across all models are also displayed in **Table 2** and **Table 3** respectively.
+
+
+```{r, warning=FALSE, echo=FALSE}
+## model fitting
+lambdas <- 10^seq(2, -3, by = -.1)
+dummy_municipal<-dummy(assessment_transform$AddressAssessorMunicipalityDesc)
+dummy_taxclass<-dummy(assessment_transform$TaxClassCode)
+
+# build x matrix
+x<-cbind(dummy_municipal,dummy_taxclass,assessment_transform$AvgTotalAssessmentValue)
+y<-assessment_transform$rate
+x<-cbind(x,y)
+
+# correct col name
+colnames(x)[26]<-c("AvgTotalAssessmentValue")
+colnames(x)[27]<-c("rate")
+xm<-x[,1:(ncol(x)-1)]
+x.data.frame<-assessment_transform
+xm.data.frame<-assessment_transform[,-c(1,8,9,10,11)]
+y.data.frame<-assessment_transform$rate
+n <- nrow(xm)
+k <- 10
+ii <- (1:n)%%k + 1
+N <- 50
+mspe1.n<-mspe1.la <- mspe1.f <- mspe1.ri <- mspe1.reduced <- rep(0, N)
+mspe.n<-mspe.la <- mspe.f <- mspe.ri <- mspe.reduced <- rep(0, N)
+
+for (i in 1:N) {
+  ii <- sample(ii)
+  pr1.n<-pr1.la <- pr1.f <- pr1.ri <- pr1.reduced <- rep(0, n)
+  pr.n<-pr.la <- pr.f <- pr.ri <- pr.reduced <- rep(0, n)
+  for (j in 1:k) {
+    # ~ models trained!
+    tmp.ri <- cv.glmnet(x = xm[ii != j, ], y = y[ii != j], lambda = lambdas, 
+                        nfolds = 10, alpha = 0, family = "gaussian")
+    tmp.la <- cv.glmnet(x = xm[ii != j, ], y = y[ii != j], lambda = lambdas, 
+                        nfolds = 10, alpha = 1, family = "gaussian")
+    tmp.reduced <- lm(rate ~ factor(TaxClassCode)+
+                        factor(AddressAssessorMunicipalityDesc)+
+                        AvgTotalAssessmentValue, 
+                      data = x.data.frame[ii != j, ])
+    tmp.full <- lm(rate ~ factor(AddressAssessorMunicipalityDesc)+
+                     factor(TaxClassCode)+
+                     assessTotal+
+                     landTotal+
+                     improvementTotal+
+                     propertyCount, 
+                   data = x.data.frame[ii != j, ])
+    tmp.n <- lm(rate ~ 1, 
+                      data = x.data.frame[ii != j, ])
+    
+    # ~ prediction vector on train set
+    pr1.ri[ii != j] <- predict(tmp.ri, s = tmp.ri$lambda.min, newx = xm[ii !=
+                                                                         j, ])
+    pr1.la[ii != j] <- predict(tmp.la, s = tmp.la$lambda.min, newx = xm[ii !=
+                                                                         j, ])
+    pr1.reduced[ii != j] <- predict(tmp.reduced, newdata = x.data.frame[ii != j, ])
+    pr1.f[ii != j] <- predict(tmp.full, newdata = x.data.frame[ii != j, ])
+    pr1.n[ii != j] <-predict(tmp.n, newdata = x.data.frame[ii != j, ])
+    
+    # ~ prediction vector on test set
+    pr.ri[ii == j] <- predict(tmp.ri, s = tmp.ri$lambda.min, newx = xm[ii == 
+                                                                         j, ])
+    pr.la[ii == j] <- predict(tmp.la, s = tmp.la$lambda.min, newx = xm[ii == 
+                                                                         j, ])
+    pr.reduced[ii == j] <- predict(tmp.reduced, newdata = x.data.frame[ii == j, ])
+    pr.f[ii == j] <- predict(tmp.full, newdata = x.data.frame[ii == j, ])
+    pr.n[ii == j] <-predict(tmp.n, newdata = x.data.frame[ii == j, ])
+    
+  }
+  
+  # goodness of fit
+  mspe1.ri[i]<-mean((y - pr1.ri)^2)
+  mspe1.la[i]<-mean((y - pr1.la)^2)
+  mspe1.reduced[i]<-mean((y - pr1.reduced)^2)
+  mspe1.f[i]<-mean((y - pr1.f)^2)
+  mspe1.n[i]<-mean((y - pr1.n)^2)
+  
+  # prediction power
+  mspe.ri[i]<-mean((y - pr.ri)^2)
+  mspe.la[i]<-mean((y - pr.la)^2)
+  mspe.reduced[i]<-mean((y - pr.reduced)^2)
+  mspe.f[i]<-mean((y - pr.f)^2)
+  mspe.n[i]<-mean((y - pr.n)^2)
+}
+```
+
+```{r, warning=FALSE, echo=FALSE, fig.cap="Goodness of Fit"}
+boxplot(mspe1.la, 
+        mspe1.ri, 
+        mspe1.reduced, 
+        mspe1.f, 
+        names = c("LASSO", 
+                  "Ridge",
+                  "Transformed", 
+                  "Full"
+                  ), 
+        col = c("steelblue","gray80",
+                "pink", 
+                "tomato"), 
+        cex.axis = 1, 
+        cex.lab = 1, 
+        ylab = expression(hat(MSPE)))
+```
+
+
+
+| Model | PMSE:Min | PMSE:Mean | PMSE:Max |
+| :-----: | :-----: | :-----: | :-----: |
+| Full Model | 5.23 | 5.43 | 5.52 |
+| Transformed Model | 4.45 | 4.59 | 4.64 |
+| Null Model | 36.33 | 36.52 | 36.64 |
+| Lasso for Full Model | 4.52 | 4.63 | 4.73 |
+| Ridge Regression for Full Model | 4.50 | 4.63 | 4.72 |
+
+Table: Goodness of fit of All Models
+
+
+
+```{r, warning=FALSE, echo=FALSE, fig.cap="Prediction Power"}
+boxplot(mspe.la, 
+        mspe.ri,
+        mspe.reduced, 
+        mspe.f,
+        names = c("LASSO", 
+                  "Ridge", 
+                  "Transformed", 
+                  "Full"
+                  ), 
+        col = c("steelblue","gray80", 
+                "pink",
+                "tomato"), 
+        cex.axis = 1, 
+        cex.lab = 1, 
+        ylab = expression(hat(MSPE)))
+```
+
+
+| Model | PMSE:Min | PMSE:Mean | PMSE:Max |
+| :-----: | :-----: | :-----: | :-----: |
+| Full Model | 6.50 | 6.97 | 7.59 |
+| Transformed Model | 5.60 | 5.92 | 6.51 |
+| Null Model | 36.67 | 36.87 | 37.26 |
+| Lasso for Full Model | 5.58 | 5.91 | 6.40 |
+| Ridge Regression for Full Model | 5.53 | 5.88 | 6.39 |
+
+Table: Prediction Power of All Models
+
+
+
+As for goodness of fit, *Lasso*, *Ridge*, and *OLR transformed* have similar performance; MSPEs across these models were around 4.6, but *OLR transformed* performed slightly better and had a smaller spread (variance) of MSPE. *OLR full* performed worse than the other three, around 5.4, and *OLR null* had the greatest MSPE, around 35.   
+
+
+Similarly, as for prediction power, *Lasso*, *Ridge*, and *OLR transformed* performed roughly the same; MSPEs across these models were close to 6. *OLR full* was worse with MSPE around 6.9. *OLR Null* performed the worst with MSPE over 35.
+
+
+Therefore, we conclude that from the results of a 50-run of 10-fold cross-validation, *Lasso*, *Ridge*, and *OLR transformed* had the best goodness of fit and prediction power. *OLR null* perfromed much worse than all the other four models. 
+
+
+
+
+```{r fit, echo=FALSE}
+## choose transformed model
+linear_1<-lm(rate~factor(AddressAssessorMunicipalityDesc)+factor(TaxClassCode)+AvgTotalAssessmentValue,data=assessment_transform)
+
+## Fit and get PMSE
+assessment_2020.agg <- assessment_2020%>%
+  mutate(AvgTotalAssessmentValue = assessTotal/propertyCount)%>%
+  mutate(predict_rate = predict(linear_1,newdata = .))
+resid<-assessment_2020.agg$predict_rate - assessment_2020.agg$rate
+#sqrt(sum(resid^2)/nrow(assessment_2020.agg))
+
+## Aggregate Data
+b <- assessment_2020.agg%>%
+  select(-c(assessTotal : propertyCount, AvgTotalAssessmentValue))%>%
+  mutate(TaxClassCode = as.factor(paste0("0",TaxClassCode)))
+
+write.csv(b, "../../Data/assessment_2020_fit.csv")
+``` 
+
+
+\pagebreak
+
+## Conclusion
+
+
+From the exploratory data analysis, we have found that Total Assessments contain outliers in major municipalities such as Vancouver and Burnaby. In order to reduce the effect of outliers, the Total Assessment was transformed by taking its average over the number of properties in each municipality. The correlation analyses had shown that the transformed assessment total is the only continuous variable that has a relatively strong correlation with the mill rate. The Kruskal-Wallis had suggested that mill rates in each municipality and tax class are significantly different. From these results, we have decided to use Average Assessment Total, TaxClassCode and Municipality to fit our transformed model.
+
+*Transformed OLR*, *Ridge Regression*, and *LASSO* were able to make good predictions based on mean squared prediction error on the training sets and test sets from cross-validation. Since the client prefers a simpler model, we choose the *transformed model* to make our 2020 prediction.  
+
+For predicted mill rate in 2020, please refer to **Appendix** **Table 6**.
+
+
+\pagebreak
+
+
+
+## Appendix
+
+
+### Variables selected in different models
+
+| Parameter  | Type | 
+| :------------ | :-----------: | 
+| Total Assessment     | Quantitative   | 
+| Total Land Assessment     | Quantitative   | 
+| Total Improvement Assessment     | Quantitative   | 
+| Total Number of Properties     | Quantitative   | 
+| Tax Class Code     | Categorical  | 
+| Municipality       | Categorical |
+
+Table: Selected Explanatory Variables of OLR full
+
+*Ridge Regression* and *Lasso* models were fitted based on *OLR full* model.
+
+
+| Parameter  | Type | 
+| :------------ | :-----------: | 
+| Average Total Assessment     | Quantitative   | 
+| Tax Class Code     | Categorical  | 
+| Municipality       | Categorical |
+
+Table: Selected Explanatory Variables of OLR transformed
+
+
+### Scatter plots: 
+
+
+#### - mill rate v.s. total land assessment
+
+
+```{r, echo=FALSE, fig.cap="Mill Rate vs Total Land Assessment",fig.width=6,fig.height=4}
+assessment_eda %>%
+   ggplot(aes(x=`Total Land Assessment`,
+              y=`Mill Rate`,group=Municipality,
+              color=Municipality)) + 
+   geom_point() + 
+  xlab("Total Land Assessment (in Billion)") +
+   geom_smooth(aes(group = 1), size = 0.5, method = "glm", se = FALSE, colour = "black") +
+  scale_x_continuous(labels = unit_format(unit = "B", scale = 1e-9))
+```
+
+
+#### - mill rate v.s. total improvement assessment
+
+
+```{r, echo=FALSE, fig.cap="Mill Rate vs Total Improvement Assessment",fig.width=6,fig.height=4}
+assessment_eda %>%
+   ggplot(aes(x=`Total Improvement Assessment`,
+              y=`Mill Rate`,group=Municipality,
+              color=Municipality)) + 
+   geom_point() + 
+  xlab("Total Improvement Assessment (in Billion)") +
+   geom_smooth(aes(group = 1), size = 0.5, method = "glm", se = FALSE, colour = "black") +
+  scale_x_continuous(labels = unit_format(unit = "Billion", scale = 1e-9))
+```
+
+
+### 2020 Mill Rate prediction
+
+```{r, echo=FALSE, warning=FALSE}
+mill_rate_pre_2020 <- read.csv(here("data","assessment_2020_fit.csv"))[,-c(1,2,5)]
+```
+
+
+| Municipality | Residential (%) | Light industry (%) | Business (%) |                    
+| :------: | :------: | :------: | :------: |
+| Anmore | 0.98 | NA | 9.91 |
+| Belcarra | 1.19 | NA | 12.31 |
+| Bowen Island | 1.63 | 14.69 | 11.15 |
+| Burnaby | -2.76 | 12.80 | 10.88 |
+| Coquitlam | 1.72 | 17.70 | 12.84 |
+| Delta | 5.50 | 12.98 | 13.65 |
+| Langley - City | 1.73 | 15.12 | 12.25 |
+| Langley - Township | 3.77 | 12.46 | 12.49 |
+| Lions Bay | 2.19 | NA | 11.66 |
+| Maple Ridge | 5.11 | 16.88 | 13.60 |
+| New Westminster | 4.65 | 18.04 | 15.78 |
+| North Vancouver - City | -2.17 | 15.51 | 11.90 |
+| North Vancouver - Dist | 1.29 | 13.68 | 11.82 |
+| Pitt Meadows | 6.06 | 17.00 | 13.78 |
+| Port Coquitlam | 4.91 | 17.58 | 14.50 |
+| Port Moody | 4.16 | 17.66 | 13.44 |
+| Richmond | 1.14 | 10.42 | 10.29 |
+| Surrey | 0.82 | 12.47 | 10.53 |
+| Vancouver | 2.69 | 12.38 | 8.79 |
+| West Vancouver | 4.92 | 17.05 | 12.62 |
+| White Rock | 1.88 | 16.33 | 12.17 |
+
+Table: Predicted Mill Rate in 2020 based on transformed model
+
+
+
+### Missing Value:
+
+There are 1801 missing values in mill rate(TaxClassTaxRate). We decided to impute these missing values
+Based on client information, all properties in the same region, classcode, and year should have a unique class rate
+
+- For entries with mill rate, we aggregated them into groups by region + classcode + year.
+
+- For entries without mill rate, we found the group they belong to and assign them mill rate in that group.
+
+#### Here is some exceptions found:
+
+Some groups' mill rate is not unique:
+
+
+- In Delta, properties in different neighbourhoods have slightly different mill rates. Since the variance is not significant, we take the mean as the overall mill rate in groups.
+
+- In New Westminister, 2019, Class 06, one property's mill rate is different from others. It is regarded as an outlier.
+
+- In Vancouver, 2019, Class 01, one property's mill rate is different from others. It is regarded as an outlier.
+
+- In Burnaby, 2019, Class 06, six properties' mill rate are different from others. They are regarded as outliers.
+
+- In Langley, 2019, Class 06, mill rate is different between assessment type. After talking to the client, the mill rate for assessment type "land" is regarded as the overall mill rate in that group.
+
+- In some groups, all entries' mill rates are missing. Entries in these groups are removed. Here is the list of the groups:
+
+
+| Year  | Region | Class | Number of Properties |
+| :------: | :--------: | :-------: | :----------: |
+| 2016 | Belcarra | 06 | 9 |
+| 2016 | Lions Bay | 01 | 40 | 
+| 2016 | Lions Bay | 06 | 25 |
+| 2016 | Maple Ridge Rural | 05 | 36 |
+| 2017 | Belcarra | 06 | 9 |
+| 2017 | Lions Bay | 01 | 39 |
+| 2017 | Lions Bay | 06 | 24 |
+| 2017 | Maple Ridge Rural | 05 | 36 |
+| 2018 | Maple Ridge Rural | 05 | 36 |
+| 2019 | Maple Ridge Rural | 05 | 38 |
+
+Table: Data with missing mill rate
+
+
+\pagebreak
+
+## References
+
+
+Code repository:
+
+
+- Data Cleaning (https://github.com/STAT450-550/RealEstate/blob/450/src/Data_Cleaning.Rmd)
+
+- Exploratory Data Analysis and Model Fitting (https://github.com/STAT450-550/RealEstate/blob/450/src/EDA%26mode_fitting.Rmd)
+
+Measure of Goodness of Fit and Prediction Power:
+https://channabasavagola.github.io/2018-01-09-metrics/
+
+Lasso and Ridge:
+https://web.stanford.edu/class/stats202/content/lec14-cond.pdf
+
+Cross Validation:
+https://github.com/msalibian/STAT406/tree/master/Lecture2
+
+Kruskal Wallis:
+http://www.biostathandbook.com/kruskalwallis.html

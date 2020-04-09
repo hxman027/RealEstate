@@ -15,7 +15,9 @@ library(shinyjs)
 enableBookmarking("url")
 
 # read data
-dat <- readr::read_delim("./../../data/test_train_data.txt", 
-                         delim = ",", col_types = "ciccdddddf")
+# dat <- readr::read_delim("./../../data/test_train_data.txt", 
+#                          delim = ",", col_types = "ciccdddddf")
 
+dat <- readr::read_delim("test_train_data.txt", 
+                         delim = ",", col_types = "ciccdddddf")
 

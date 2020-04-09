@@ -83,6 +83,10 @@ ui <- fluidPage(theme = shinytheme("journal"), #maybe lumen theme?
                     a(img(src = "altusgroupimg.png", alt = "Altus Group"),
                       href = "https://www.altusgroup.com",
                       target = "_blank"),
+                    br(),
+                    br(),
+                    br(),
+                    br(),
                     bookmarkButton()
                     ),
                 

@@ -7,29 +7,25 @@ source("helpers.R")
 server <- function(input, output, session) {
   
   filtered <- reactive({
-    # SINCE PLOTS FOR MILL RATE AND ASSESSMENT VALUES DIFFER, WE NEED TO DISTINGUISH THIS HERE
-    # IF A PIC IS AVAILABLE (IN CASE OF MILL RATE - PLOT FOR MUNCIPALITY.  IN CASE OF ASSESSMENTS
-    # - PLOT THE PROPERTY(OR NOTHING))
     
     # Update when following inputs are changed
     input$updateButton
     
     newdata <- dat
     d <- NULL
-    print(dim(dat))
+    #print(dim(dat))
     
     # Filter data based on the user inputs
     isolate({
       #if (input$typeInput != 'Select'){
-        print("The type is not Select, it is:")
-        
-          print(input$typeInput)
+        #print("The type is not Select, it is:")
+          #print(input$typeInput)
           
           # If using PIC:
           if(input$picInput && input$identInput!="")
             {
-            print(paste("PIC input is", input$picInput, "and is:", sep = " "))
-            print(input$identInput)
+            #print(paste("PIC input is", input$picInput, "and is:", sep = " "))
+            #print(input$identInput)
             
             d <- newdata  %>% 
               filter(PIC == input$identInput)
@@ -38,7 +34,7 @@ server <- function(input, output, session) {
           
           # If not using PIC, filter by municipality and tax class:
           if(!input$picInput){
-            print(paste("PIC input is:", input$picInput, sep = " "))
+            #print(paste("PIC input is:", input$picInput, sep = " "))
             d <- newdata %>% 
               filter(tax.class == input$taxclassInput,
                      municipality == input$municipalityInput)
@@ -51,8 +47,8 @@ server <- function(input, output, session) {
       d <- NULL
     }
     d
-    print(dim(d))
-    print(head(d))
+    #print(dim(d))
+    #print(head(d))
     })
   
    ########## PLOTTING TAB ###################
@@ -63,8 +59,8 @@ server <- function(input, output, session) {
     input$updateButton
     
     data <- filtered()
-    print("plotting mill rate plot")
-    print(head(data))
+    #print("plotting mill rate plot")
+    #print(head(data))
     
           
     isolate({
@@ -92,8 +88,8 @@ server <- function(input, output, session) {
     input$updateButton
     
     data <- filtered()
-    print("plotting assessplot")
-    print(head(data))
+    #print("plotting assessplot")
+    #print(head(data))
 
     isolate({
       if(is.null(data)){
@@ -101,9 +97,9 @@ server <- function(input, output, session) {
         }
       
     # plot assessment values over time 
-      print("trying to plot")
+      #print("trying to plot")
       if(input$typeInput == 'Assessment Value'){
-          print("ggplotting assessment values")
+          #print("ggplotting assessment values")
           p <- ggplot(data, aes(x = year, y = total.assessment)) +
             geom_line(color="#56B4E9") +
             geom_point(color="#56B4E9") +
@@ -145,13 +141,13 @@ server <- function(input, output, session) {
   estimates <- reactive({
     input$updateButton
     
-   print("estimates...")
+   #print("estimates...")
       
    # If using PIC:
    if(input$picInput){
      if(input$identInput!=""){
        if(input$typeInput == 'Mill Rate'){   #need to be changed to extract values
-         print("estimates for mill rate")
+         #print("estimates for mill rate")
          return(paste("Mill rate prediction for class", input$taxclassInput,
                       "in", input$municipalityInput, "is...", sep = " ")) # RETURN PREDICTION
          }
@@ -174,7 +170,7 @@ server <- function(input, output, session) {
    # If not using PIC:
    else{
      if(input$typeInput == 'Mill Rate'){
-       print("estimates for mill rate")
+       #print("estimates for mill rate")
        return(paste("Mill rate prediction for class", input$taxclassInput,
                     "in", input$municipalityInput, "is...", sep = " ")) # RETURN PREDICTION
        }
@@ -206,6 +202,7 @@ server <- function(input, output, session) {
        input$taxclassInput == '-'){
       return(paste(""))
     }
+    
     if(is.null(data)){
       return(paste("Could not find matching data."))
     }
@@ -227,23 +224,23 @@ server <- function(input, output, session) {
             return(paste("Select prediction type."))
           }
         }
-        
-        else{
+      }
+      
+      else{
+          #print("trying to post title")
           if(input$typeInput == 'Mill Rate'){
             return(paste("Class", input$taxclassInput, 
                          "mill rate for", input$municipalityInput, sep = " ")) #ADD PREDICTION HERE
           }
-          
           else{
             return(paste("Could not find matching data."))
           }
         }
       }
-    }
   })
       
   
-  output$resultsText <- renderText({     #working
+  output$resultsText <- renderText({     
     titles()
   })
 }

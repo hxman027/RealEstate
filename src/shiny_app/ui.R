@@ -3,7 +3,8 @@
 
 library(shinythemes)
 
-ui <- fluidPage(theme = shinytheme("paper"),
+ui <- fluidPage(theme = shinytheme("journal"), #maybe lumen theme?
+
                 # header
                 div(id = "headerSection",
                     h2("BC Mill Rate & Assessment Value Predictions"),
@@ -12,7 +13,8 @@ ui <- fluidPage(theme = shinytheme("paper"),
                       style = "font-size: 1em",
                       # authors
                       span("Created by "),
-                      a("Gian Carlo Diluvi, Vittorio Romaniello, Sophia Li & Mallory Flynn"),
+                      a("Gian Carlo Diluvi, Vittorio Romaniello, Sophia Li & Mallory Flynn",
+                        href = "https://www.stat.ubc.ca"),
                       HTML("&bull;"),
                       # date
                       span("April 2020"),
@@ -22,7 +24,8 @@ ui <- fluidPage(theme = shinytheme("paper"),
                       a("on GitHub", href = "insert_link"),
                     )
                 ),
-                
+                br(),
+                br(),
                 
                 # all content goes here, and is hidden initially until the page fully loads
                 sidebarLayout(
@@ -70,14 +73,14 @@ ui <- fluidPage(theme = shinytheme("paper"),
                     actionButton("updateButton", "Update"),
                       
                     
-                    # source of data as a footer
+                    # source of data as a footer - Altus Group image not loading
                     br(),
                     br(),
                     p("Generated using data from ",
                       a("the Altus Group Ltd.",
                         href = "https://www.altusgroup.com",
                         target = "_blank")),
-                    a(img(src = "AltusGroup.svg", alt = "Altus Group"),
+                    a(img(src = "altusgroupimg.png", alt = "Altus Group"),
                       href = "https://www.altusgroup.com",
                       target = "_blank"),
                     bookmarkButton()

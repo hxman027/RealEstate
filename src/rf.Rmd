@@ -1,11 +1,13 @@
 ---
-title: "random forest"
+title: "random forest and lme"
 output: github_document
 ---
 
 ```{r}
 suppressPackageStartupMessages(library(randomForest))
 suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(nlme))
+suppressPackageStartupMessages(library(ROCR))
 ```
 
 ```{r}
@@ -42,15 +44,46 @@ train <- dat %>%  filter(test.train == "train")
 test <- dat %>%  filter(test.train == "test")
 ```
 
+# Random Forest
 ```{r}
+set.seed(0)
+
 rf.mill <- randomForest(
-  mill.rate ~  tax.class + municipality + total.assessment + past.mill,na.action = na.omit,
+  mill.rate ~  tax.class + municipality + total.assessment + past.mill,na.action = na.omit, mtry = 4,
+  data=train, ntree=500
+)
+#Evaluate variable importance
+importance(rf.mill)
+varImpPlot(rf.mill)
+
+rf.as <- randomForest(
+  next.assess ~  tax.class + municipality + total.assessment + mill.rate,na.action = na.omit,mtry = 4,
   data=train
 )
+
+importance(rf.as)
+varImpPlot(rf.as)
+
+yhat.bag <- predict(rf.mill,newdata=test)
+plot(yhat.bag, test$mill.rate, xlab="Predicted Mill Rate Using Test Set", ylab="Actual Mill Rate")
+abline(0,1)
+
+yhat.bag1 <- predict(rf.as,newdata=test)
+plot(yhat.bag1, test$next.assess, xlab="Predicted Asssessment Value Using Test Set", ylab="Actual Assessment Value")
+abline(0,1)
 ```
 
+# Linear Mixed Effect Model
 ```{r}
-predict(rf.mill, test)
+# both random slope and random intercept
+# different rate of change of assessment value and mill rate as well as initial assessment value and mill rate for each municipality 
+lme.mill <- lme( mill.rate ~  tax.class + municipality + total.assessment + past.mill,na.action = na.omit, data=train, random = ~ 1 + total.assessment + past.mill | municipality, method = "ML")
+
+summary(lme.mill)
+
+lme.as <- lme(next.assess ~  tax.class + municipality + total.assessment + mill.rate ,na.action = na.omit, data=train, random = ~ 1 + total.assessment + mill.rate | municipality, method = "ML")
+
+summary(lme.as)
 ```
 
 

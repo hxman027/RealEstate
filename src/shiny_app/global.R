@@ -3,11 +3,10 @@ library(readr)
 library(ggplot2)
 library(dplyr)
 library(DT)
-library(shinyjs)
 library(tidyr)
 library(shinyjs)
 
-#PIC using for testing
+#PIC used for some testing
 #CA-BC-022-04490000
 
 

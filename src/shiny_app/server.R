@@ -176,8 +176,7 @@ server <- function(input, output, session) {
        }
         
      if(input$typeInput == 'Assessment Value'){
-       return(paste("prediction for", input$identInput,
-                    "is...", sep = " "))  # RETURN PREDICTION
+       return(paste("Predicted next assessment value is...", sep = " "))  # RETURN PREDICTION
        }
         
      if(input$typeInput == 'Select'){

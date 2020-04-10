@@ -40,8 +40,8 @@ dat <- dat %>%
   arrange(desc(n.prop)) %>% 
   distinct(municipality, .keep_all = T) 
 
-
-train <- dat %>%  filter(test.train == "train") 
+notwant <- c("CA-BC-003-6500000", "CA-BC-223-00100030000", "CA-BC-227-0000020000", "CA-BC-234-01001006", "CA-BC-301-0000001", "CA-BC-315-00001000","CA-BC-316-010012122009", "CA-BC-336-00001000", "CA-BC-338-1000004884000", "CA-BC-556-00001000", "CA-BC-727-03025100", "CA-BC-757-05141000", "CA-BC-759-000147000", "CA-BC-760-001203000", "CA-BC-765-00002001", "CA-BC-771-00003000")
+train <- dat %>%  filter(test.train == "train" & !PIC %in% notwant)
 test <- dat %>%  filter(test.train == "test")
 ```
 
@@ -53,12 +53,14 @@ rf.mill <- randomForest(
   mill.rate ~  tax.class + municipality + total.assessment + past.mill,na.action = na.omit, mtry = 4,
   data=train, ntree=500
 )
+
+save(rf.mill, file = "~/Desktop/git_docs/RealEstate/src/shiny_app/rf.mill.rda")
 #Evaluate variable importance
 importance(rf.mill)
 varImpPlot(rf.mill)
 
 rf.as <- randomForest(
-  next.assess ~  tax.class + municipality + total.assessment + mill.rate,na.action = na.omit,mtry = 4,
+  next.assess ~ tax.class + municipality + total.assessment + mill.rate,na.action = na.omit,mtry = 4,
   data=train
 )
 
@@ -97,5 +99,11 @@ residplot(lme.mill)
 residplot(lme.as)
 ```
 
+# Linear Regression
+```{r}
+lm.as <- lm(
+  next.assess ~ PIC + tax.class + municipality + total.assessment + mill.rate, na.action = na.omit, data=train)
 
+predict(lm.as, test)
+```
 

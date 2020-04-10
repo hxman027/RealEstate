@@ -1,6 +1,11 @@
 # Mallory - STAT 550 2020###
 # This is the server file of the shiny app
 
+# fix mill rate title when PIC is used
+# fix main title when PIC is checked but empty 
+
+
+
 # in case modified data needs to be accessed
 source("helpers.R")
 

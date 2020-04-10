@@ -22,7 +22,8 @@ ui <- fluidPage(theme = shinytheme("cerulean"), #maybe journal theme?
                       HTML("&bull;"),
                       # Shiny app code link
                       span("Code"),
-                      a("on GitHub", href = "insert_link"),
+                      a("on GitHub", 
+                        href = "https://github.com/STAT450-550/RealEstate/tree/master/src/shiny_app"),
                     )
                 ),
                 br(),
@@ -77,14 +78,13 @@ ui <- fluidPage(theme = shinytheme("cerulean"), #maybe journal theme?
                     # 
                     # tabPanel("Upload data",
                     #          br(),
-                    #          # Input: Select a file ----
+                    #          # Input: Select a file 
                     #          fileInput("csvfile", "Upload Data from .csv file",
                     #                    multiple = TRUE,
                     #                    accept = c("text/csv",
                     #                               "text/comma-separated-values,text/plain",
                     #                               ".csv")),
                     #          
-                    #          # Horizontal line ----
                     #          tags$hr(),
                     #          
                     # )

@@ -13,6 +13,8 @@ suppressPackageStartupMessages(library(predictmeans))
 
 ```{r}
 dat <- readr::read_delim("test_train_data.txt", delim = ",", col_types = "ciccdddddc")
+train <- readr::read_delim("train_data.txt", delim = ",", col_types = "ciccddddd")
+test <- readr::read_delim("test_data.txt", delim = ",", col_types = "ciccddddd")
 dat$municipality <- as.factor(dat$municipality)
 
 factors_tbl = dat %>% 

@@ -7,7 +7,6 @@ library(readxl)
 library(ggplot2)
 ggplot2::theme_set(theme_classic())
 library(viridis)
-library(GGally)
 
 # data wrangling ####
 

@@ -2,8 +2,9 @@
 # This is the user interface version of the shiny app
 
 library(shinythemes)
+library(png)
 
-ui <- fluidPage(theme = shinytheme("journal"), #maybe lumen theme?
+ui <- fluidPage(theme = shinytheme("cerulean"), #maybe journal theme?
 
                 # header
                 div(id = "headerSection",
@@ -30,7 +31,8 @@ ui <- fluidPage(theme = shinytheme("journal"), #maybe lumen theme?
                 # all content goes here, and is hidden initially until the page fully loads
                 sidebarLayout(
                   sidebarPanel(
-                                    
+                    # tabsetPanel(
+                    #   tabPanel("User Inputs",                
                     # Only show the following for assessment predictions:
                     # Use PIC?
                     checkboxInput("picInput", "Use PIC?", value = FALSE),
@@ -71,6 +73,24 @@ ui <- fluidPage(theme = shinytheme("journal"), #maybe lumen theme?
                     # button to update the data
                     shiny::hr(),
                     actionButton("updateButton", "Update"),
+                    # ),
+                    # 
+                    # tabPanel("Upload data",
+                    #          br(),
+                    #          # Input: Select a file ----
+                    #          fileInput("csvfile", "Upload Data from .csv file",
+                    #                    multiple = TRUE,
+                    #                    accept = c("text/csv",
+                    #                               "text/comma-separated-values,text/plain",
+                    #                               ".csv")),
+                    #          
+                    #          # Horizontal line ----
+                    #          tags$hr(),
+                    #          
+                    # )
+                    # ),
+                    
+                    
                       
                     
                     # source of data as a footer - Altus Group image not loading
@@ -80,7 +100,8 @@ ui <- fluidPage(theme = shinytheme("journal"), #maybe lumen theme?
                       a("the Altus Group Ltd.",
                         href = "https://www.altusgroup.com",
                         target = "_blank")),
-                    a(img(src = "altusgroupimg.png", alt = "Altus Group"),
+                    a(img(src = "altusgroupimg.png", alt = "Altus Group",
+                          height = 63, width = 150),
                       href = "https://www.altusgroup.com",
                       target = "_blank"),
                     br(),

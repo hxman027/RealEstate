@@ -15,9 +15,9 @@ server <- function(input, output, session) {
     d <- NULL
     #print(dim(dat))
     
+    #if(input$csvfile == NULL){
     # Filter data based on the user inputs
     isolate({
-      #if (input$typeInput != 'Select'){
         #print("The type is not Select, it is:")
           #print(input$typeInput)
           

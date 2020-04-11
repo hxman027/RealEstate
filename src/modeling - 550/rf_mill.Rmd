@@ -62,7 +62,7 @@ dat_as <- dat %>%
   mutate(next.assess = lead(total.assessment, order_by = year),
          past.mill = lag(mill.rate, order_by = year)) %>% 
   group_by(municipality) %>% 
-  top_n(5, wt = total.assessment) %>% 
+  top_n(25, wt = total.assessment) %>% 
   arrange(municipality)
 
 train_mill <- dat_mill %>%  filter(test.train == "train")

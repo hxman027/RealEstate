@@ -10,7 +10,8 @@
 source("helpers.R")
 
 # load models - RF for mill rate predictions and ??? for assessment value predictions
-load("RegularizedLogisticRegression.rda")
+load("rf.mill.rda")
+load("rf.as.rda")
 
 
 # server:
@@ -25,17 +26,13 @@ server <- function(input, output, session) {
     d <- NULL
     #print(dim(dat))
     
-    #if(input$csvfile == NULL){
     # Filter data based on the user inputs
     isolate({
-        #print("The type is not Select, it is:")
-          #print(input$typeInput)
           
           # If using PIC:
           if(input$picInput && input$identInput!="")
             {
-            #print(paste("PIC input is", input$picInput, "and is:", sep = " "))
-            #print(input$identInput)
+          
             
             d <- newdata  %>% 
               filter(PIC == input$identInput)
@@ -44,7 +41,7 @@ server <- function(input, output, session) {
           
           # If not using PIC, filter by municipality and tax class:
           if(!input$picInput){
-            #print(paste("PIC input is:", input$picInput, sep = " "))
+            
             d <- newdata %>% 
               filter(tax.class == input$taxclassInput,
                      municipality == input$municipalityInput)
@@ -57,20 +54,18 @@ server <- function(input, output, session) {
       d <- NULL
     }
     d
-    #print(dim(d))
-    #print(head(d))
+    
     })
   
    ########## PLOTTING TAB ###################
    # Add plots of either mill rate or assessment value over time to plot tab
   munic <- reactive(input$municipalityInput)
   
+  # create mill rate plot that reacts to inputs
   millrateplot <- reactive({
     input$updateButton
     
     data <- filtered()
-    #print("plotting mill rate plot")
-    #print(head(data))
     
           
     isolate({
@@ -94,12 +89,11 @@ server <- function(input, output, session) {
 
   })
 
+  # create assessment plots that react to user inputs
   assessplot <- reactive({
     input$updateButton
     
     data <- filtered()
-    #print("plotting assessplot")
-    #print(head(data))
 
     isolate({
       if(is.null(data)){
@@ -107,7 +101,6 @@ server <- function(input, output, session) {
         }
       
     # plot assessment values over time 
-      #print("trying to plot")
       if(input$typeInput == 'Assessment Value'){
           #print("ggplotting assessment values")
           p <- ggplot(data, aes(x = year, y = total.assessment)) +
@@ -124,6 +117,7 @@ server <- function(input, output, session) {
     
   })
   
+  # output one of the above plots onto UI
    output$coolplot <- renderPlot({
      if (input$typeInput != 'Select'){
        if(input$typeInput == 'Assessment Value'){
@@ -147,7 +141,7 @@ server <- function(input, output, session) {
 
   
   ###### ESTIMATE TAB ####################
-  # reactive text  - working
+  # give predictions given user inputs for mill rate or assessment value
   estimates <- reactive({
     input$updateButton
     
@@ -173,29 +167,37 @@ server <- function(input, output, session) {
               filter(year == 2019)
             
             # if 2020 column is nonempty of mill rates for this community:
+            # otherwise use 2019 mill rate data (it will break if these
+            # are both empty)
+            meanmillrate <- mean(past19$mill.rate)
             if(sum(!is.na(past20$mill.rate>0))){
               meanmillrate <- mean(past20$mill.rate)
             }
             
-            # otherwise use 2019 mill rate data
-            else{
-              meanmillrate <- mean(past19$mill.rate)
+            if(is.na(meanmillrate)){
+              return(paste("No recent mill rate found."))
             }
             
             # put data together in the way rfmill expects as input call it inputdata
             # columns include tax.class, municipality, total.assessment, past.mill
-            meanassess <- mean(past20$total.assessment)
+            meanassess <- mean(na.omit(past20$total.assessment))
             
             pred.data <- cbind(filtered()$tax.class[1], 
                                filtered()$municipality[1],
                                meanassess,
                                meanmillrate)
-            pred.data <- as.data.frame(pred.data)
-            pred.data$municipality <- as.factor(pred.data$municipality)
+            pred.data <- as.data.frame(pred.data, stringsAsFactors = FALSE)
+            colnames(pred.data) <- c('tax.class', 'municipality',
+                                      'total.assessment','past.mill')
                                
-            colnames(pred.data) <- c('tax.class', 'municipality', 'total.assessment',
-                                  'past.mill')
-                               
+            rfdat <- rfData(dat)
+            pred.data$past.mill <- as.numeric(pred.data$past.mill)
+            pred.data$total.assessment <- as.numeric(pred.data$total.assessment)
+            pred.data$municipality <- factor(pred.data$municipality, 
+                                             levels = levels(rfdat$municipality))
+            pred.data$tax.class <- factor(pred.data$tax.class, 
+                                          levels = levels(rfdat$tax.class))
+            
             # predict next mill rate using random forest
             predict(rf.mill, newdata = pred.data)
           }
@@ -222,60 +224,62 @@ server <- function(input, output, session) {
     })
   })
    
-  estimatestext <- reactive({
-    input$updateButton
+   # print
+   estimatestext <- reactive({
+     input$updateButton
     
-   #print("estimates...")
       
-   # If using PIC:
-   if(input$picInput){
-     if(input$identInput!=""){
-       if(input$typeInput == 'Mill Rate'){   #need to be changed to extract values
-         #print("estimates for mill rate")
-         return(paste("Mill rate prediction for class", filtered()$tax.class[1],
-                      "in", filtered()$municipality[1], "is...",
-                      estimates(), sep = " ")) # RETURN PREDICTION
-         }
+     # If using PIC:
+     if(input$picInput){
+       if(input$identInput!=""){
+         if(input$typeInput == 'Mill Rate'){   #need to be changed to extract values
+           
+            return(paste("Mill rate prediction for class", 
+                         filtered()$tax.class[1],
+                         "in", filtered()$municipality[1], "is...",
+                         estimates(), sep = " ")) # RETURN PREDICTION
+           }
+       
+         if(input$typeInput == 'Assessment Value'){
+           return(paste("prediction for", input$identInput,
+                        "is...", estimate(), sep = " "))  # RETURN PREDICTION
+           }
           
+         if(input$typeInput == 'Select'){
+           return("Enter prediction type.")
+         }
+         }
+     
+       else{
+         return("Please enter PIC.")
+       }
+       }
+    
+     # If not using PIC:
+     else{
+       if(input$typeInput == 'Mill Rate'){
+         
+         return(paste("Mill rate prediction for class", 
+                      input$taxclassInput,
+                      "in", input$municipalityInput, "is...", 
+                      estimate(), sep = " ")) # RETURN PREDICTION
+         }
+      
        if(input$typeInput == 'Assessment Value'){
-         return(paste("prediction for", input$identInput,
-                      "is...", estimate(), sep = " "))  # RETURN PREDICTION
+         return(paste("Predicted next assessment value is...", 
+                      estimates(), sep = " "))  # RETURN PREDICTION
          }
-          
+        
        if(input$typeInput == 'Select'){
          return("Enter prediction type.")
        }
        }
-     
-     else{
-       return("Please enter PIC.")
-     }
-     }
-      
-   # If not using PIC:
-   else{
-     if(input$typeInput == 'Mill Rate'){
-       #print("estimates for mill rate")
-       return(paste("Mill rate prediction for class", input$taxclassInput,
-                    "in", input$municipalityInput, "is...", 
-                    estimate(), sep = " ")) # RETURN PREDICTION
-       }
-        
-     if(input$typeInput == 'Assessment Value'){
-       return(paste("Predicted next assessment value is...", 
-                    estimates(), sep = " "))  # RETURN PREDICTION
-       }
-        
-     if(input$typeInput == 'Select'){
-       return("Enter prediction type.")
-     }
-   }
-   })
-   
-  # output the estimates text in the main panel
-  output$results <- renderText({
-    estimatestext()
-  })
+     })
+  
+   # output the estimates text in the main panel
+   output$results <- renderText({
+     estimatestext()
+     })
   
   
   # Titles text for main panel title - describes prediction type or PIC 

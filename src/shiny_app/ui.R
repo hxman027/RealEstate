@@ -47,13 +47,11 @@ ui <- fluidPage(theme = shinytheme("cerulean"), #maybe journal theme?
                                      
                     # If PIC is not available:
                     conditionalPanel("!input.picInput",
-                                     # selectInput("typeInput", "Estimate Type",
-                                     #             c("Select", "Assessment Value", "Mill Rate"),
-                                     #             selected = "Select"),
                                      
                                      # for municipality
                                      selectInput("municipalityInput", "Municipality:", 
-                                                 c("-",sort(unique(dat$municipality))),
+                                                 c("-",sort(unique(datshort$municipality)),
+                                                   "Other"),
                                                  selected = "-"),
                                                      
                                      # for Tax Class code
@@ -74,22 +72,6 @@ ui <- fluidPage(theme = shinytheme("cerulean"), #maybe journal theme?
                     # button to update the data
                     shiny::hr(),
                     actionButton("updateButton", "Update"),
-                    # ),
-                    # 
-                    # tabPanel("Upload data",
-                    #          br(),
-                    #          # Input: Select a file 
-                    #          fileInput("csvfile", "Upload Data from .csv file",
-                    #                    multiple = TRUE,
-                    #                    accept = c("text/csv",
-                    #                               "text/comma-separated-values,text/plain",
-                    #                               ".csv")),
-                    #          
-                    #          tags$hr(),
-                    #          
-                    # )
-                    # ),
-                    
                     
                       
                     

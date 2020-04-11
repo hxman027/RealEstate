@@ -14,9 +14,13 @@ library(shinyjs)
 enableBookmarking("url")
 
 # read data
-# dat <- readr::read_delim("./../../data/test_train_data.txt", 
-#                          delim = ",", col_types = "ciccdddddf")
-
 dat <- readr::read_delim("test_train_data.txt", 
                          delim = ",", col_types = "ciccdddddf")
 
+# creates dataset with only the top 52 municipalities
+counts <- dat %>% 
+  count(municipality, sort = TRUE)
+
+datshort <- dat %>% 
+  filter(municipality %in% counts$municipality[1:52])
+  

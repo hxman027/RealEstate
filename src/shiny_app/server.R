@@ -2,7 +2,8 @@
 # This is the server file of the shiny app
 
 # fix main title when PIC is checked but empty 
-
+# load rdas for each so that estimates can be made
+# fix select input to choose only the top 52 categories and other
 
 
 # in case modified data needs to be accessed

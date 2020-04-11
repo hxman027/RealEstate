@@ -1,7 +1,6 @@
 # Mallory - STAT 550 2020###
 # This is the server file of the shiny app
 
-# fix mill rate title when PIC is used
 # fix main title when PIC is checked but empty 
 
 
@@ -9,6 +8,11 @@
 # in case modified data needs to be accessed
 source("helpers.R")
 
+# load models - RF for mill rate predictions and ??? for assessment value predictions
+load("RegularizedLogisticRegression.rda")
+
+
+# server:
 server <- function(input, output, session) {
   
   filtered <- reactive({
@@ -146,6 +150,80 @@ server <- function(input, output, session) {
   estimates <- reactive({
     input$updateButton
     
+    data <- filtered()
+    
+    isolate({
+      if(is.null(data)){
+        return(NULL)
+      }
+      
+     # If using PIC: 
+      if(input$picInput){
+        if(input$identInput != ""){
+          
+          # If doing Mill Rate prediciton, use random forest
+          if(input$typeInput == 'Mill Rate'){
+            
+            # extract latest mill rate
+            past20 <- filtered() %>% 
+              filter(year == 2020)
+            
+            past19 <- filtered() %>% 
+              filter(year == 2019)
+            
+            # if 2020 column is nonempty of mill rates for this community:
+            if(sum(!is.na(past20$mill.rate>0))){
+              meanmillrate <- mean(past20$mill.rate)
+            }
+            
+            # otherwise use 2019 mill rate data
+            else{
+              meanmillrate <- mean(past19$mill.rate)
+            }
+            
+            # put data together in the way rfmill expects as input call it inputdata
+            # columns include tax.class, municipality, total.assessment, past.mill
+            meanassess <- mean(past20$total.assessment)
+            
+            pred.data <- cbind(filtered()$tax.class[1], 
+                               filtered()$municipality[1],
+                               meanassess,
+                               meanmillrate)
+            pred.data <- as.data.frame(pred.data)
+            pred.data$municipality <- as.factor(pred.data$municipality)
+                               
+            colnames(pred.data) <- c('tax.class', 'municipality', 'total.assessment',
+                                  'past.mill')
+                               
+            # predict next mill rate using random forest
+            predict(rf.mill, newdata = pred.data)
+          }
+          
+          # If doing Assessment Value prediction, use something else...
+          if(input$typeInput == 'Assessment Value'){
+            #...
+          }
+        }
+      }
+      
+      # If not using PIC:
+      else{
+        # If doing Mill Rate prediciton, use random forest
+        if(input$typeInput == 'Mill Rate'){
+          #...
+        }
+        
+        # If doing Assessment Value prediction, use something else...
+        if(input$typeInput == 'Assessment Value'){
+          #...
+        }
+      }
+    })
+  })
+   
+  estimatestext <- reactive({
+    input$updateButton
+    
    #print("estimates...")
       
    # If using PIC:
@@ -153,13 +231,14 @@ server <- function(input, output, session) {
      if(input$identInput!=""){
        if(input$typeInput == 'Mill Rate'){   #need to be changed to extract values
          #print("estimates for mill rate")
-         return(paste("Mill rate prediction for class", input$taxclassInput,
-                      "in", input$municipalityInput, "is...", sep = " ")) # RETURN PREDICTION
+         return(paste("Mill rate prediction for class", filtered()$tax.class[1],
+                      "in", filtered()$municipality[1], "is...",
+                      estimates(), sep = " ")) # RETURN PREDICTION
          }
           
        if(input$typeInput == 'Assessment Value'){
          return(paste("prediction for", input$identInput,
-                      "is...", sep = " "))  # RETURN PREDICTION
+                      "is...", estimate(), sep = " "))  # RETURN PREDICTION
          }
           
        if(input$typeInput == 'Select'){
@@ -177,11 +256,13 @@ server <- function(input, output, session) {
      if(input$typeInput == 'Mill Rate'){
        #print("estimates for mill rate")
        return(paste("Mill rate prediction for class", input$taxclassInput,
-                    "in", input$municipalityInput, "is...", sep = " ")) # RETURN PREDICTION
+                    "in", input$municipalityInput, "is...", 
+                    estimate(), sep = " ")) # RETURN PREDICTION
        }
         
      if(input$typeInput == 'Assessment Value'){
-       return(paste("Predicted next assessment value is...", sep = " "))  # RETURN PREDICTION
+       return(paste("Predicted next assessment value is...", 
+                    estimates(), sep = " "))  # RETURN PREDICTION
        }
         
      if(input$typeInput == 'Select'){
@@ -190,13 +271,14 @@ server <- function(input, output, session) {
    }
    })
    
+  # output the estimates text in the main panel
   output$results <- renderText({
-    estimates()
+    estimatestext()
   })
   
   
-  # Titles text - mostly working...
-  
+  # Titles text for main panel title - describes prediction type or PIC 
+  # number if applicable
   titles <- reactive({
     input$updateButton
     
@@ -220,8 +302,8 @@ server <- function(input, output, session) {
           }
           
           if(input$typeInput == 'Mill Rate'){
-            return(paste("Class", input$taxclassInput, 
-                         "mill rate for", input$municipalityInput, sep = " ")) #ADD PREDICTION HERE
+            return(paste("Class", filtered()$tax.class[1], 
+                         "mill rate for", filtered()$municipality[1], sep = " ")) #ADD PREDICTION HERE
           }
           
           if(input$typeInput == 'Select'){

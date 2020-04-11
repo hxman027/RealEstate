@@ -7,7 +7,7 @@ rfData <- function(data) {
   
   rfdat$municipality <- as.factor(rfdat$municipality)
   
-  factors_tbl = rfdat %>% 
+  factors_tbl = dat %>% 
     group_by(municipality) %>% 
     count(name="mun_count", sort = TRUE) %>% 
     ungroup() %>% 

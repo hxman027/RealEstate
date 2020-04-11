@@ -1,0 +1,105 @@
+---
+title: "Random forest mill rates"
+output: github_document
+---
+
+```{r}
+suppressPackageStartupMessages(library(randomForest))
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(lme4))
+suppressPackageStartupMessages(library(ROCR))
+suppressPackageStartupMessages(library(predictmeans))
+```
+
+```{r}
+dat <- readr::read_delim("test_train_data.txt", delim = ",", col_types = "ciccdddddc")
+dat$municipality <- as.factor(dat$municipality)
+
+factors_tbl = dat %>% 
+  group_by(municipality) %>% 
+  count(name="mun_count", sort = TRUE) %>% 
+  ungroup() %>% 
+  mutate(perc = mun_count/sum(mun_count),
+         cum_perc = cumsum(perc)) %>% 
+  arrange(desc(mun_count)) %>% 
+  mutate(rank = row_number(),
+         municipality = fct_reorder(municipality, rank)) %>% 
+  mutate(col_municipality = fct_collapse(municipality, other = levels(municipality)[-c(1:52)])) %>% 
+  select(municipality, col_municipality)
+
+
+avg_assessment_by_municipality = dat %>% 
+  left_join(factors_tbl) %>% 
+  select(-c(municipality)) %>% 
+  rename(municipality = col_municipality) %>% 
+  filter(test.train == "train") %>% 
+  group_by(municipality, tax.class, year) %>% 
+  mutate(avg_assessment = mean(total.assessment, na.rm=TRUE)) %>% 
+  select(municipality, year, tax.class, avg_assessment) %>% 
+  distinct(municipality, .keep_all = T)
+
+dat_mill <- dat %>% 
+  left_join(factors_tbl) %>% 
+  select(-c(municipality)) %>% 
+  rename(municipality = col_municipality) %>% 
+  left_join(avg_assessment_by_municipality) %>% 
+  group_by(PIC) %>% 
+  mutate(next.assess = lead(avg_assessment, order_by = year),
+         past.mill = lag(mill.rate, order_by = year)) %>%
+  arrange(PIC) %>% 
+  group_by(municipality, year) %>% 
+  mutate(n.prop = n()) %>% 
+  arrange(desc(n.prop)) %>% 
+  distinct(municipality, .keep_all = T) %>% 
+  select(-c(tax, improvement.assessment, land.assessment, total.assessment))
+
+dat_as <- dat %>% 
+  left_join(factors_tbl) %>% 
+  select(-c(municipality)) %>% 
+  rename(municipality = col_municipality) %>% 
+  group_by(PIC) %>% 
+  arrange(year) %>% 
+  mutate(next.assess = lead(total.assessment, order_by = year),
+         past.mill = lag(mill.rate, order_by = year)) %>% 
+  group_by(municipality) %>% 
+  top_n(25, wt = total.assessment) %>% 
+  arrange(municipality)
+
+train_mill <- dat_mill %>%  filter(test.train == "train")
+test_mill <- dat_mill %>%  filter(test.train == "test")
+train_as <- dat_as %>%  filter(test.train == "train")
+test_as <- dat_as %>%  filter(test.train == "test")
+```
+
+# Random Forest
+```{r}
+set.seed(0)
+
+rf.mill <- randomForest(
+  mill.rate ~  tax.class + municipality + avg_assessment + past.mill, na.action = na.omit, mtry = 4,
+  data=train_mill, ntree=500
+)
+
+save(rf.mill, file = "rf.mill.rda")
+
+#Evaluate variable importance
+importance(rf.mill)
+varImpPlot(rf.mill)
+
+rf.as <- randomForest(
+  next.assess ~ tax.class + municipality + total.assessment + mill.rate, na.action = na.omit,mtry = 4,
+  data=train_as
+)
+
+save(rf.as, file = "rf.as.rda")
+importance(rf.as)
+varImpPlot(rf.as)
+
+yhat.bag <- predict(rf.mill,newdata=test_mill)
+plot(yhat.bag, test_mill$mill.rate, xlab="Predicted Mill Rate Using Test Set", ylab="Actual Mill Rate")
+abline(0,1)
+
+yhat.bag1 <- predict(rf.as,newdata=test_as)
+plot(yhat.bag1, test_as$next.assess, xlab="Predicted Asssessment Value Using Test Set", ylab="Actual Assessment Value")
+abline(0,1)
+```

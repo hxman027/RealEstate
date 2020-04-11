@@ -339,29 +339,22 @@ ggsave("RealEstate/src/eda - s550/plots/4. scatter average year.png")
     theme(text = element_text(size = 18))
   
   
-  
-  
-corr <- data.frame(assessment = corr.values$total.assessment)
-rownames(corr) <- corr.values$municipality
-cor(corr)
-  ggsave("RealEstate/src/eda - s550/plots/9. correlation matrix.pdf")
-  ggsave("RealEstate/src/eda - s550/plots/9. correlation matrix.png")
+
 
 # export data set ####
 set.seed(2303)
 train <- re %>% 
-  dplyr::select(PIC) %>% 
-  dplyr::distinct() %>% 
-  dplyr::sample_frac(0.75) %>% 
-  dplyr::pull()
+  dplyr::filter(year != 2020)
+test <- re %>% 
+  dplyr::filter(year != 2016)
 
-re.out <- re %>% 
-  dplyr::mutate(test.train = ifelse(PIC %in% train, "train", "test"))
-
-readr::write_delim(re.out, "test_train_data.txt", delim = ",")
+readr::write_delim(train, "train_data.txt", delim = ",")
+readr::write_delim(test, "test_data.txt", delim = ",")
 # read for test
-dataset <- readr::read_delim("test_train_data.txt", delim = ",",
-                             col_types = "ciccdddddc")
+train_read <- readr::read_delim("train_data.txt", delim = ",",
+                             col_types = "ciccddddd")
+test_read <- readr::read_delim("test_data.txt", delim = ",",
+                             col_types = "ciccddddd")
 
 ## S450 data ####
 re.450 <- read_csv("RealEstate/data/assessment_aggregate.csv")

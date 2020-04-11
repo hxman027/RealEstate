@@ -14,6 +14,7 @@ suppressPackageStartupMessages(library(predictmeans))
 ```{r}
 dat <- readr::read_delim("test_train_data.txt", delim = ",", col_types = "ciccdddddc")
 dat$municipality <- as.factor(dat$municipality)
+dat$tax.class <- as.factor(dat$tax.class)
 
 factors_tbl = dat %>% 
   group_by(municipality) %>% 
@@ -100,6 +101,6 @@ plot(yhat.bag, test_mill$mill.rate, xlab="Predicted Mill Rate Using Test Set", y
 abline(0,1)
 
 yhat.bag1 <- predict(rf.as,newdata=test_as)
-plot(yhat.bag1, test_as$next.assess, xlab="Predicted Asssessment Value Using Test Set", ylab="Actual Assessment Value")
+plot(yhat.bag1, test_as$next.assess, xlab="Predicted Asssessment Value Using Test Set", ylab="Actual Assessment Value", ylim=c(0, 6e8))
 abline(0,1)
 ```

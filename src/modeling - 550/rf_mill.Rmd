@@ -27,6 +27,7 @@ factors_tbl = dat %>%
   mutate(col_municipality = fct_collapse(municipality, other = levels(municipality)[-c(1:52)])) %>% 
   select(municipality, col_municipality)
 
+
 avg_assessment_by_municipality = dat %>% 
   left_join(factors_tbl) %>% 
   select(-c(municipality)) %>% 
@@ -59,10 +60,8 @@ dat_as <- dat %>%
   group_by(PIC) %>% 
   arrange(year) %>% 
   mutate(next.assess = lead(total.assessment, order_by = year),
-         past.mill = lag(mill.rate, order_by = year))
-
-# 
-# notwant <- c("CA-BC-003-6500000", "CA-BC-223-00100030000", "CA-BC-227-0000020000", "CA-BC-234-01001006", "CA-BC-301-0000001", "CA-BC-315-00001000","CA-BC-316-010012122009", "CA-BC-336-00001000", "CA-BC-338-1000004884000", "CA-BC-556-00001000", "CA-BC-727-03025100", "CA-BC-757-05141000", "CA-BC-759-000147000", "CA-BC-760-001203000", "CA-BC-765-00002001", "CA-BC-771-00003000")
+         past.mill = lag(mill.rate, order_by = year)) %>% 
+  na.omit()
 
 train_mill <- dat_mill %>%  filter(test.train == "train")
 test_mill <- dat_mill %>%  filter(test.train == "test")

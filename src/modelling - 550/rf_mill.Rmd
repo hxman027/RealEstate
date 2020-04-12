@@ -29,23 +29,23 @@ factors_tbl = dat %>%
   select(municipality, col_municipality)
 
 
-avg_assessment_by_municipality = dat %>% 
+med_assessment_by_municipality = dat %>% 
   left_join(factors_tbl) %>% 
   select(-c(municipality)) %>% 
   rename(municipality = col_municipality) %>% 
   filter(test.train == "train") %>% 
   group_by(municipality, tax.class, year) %>% 
-  mutate(avg_assessment = median(total.assessment, na.rm=TRUE)) %>% 
-  select(municipality, year, tax.class, avg_assessment) %>% 
+  mutate(med_assessment = median(total.assessment, na.rm=TRUE)) %>% 
+  select(municipality, year, tax.class, med_assessment) %>% 
   distinct(municipality, .keep_all = T)
 
 dat_mill <- dat %>% 
   left_join(factors_tbl) %>% 
   select(-c(municipality)) %>% 
   rename(municipality = col_municipality) %>% 
-  left_join(avg_assessment_by_municipality) %>% 
+  left_join(med_assessment_by_municipality) %>% 
   group_by(PIC) %>% 
-  mutate(next.assess = lead(avg_assessment, order_by = year),
+  mutate(next.assess = lead(med_assessment, order_by = year),
          past.mill = lag(mill.rate, order_by = year)) %>%
   arrange(PIC) %>% 
   group_by(municipality, year) %>% 
@@ -77,7 +77,7 @@ test_as <- dat_as %>%  filter(test.train == "test")
 set.seed(0)
 
 rf.mill <- randomForest(
-  mill.rate ~  tax.class + municipality + avg_assessment + past.mill, na.action = na.omit, mtry = 4,
+  mill.rate ~  tax.class + municipality + med_assessment + past.mill, na.action = na.omit, mtry = 4,
   data=train_mill, ntree=500
 )
 
@@ -101,6 +101,6 @@ plot(yhat.bag, test_mill$mill.rate, xlab="Predicted Mill Rate Using Test Set", y
 abline(0,1)
 
 yhat.bag1 <- predict(rf.as,newdata=test_as)
-plot(yhat.bag1, test_as$next.assess, xlab="Predicted Asssessment Value Using Test Set", ylab="Actual Assessment Value", ylim=c(0, 6e8))
+plot(yhat.bag1, test_as$next.assess, xlab="Predicted Asssessment Value Using Test Set", ylab="Actual Assessment Value", ylim=c(0, 10e8))
 abline(0,1)
 ```

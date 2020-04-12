@@ -5,11 +5,12 @@
 # load rdas for each so that estimates can be made
 # fix select input to choose only the top 52 categories and other
 
+library(randomForest)
 
 # in case modified data needs to be accessed
 source("helpers.R")
 
-# load models - RF for mill rate predictions and ??? for assessment value predictions
+# load models - RF for mill rate predictions and for assessment value predictions
 load("rf.mill.rda")
 load("rf.as.rda")
 
@@ -140,18 +141,17 @@ server <- function(input, output, session) {
   estimates <- reactive({
     input$updateButton
     
-    data <- filtered()
-    
     isolate({
-      if(is.null(data)){
+      if(is.null(filtered())){
         pred <- paste("No data.")
       }
 
       else{
         # If using PIC: 
+        
         # If doing Mill Rate prediciton:
         if(input$typeInput == 'Mill Rate'){
-          print("doing mill rate prediction")
+          #print("doing mill rate prediction")
           
           # extract latest mill rate
           past20 <- filtered() %>% 
@@ -257,7 +257,7 @@ server <- function(input, output, session) {
           pred <- round(predict(rf.as, newdata = pred.data),2)
           
           if(last.assess==0 || is.na(pred)){
-            pred <- paste("No previous assessment value found.")
+            pred <- paste("Missing required data.")
           }
         }
       }
@@ -356,6 +356,10 @@ server <- function(input, output, session) {
           if(input$typeInput == 'Select'){
             return(paste("Select prediction type."))
           }
+        }
+        
+        else{
+          return(paste(""))
         }
       }
       

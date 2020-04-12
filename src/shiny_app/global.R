@@ -26,8 +26,8 @@ datshort <- dat %>%
 
 
 # load dataset used for rf.mill
-rfdatload <- readRDS("rf_data.rds")
+rfdat <- readRDS("rf_data.rds")
 
 # create dataset used for rf.as
-asdatload <- readRDS("as_data.rds")
+asdat <- readRDS("as_data.rds")
   

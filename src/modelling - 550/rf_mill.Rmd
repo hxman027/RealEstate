@@ -92,7 +92,7 @@ rf.as <- randomForest(
   data=train_as
 )
 
-save(rf.as, file = "rf.as.rda")
+save(rf.as, file = "rf.as1.rda")
 importance(rf.as)
 varImpPlot(rf.as)
 

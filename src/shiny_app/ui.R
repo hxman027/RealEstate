@@ -33,7 +33,8 @@ ui <- fluidPage(theme = shinytheme("cerulean"), #maybe journal theme?
                 sidebarLayout(
                   sidebarPanel(
                     # tabsetPanel(
-                    #   tabPanel("User Inputs",                
+                    #   tabPanel("User Inputs",        
+                    
                     # Only show the following for assessment predictions:
                     # Use PIC?
                     checkboxInput("picInput", "Use PIC?", value = FALSE),
@@ -50,8 +51,7 @@ ui <- fluidPage(theme = shinytheme("cerulean"), #maybe journal theme?
                                      
                                      # for municipality
                                      selectInput("municipalityInput", "Municipality:", 
-                                                 c("-",sort(unique(datshort$municipality)),
-                                                   "Other"),
+                                                 c("-",sort(unique(datshort$municipality))),
                                                  selected = "-"),
                                                      
                                      # for Tax Class code
@@ -63,8 +63,9 @@ ui <- fluidPage(theme = shinytheme("cerulean"), #maybe journal theme?
                                      conditionalPanel("input.typeInput == 'Assessment Value'",
                                                       numericInput("assessmentInput",
                                                                    "Current Assessment Value:",
-                                                                   value = 500000, min = 0, 
-                                                                   max = 6000000000))
+                                                                   value = 70000000, 
+                                                                   min = 4241700, 
+                                                                   max = 10000000000))
                                      ),
                                     
                     

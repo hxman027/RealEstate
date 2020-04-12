@@ -5,7 +5,6 @@
 # load rdas for each so that estimates can be made
 # fix select input to choose only the top 52 categories and other
 
-library(randomForest)
 
 # in case modified data needs to be accessed
 source("helpers.R")
@@ -308,8 +307,18 @@ server <- function(input, output, session) {
          }
       
        if(input$typeInput == 'Assessment Value'){
+         md <- asdat %>% 
+           filter(municipality == input$municipalityInput)
+         
+         minm <- min(na.omit(md$total.assessment))
+         print(minm)
+
+         maxm <- max(na.omit(md$total.assessment))
+         print(maxm)
+         
          return(paste("Predicted next assessment value - \n", 
-                      estimates(), sep = " "))  # RETURN PREDICTION
+                      estimates(), "\n Valid prediction range for this municipality is",
+                      minm, "-", maxm, sep = " "))  # RETURN PREDICTION
          }
         
        if(input$typeInput == 'Select'){

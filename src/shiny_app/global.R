@@ -5,6 +5,7 @@ library(dplyr)
 library(DT)
 library(tidyr)
 library(shinyjs)
+library(randomForest)
 
 #PIC used for some testing
 # CA-BC-200-001019632060000

@@ -97,4 +97,4 @@ asData <- function(data) {
   dat_as
 }
 
-
+saveRDS(asData(dat),"as_data.rds")

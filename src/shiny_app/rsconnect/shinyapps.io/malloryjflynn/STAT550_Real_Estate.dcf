@@ -5,8 +5,8 @@ account: malloryjflynn
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 2091582
-bundleId: 3002078
+bundleId: 3004223
 url: https://malloryjflynn.shinyapps.io/STAT550_Real_Estate/
-when: 1586667638.32723
+when: 1586725254.57855
 asMultiple: FALSE
 asStatic: FALSE

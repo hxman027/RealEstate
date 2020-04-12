@@ -35,7 +35,7 @@ avg_assessment_by_municipality = dat %>%
   rename(municipality = col_municipality) %>% 
   filter(test.train == "train") %>% 
   group_by(municipality, tax.class, year) %>% 
-  mutate(avg_assessment = mean(total.assessment, na.rm=TRUE)) %>% 
+  mutate(avg_assessment = median(total.assessment, na.rm=TRUE)) %>% 
   select(municipality, year, tax.class, avg_assessment) %>% 
   distinct(municipality, .keep_all = T)
 

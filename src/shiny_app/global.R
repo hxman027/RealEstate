@@ -7,7 +7,7 @@ library(tidyr)
 library(shinyjs)
 
 #PIC used for some testing
-#CA-BC-022-04490000
+# CA-BC-200-001019632060000
 
 
 # for bookmarking button
@@ -23,4 +23,11 @@ counts <- dat %>%
 
 datshort <- dat %>% 
   filter(municipality %in% counts$municipality[1:52])
+
+
+# load dataset used for rf.mill
+rfdatload <- readRDS("rf_data.rds")
+
+# create dataset used for rf.as
+asdatload <- readRDS("as_data.rds")
   

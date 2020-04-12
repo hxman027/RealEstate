@@ -22,18 +22,14 @@ server <- function(input, output, session) {
     # Update when following inputs are changed
     input$updateButton
     
-    newdata <- dat
+    newdata <- datshort
     d <- NULL
     #print(dim(dat))
     
     # Filter data based on the user inputs
     isolate({
-          
           # If using PIC:
-          if(input$picInput && input$identInput!="")
-            {
-          
-            
+          if(input$picInput && input$identInput!=""){
             d <- newdata  %>% 
               filter(PIC == input$identInput)
           }
@@ -59,7 +55,6 @@ server <- function(input, output, session) {
   
    ########## PLOTTING TAB ###################
    # Add plots of either mill rate or assessment value over time to plot tab
-  munic <- reactive(input$municipalityInput)
   
   # create mill rate plot that reacts to inputs
   millrateplot <- reactive({
@@ -70,7 +65,7 @@ server <- function(input, output, session) {
           
     isolate({
     if(is.null(data)){
-      p <- paste("No corresponding data.")
+      p <- paste("No corresponding data to plot.")
     }
 
     # plot mill rates over time for municipality chosen for mill rate predicitons
@@ -85,7 +80,7 @@ server <- function(input, output, session) {
     }
     })
 
-    return(p)
+    p
 
   })
 
@@ -97,23 +92,28 @@ server <- function(input, output, session) {
 
     isolate({
       if(is.null(data)){
-        p <- paste("No corresponding data.")
+        p <- paste("No corresponding data to plot.")
         }
       
     # plot assessment values over time 
-      if(input$typeInput == 'Assessment Value'){
+      if(input$picInput && input$identInput!=""){
+        if(input$typeInput == 'Assessment Value') {
           #print("ggplotting assessment values")
           p <- ggplot(data, aes(x = year, y = total.assessment)) +
-            geom_line(color="#56B4E9") +
-            geom_point(color="#56B4E9") +
+            geom_line(color = "#56B4E9") +
+            geom_point(color = "#56B4E9") +
             theme_minimal() +
             xlab("Year") +
             ylab("Assessment Value") +
             ggtitle("Assessment Values Over Time")
+        }
+      }
+      else{
+        p <- paste("No corresponding data to plot.")
       }
       })
     
-    return(p)
+    p
     
   })
   
@@ -121,18 +121,13 @@ server <- function(input, output, session) {
    output$coolplot <- renderPlot({
      if (input$typeInput != 'Select'){
        if(input$typeInput == 'Assessment Value'){
-         if(input$picInput && input$identInput!=""){
-           assessplot()
-         }
-         else{
-           return()
-         }
+         assessplot()
        }
        
        else{
          millrateplot()
        }
-     }
+       }
      
      else{
        return()
@@ -149,82 +144,132 @@ server <- function(input, output, session) {
     
     isolate({
       if(is.null(data)){
-        return(NULL)
+        pred <- paste("No data.")
       }
-      
-     # If using PIC: 
-      if(input$picInput){
-        if(input$identInput != ""){
-          
-          # If doing Mill Rate prediciton, use random forest
-          if(input$typeInput == 'Mill Rate'){
-            
-            # extract latest mill rate
-            past20 <- filtered() %>% 
-              filter(year == 2020)
-            
-            past19 <- filtered() %>% 
-              filter(year == 2019)
-            
-            # if 2020 column is nonempty of mill rates for this community:
-            # otherwise use 2019 mill rate data (it will break if these
-            # are both empty)
-            meanmillrate <- mean(past19$mill.rate)
-            if(sum(!is.na(past20$mill.rate>0))){
-              meanmillrate <- mean(past20$mill.rate)
-            }
-            
-            if(is.na(meanmillrate)){
-              return(paste("No recent mill rate found."))
-            }
-            
-            # put data together in the way rfmill expects as input call it inputdata
-            # columns include tax.class, municipality, total.assessment, past.mill
-            meanassess <- mean(na.omit(past20$total.assessment))
-            
-            pred.data <- cbind(filtered()$tax.class[1], 
-                               filtered()$municipality[1],
-                               meanassess,
-                               meanmillrate)
-            pred.data <- as.data.frame(pred.data, stringsAsFactors = FALSE)
-            colnames(pred.data) <- c('tax.class', 'municipality',
-                                      'total.assessment','past.mill')
-                               
-            rfdat <- rfData(dat)
-            pred.data$past.mill <- as.numeric(pred.data$past.mill)
-            pred.data$total.assessment <- as.numeric(pred.data$total.assessment)
-            pred.data$municipality <- factor(pred.data$municipality, 
-                                             levels = levels(rfdat$municipality))
-            pred.data$tax.class <- factor(pred.data$tax.class, 
-                                          levels = levels(rfdat$tax.class))
-            
-            # predict next mill rate using random forest
-            predict(rf.mill, newdata = pred.data)
-          }
-          
-          # If doing Assessment Value prediction, use something else...
-          if(input$typeInput == 'Assessment Value'){
-            #...
-          }
-        }
-      }
-      
-      # If not using PIC:
+
       else{
-        # If doing Mill Rate prediciton, use random forest
+        # If using PIC: 
+        # If doing Mill Rate prediciton:
         if(input$typeInput == 'Mill Rate'){
-          #...
-        }
+          print("doing mill rate prediction")
+          
+          # extract latest mill rate
+          past20 <- filtered() %>% 
+            filter(year == 2020)
+            
+          # if 2020 column is empty, it will break by condition on mean mill rate=0
+          meanmillrate <- mean(na.omit(past20$mill.rate))
+          print(meanmillrate)
+           
+          # put data together in the way rfmill expects as input call it inputdata
+          # columns include tax.class, municipality, total.assessment, past.mill
+          meanassess <- mean(na.omit(past20$total.assessment))
+          print(meanassess)
+         
+          pred.data <- cbind(filtered()$tax.class[1], 
+                             filtered()$municipality[1],
+                             meanassess,
+                             meanmillrate)
+          pred.data <- as.data.frame(pred.data, stringsAsFactors = FALSE)
+          colnames(pred.data) <- c('tax.class', 'municipality',
+                                   'avg_assessment','past.mill')
+            
         
-        # If doing Assessment Value prediction, use something else...
+          pred.data$past.mill <- as.numeric(pred.data$past.mill)
+          pred.data$avg_assessment <- as.numeric(pred.data$avg_assessment)
+          pred.data$municipality <- factor(pred.data$municipality,
+                                           levels = levels(rfdat$municipality))
+          pred.data$tax.class <- factor(pred.data$tax.class, 
+                                        levels = levels(rfdat$tax.class))
+          print(pred.data)
+        
+          # predict next mill rate using random forest
+          pred <- round(predict(rf.mill, newdata = pred.data), 2)
+        
+          if(meanmillrate==0 || is.na(pred)){
+            pred <- paste("No previous mill rate found in data.")
+          }
+          
+          pred
+          
+          }
+          
+        
+        # If doing Assessment Value prediction:
         if(input$typeInput == 'Assessment Value'){
-          #...
+        
+          print("doing assessment value prediction")
+        
+          # extract latest assessment value
+          past20 <- filtered() %>% 
+            filter(year == 2020)
+           
+          # if using PIC and 2020 column is NA for this property's
+          # assessment value, it will break 
+          if(input$picInput){
+            print("using PIC")
+            if(input$identInput != ""){
+              if(!is.na(past20$total.assessment)){
+                last.assess <- past20$total.assessment
+                }
+              else{
+                last.assess <- 0
+              }
+              }
+            print(last.assess)
+            }
+        
+          # if not using PIC, assessment value must come from user input
+          else{
+            print("not using PIC")
+            if(input$assessmentInput != ""){
+              last.assess <- input$assessmentInput
+              }
+            else{
+              last.assess <- 0
+              }
+            print(last.assess)
+            }
+        
+        
+          # put data together in the way rfmill expects as input call it inputdata
+          # columns include tax.class, municipality, total.assessment, and mill.rate
+          print(head(filtered()))
+          pred.data <- cbind(filtered()$tax.class[1], 
+                             filtered()$municipality[1],
+                             last.assess,
+                             past20$mill.rate[1])
+          
+          pred.data <- as.data.frame(pred.data, stringsAsFactors = FALSE)
+          colnames(pred.data) <- c('tax.class', 'municipality',
+                                   'total.assessment', 'mill.rate')
+            
+          
+          pred.data$mill.rate <- as.numeric(pred.data$mill.rate)
+          pred.data$total.assessment <- as.numeric(pred.data$total.assessment)
+          pred.data$municipality <- factor(pred.data$municipality,
+                                           levels = levels(asdat$municipality))
+          pred.data$tax.class <- factor(pred.data$tax.class,
+                                        levels = levels(asdat$tax.class))
+          print(pred.data)
+          
+          # predict next assessment value using random forest
+          pred <- round(predict(rf.as, newdata = pred.data),2)
+          
+          if(last.assess==0 || is.na(pred)){
+            pred <- paste("No previous assessment value found.")
+          }
         }
       }
+      })
+    
+    
+    pred
+    print(pred)
+    
     })
-  })
    
-   # print
+   # create estimates as text for output
    estimatestext <- reactive({
      input$updateButton
     
@@ -233,16 +278,15 @@ server <- function(input, output, session) {
      if(input$picInput){
        if(input$identInput!=""){
          if(input$typeInput == 'Mill Rate'){   #need to be changed to extract values
-           
-            return(paste("Mill rate prediction for class", 
+           return(paste("Mill rate prediction for class", 
                          filtered()$tax.class[1],
-                         "in", filtered()$municipality[1], "is...",
-                         estimates(), sep = " ")) # RETURN PREDICTION
+                         "in", filtered()$municipality[1], "- \n", 
+                         estimates(), sep = " "))  #  RETURN PREDICTION
            }
        
          if(input$typeInput == 'Assessment Value'){
-           return(paste("prediction for", input$identInput,
-                        "is...", estimate(), sep = " "))  # RETURN PREDICTION
+           return(paste("Predicted next assessment value of property \n", input$identInput,
+                        "-", estimates(), sep = " "))  # RETURN PREDICTION
            }
           
          if(input$typeInput == 'Select'){
@@ -258,15 +302,13 @@ server <- function(input, output, session) {
      # If not using PIC:
      else{
        if(input$typeInput == 'Mill Rate'){
-         
-         return(paste("Mill rate prediction for class", 
-                      input$taxclassInput,
-                      "in", input$municipalityInput, "is...", 
-                      estimate(), sep = " ")) # RETURN PREDICTION
+         return(paste("Mill rate prediction for class", input$taxclassInput,
+                      "in", input$municipalityInput, "- \n", 
+                      estimates(), sep = " ")) # RETURN PREDICTION
          }
       
        if(input$typeInput == 'Assessment Value'){
-         return(paste("Predicted next assessment value is...", 
+         return(paste("Predicted next assessment value - \n", 
                       estimates(), sep = " "))  # RETURN PREDICTION
          }
         
@@ -318,13 +360,21 @@ server <- function(input, output, session) {
       }
       
       else{
-          #print("trying to post title")
           if(input$typeInput == 'Mill Rate'){
             return(paste("Class", input$taxclassInput, 
-                         "mill rate for", input$municipalityInput, sep = " ")) #ADD PREDICTION HERE
+                         "mill rate for", 
+                         input$municipalityInput, sep = " ")) 
           }
+        
           else{
-            return(paste("Could not find matching data."))
+            if(input$typeInput == 'Select'){
+              return(paste("Select prediction type."))
+            }
+            else{
+              return(paste("Assessment Value prediction for class", 
+                           input$taxclassInput, "property \n in",
+                           input$municipalityInput, sep = " "))
+            }
           }
         }
       }

@@ -318,6 +318,11 @@ server <- function(input, output, session) {
            maxm <- max(na.omit(md$total.assessment))
            print(maxm)
          }
+         
+         if(input$municipalityInput == '-' || 
+            input$taxclassInput == '-'){
+           return(paste("Complete user inputs."))
+         }
 
          return(paste("Predicted next assessment value - \n",
                       estimates(), "\n Valid prediction range for this municipality is",

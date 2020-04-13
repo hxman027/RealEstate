@@ -311,18 +311,18 @@ server <- function(input, output, session) {
          if(!is.null(filtered())){
            md <- asdat %>%
              filter(municipality == input$municipalityInput)
-           
+
            minm <- min(na.omit(md$total.assessment))
            print(minm)
-           
+
            maxm <- max(na.omit(md$total.assessment))
            print(maxm)
          }
-         
-         return(paste("Predicted next assessment value - \n", 
+
+         return(paste("Predicted next assessment value - \n",
                       estimates(), "\n Valid prediction range for this municipality is",
                       minm, "-", maxm, sep = " "))  # RETURN PREDICTION
-         }
+       }
         
        if(input$typeInput == 'Select'){
          return("Enter prediction type.")

@@ -83,12 +83,11 @@ abline(0,1)
 # both random slope and random intercept
 # different rate of change of assessment value and mill rate as well as initial assessment value and mill rate for each municipality 
 
-lme.mill <- lmer(mill.rate ~ 1+ (1+year|municipality) + as.factor(year) + tax.class  + total.assessment + past.mill, data = train)
+lme.mill <- lmer(mill.rate ~ 1+ (1+year|municipality) + as.factor(year) + tax.class  + avg_assessment + past.mill, data = train_mill)
 
 summary(lme.mill)
 
-
-lme.as <- lmer(next.assess ~ 1+ (1+year|municipality) + as.factor(year) + tax.class + total.assessment + mill.rate, data = train)
+lme.as <- lmer(next.assess ~ 1+ (1+year|municipality) + as.factor(year) + tax.class + total.assessment + mill.rate, data = train_as)
 
 summary(lme.as)
 ```

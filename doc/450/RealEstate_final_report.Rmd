@@ -204,7 +204,7 @@ The plot from **Figure 2** shows that the mill rate tends to decrease as the ave
 #### - Categorical Variables
 
 
-Here categorical variables are taken into account. Boxplots of mill rate across municipalities and tax classes are plotted to display the distributions in **Figure 3** and **Figure 4**, respectively.
+Here categorical variables are taken into account. Boxplots of mill rate across municipalities and tax classes have been plotted to display the distributions in **Figure 3** and **Figure 4**, respectively.
 
 
 

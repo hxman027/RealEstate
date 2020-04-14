@@ -1,0 +1,57 @@
+% Author: Ben Bloem-Reddy
+%		  UBC
+\usepackage[utf8]{inputenc}
+\usepackage{verbatim}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+
+%\usepackage[sorting=nyt,backend=biber,bibstyle=alphabetic,citestyle=alphabetic,giveninits=true]{biblatex}
+\usepackage[backend=biber, natbib]{biblatex}
+
+\def\coursename{STAT 550: Techniques of Statistical Consulting}
+\def\shortcoursename{STAT 550}
+\def\semester{Winter 2019/2020}
+
+\setlength{\oddsidemargin}{0.0 in}
+\setlength{\evensidemargin}{0.0 in} 
+\setlength{\topmargin}{-0.6 in} 
+\setlength{\textwidth}{6.5 in} 
+\setlength{\textheight}{8.5 in}
+\setlength{\headsep}{0.75 in} 
+\setlength{\parindent}{0 in}
+\setlength{\parskip}{0.1 in}
+
+
+\titleformat*{\section}{\Large\bfseries}
+
+
+
+
+
+\newcommand{\printtitle}{
+    %\pagestyle{myheadings}
+    \thispagestyle{plain}
+    \pagenumbering{gobble}
+    \newpage
+    \noindent
+    \begin{center}
+        {\LARGE An Analysis on Commercial Real Estate Property Assessment and Property Tax in B.C.}
+        \vskip 5mm
+        {\large \begin{tabular}{cccc} Gian Carlo Di-Luvi & Mallory Flynn & Sophia Li & Vittorio Romaniello \end{tabular}} \\
+        {\large STAT 550 Project Report} \\
+        {\large April 2020} \\
+        \vskip 5mm
+        {\large Department of Statistics} \\
+        {\large University of British Columbia}
+    \end{center}
+    
+    \newpage
+
+    \pagestyle{fancy}
+    \pagenumbering{arabic}
+    \fancyhf{}
+    \lhead{\coursename}
+    %\chead{\shortcoursename}
+    \rhead{Di-Luvi, Flynn, Li, Romaniello}
+    \cfoot{\thepage}
+}

@@ -1,0 +1,196 @@
+% ADD YOUR CUSTOM NOTATION HERE
+
+%% GCD %%
+
+% set theory
+\newcommand{\suchthat}{\, : \,} % Set such that
+\newcommand{\given}{\, \mid \,}        % Conditional probability
+
+% probability operators
+\def\P{\bbP} %fundamental probability
+\def\E{\bbE} %expectation
+\newcommand{\convergence}[2]{\overset{#1}{\underset{#2}{\longrightarrow}}} %convergence in d,p,a.s.
+\def\dconvergence{\overset{\mathrm{d}}{\longrightarrow}} % convergence in distribution
+\def\pconvergence{\overset{p}{\longrightarrow}} % convergence in probability
+\def\asconvergence{\overset{\mathrm{as}}{\longrightarrow}} % a.s. convergence
+
+% stats operators
+\newcommand{\SD}{\mathrm{SD}} %standard deviation
+\newcommand{\Var}{\mathrm{Var}} % variance
+\def\MLE{\mathrm{MLE}} %maximum likelihood extimator
+\def\MSE{\mathrm{MSE}} %mean squared error
+
+% stats distributions
+\def\Bernoulli{\mathrm{Bernoulli}}
+\def\Binom{\mathrm{Binomial}}
+\def\Poisson{\mathcal{Poisson}}
+\def\Geom{\mathcal{Geometric}}
+\def\NegBinom{\mathrm{NegBinom}}
+\def\Normal{\mathcal{N}}
+\def\Gammadist{\mathrm{Gamma}}
+\def\Beta{\mathrm{Beta}}
+\def\Exp{\mathrm{Exp}}
+
+% math operators
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\def\d{\,\mathrm{d}} % for integration
+\def\exp{\mathrm{exp}}
+\newcommand{\floor}[1]{\left\lfloor #1 \right\rfloor} % floor function
+\newcommand{\ceiling}[1]{\left\lceil #1 \right\rceil} % ceiling function
+
+% matrix operators
+\newcommand{\rank}{\mathrm{rank}}
+\newcommand{\trace}{\mathrm{tr}}
+
+%% End of GCD %%
+
+% Author: Ben Bloem-Reddy
+%		  UBC
+%%
+% full alphabets of different styles
+%%
+
+% bf series
+\def\bfA{\mathbf{A}}
+\def\bfB{\mathbf{B}}
+\def\bfC{\mathbf{C}}
+\def\bfD{\mathbf{D}}
+\def\bfE{\mathbf{E}}
+\def\bfF{\mathbf{F}}
+\def\bfG{\mathbf{G}}
+\def\bfH{\mathbf{H}}
+\def\bfI{\mathbf{I}}
+\def\bfJ{\mathbf{J}}
+\def\bfK{\mathbf{K}}
+\def\bfL{\mathbf{L}}
+\def\bfM{\mathbf{M}}
+\def\bfN{\mathbf{N}}
+\def\bfO{\mathbf{O}}
+\def\bfP{\mathbf{P}}
+\def\bfQ{\mathbf{Q}}
+\def\bfR{\mathbf{R}}
+\def\bfS{\mathbf{S}}
+\def\bfT{\mathbf{T}}
+\def\bfU{\mathbf{U}}
+\def\bfV{\mathbf{V}}
+\def\bfW{\mathbf{W}}
+\def\bfX{\mathbf{X}}
+\def\bfY{\mathbf{Y}}
+\def\bfZ{\mathbf{Z}}
+
+% bb series
+\def\bbA{\mathbb{A}}
+\def\bbB{\mathbb{B}}
+\def\bbC{\mathbb{C}}
+\def\bbD{\mathbb{D}}
+\def\bbE{\mathbb{E}}
+\def\bbF{\mathbb{F}}
+\def\bbG{\mathbb{G}}
+\def\bbH{\mathbb{H}}
+\def\bbI{\mathbb{I}}
+\def\bbJ{\mathbb{J}}
+\def\bbK{\mathbb{K}}
+\def\bbL{\mathbb{L}}
+\def\bbM{\mathbb{M}}
+\def\bbN{\mathbb{N}}
+\def\bbO{\mathbb{O}}
+\def\bbP{\mathbb{P}}
+\def\bbQ{\mathbb{Q}}
+\def\bbR{\mathbb{R}}
+\def\bbS{\mathbb{S}}
+\def\bbT{\mathbb{T}}
+\def\bbU{\mathbb{U}}
+\def\bbV{\mathbb{V}}
+\def\bbW{\mathbb{W}}
+\def\bbX{\mathbb{X}}
+\def\bbY{\mathbb{Y}}
+\def\bbZ{\mathbb{Z}}
+
+% cal series
+\def\calA{\mathcal{A}}
+\def\calB{\mathcal{B}}
+\def\calC{\mathcal{C}}
+\def\calD{\mathcal{D}}
+\def\calE{\mathcal{E}}
+\def\calF{\mathcal{F}}
+\def\calG{\mathcal{G}}
+\def\calH{\mathcal{H}}
+\def\calI{\mathcal{I}}
+\def\calJ{\mathcal{J}}
+\def\calK{\mathcal{K}}
+\def\calL{\mathcal{L}}
+\def\calM{\mathcal{M}}
+\def\calN{\mathcal{N}}
+\def\calO{\mathcal{O}}
+\def\calP{\mathcal{P}}
+\def\calQ{\mathcal{Q}}
+\def\calR{\mathcal{R}}
+\def\calS{\mathcal{S}}
+\def\calT{\mathcal{T}}
+\def\calU{\mathcal{U}}
+\def\calV{\mathcal{V}}
+\def\calW{\mathcal{W}}
+\def\calX{\mathcal{X}}
+\def\calY{\mathcal{Y}}
+\def\calZ{\mathcal{Z}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% text short-cuts
+\def\iid{i.i.d.\ } %i.i.d.
+\def\ie{i.e.\ }
+\def\eg{e.g.\ }
+\def\Polya{P\'{o}lya\ }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% set theory/measure theory
+\def\collection{\calC}
+\newcommand{\sigalg}[1]{\mathcal{#1}}
+\def\borel{\calB} %Borel sets
+\def\sigAlg{\sigalg{H}} %sigma-algebra
+\def\filtration{\calF} %filtration
+\newcommand{\msblSpace}[1]{(#1,\sigalg{#1})}
+\newcommand{\measSpace}[2][\mu]{(#2,\sigalg{#2},#1)}
+\newcommand{\borelSpace}[1]{(#1,\borel(#1))}
+\newcommand{\measFuncs}[1]{\sigalg{#1}^f}
+\newcommand{\pbblSpace}{(\Omega,\sigAlg)}
+\newcommand{\probSpace}[1][\bbP]{(\Omega,\sigAlg,#1)}
+
+\def\leb{\lambda}
+
+\def\finv{f^{-1}} % inverse
+\def\ginv{g^{-1}} % inverse
+
+% group theory
+\def\grp{\calG} %group
+
+% operators
+% conditional expectation
+\DeclarePairedDelimiterX\bigCond[2]{[}{]}{#1 \;\delimsize\vert\; #2}
+\newcommand{\conditional}[3][]{\bbE_{#1}\bigCond*{#2}{#3}}
+\def\Law{\mathcal{L}} %law; this is by convention in the literature
+\def\indicator{\mathds{1}} % indicator function
+%\def\1{{\mathbf 1}}
+%\def\indicator{\1}
+
+% binary relations
+\def\condind{{\; \perp\!\!\!\perp \;}} %independence/conditional independence
+\def\equdist{\stackrel{\text{\rm\tiny d}}{=}} %equal in distribution
+\def\equind{\stackrel{\text{\rm\tiny ind}}{=}} %equal by independence
+\def\equas{\stackrel{\text{\rm\tiny a.s.}}{=}} %equal almost surely
+\def\simiid{\sim_{\mbox{\tiny iid}}} %sampled i.i.d
+
+% common vectors and matrices
+\def\onevec{\mathbf{1}}
+\def\iden{\mathbf{I}} % identity matrix
+\def\supp{\text{\rm supp}}
+
+% misc
+% floor and ceiling
+%\DeclarePairedDelimiter{\ceilpair}{\lceil}{\rceil}
+%\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+%\newcommand{\argdot}{{\,\vcenter{\hbox{\tiny$\bullet$}}\,}} %generic argument dot
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+

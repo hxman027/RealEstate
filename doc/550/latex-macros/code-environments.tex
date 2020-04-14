@@ -1,0 +1,50 @@
+\usepackage{listings}
+	\lstset{frame = single,
+    		literate={á}{{\'a}}1
+        			 {ã}{{\~a}}1
+        			 {é}{{\'e}}1
+        			 {ó}{{\'o}}1
+        			 {í}{{\'i}}1
+        			 {ñ}{{\~n}}1
+        			 {¡}{{!`}}1
+        			 {¿}{{?`}}1
+        			 {ú}{{\'u}}1
+                     {Á}{{\'A}}1
+                     {É}{{\'E}}1
+                     {Í}{{\'I}}1
+                     {Ó}{{\'O}}1
+                     {Ú}{{\'U}}1
+} 
+
+\definecolor{darkolivegreen}{rgb}{0.33, 0.42, 0.18}
+\renewcommand{\lstlistingname}{Code}
+\lstdefinestyle{R}{%
+    %\captionsetup{labelformat=algocaption,labelsep=colon}
+    mathescape=false,
+    breaklines=true,
+    frame=single,
+    numbers=left, 
+    numberstyle=\small,
+    language=R,
+    basicstyle=\scriptsize\ttfamily, 
+    keywordstyle=\color{blue}\bf,
+    xleftmargin=.04\textwidth,
+    commentstyle=\color{darkolivegreen},
+    stringstyle=\color{darkolivegreen},
+    deletekeywords={mean, sd, start},
+    morekeywords={TRUE, FALSE, seed}
+}
+
+\lstdefinestyle{regular}{%
+    %\captionsetup{labelformat=algocaption,labelsep=colon}
+    mathescape=false,
+    breaklines=true,
+    frame=single,
+    numbers=left, 
+    numberstyle=\small,
+    language=R,
+    basicstyle=\scriptsize\ttfamily, 
+    keywordstyle=\color{black}\bf,
+    xleftmargin=.04\textwidth
+}
+%--

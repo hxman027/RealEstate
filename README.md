@@ -27,8 +27,8 @@ Every year, all property owners in BC have to pay property taxes&mdash;the singl
 ### Directory roadmap
 
 (We may want to edit this once we have better-defined folders. Below an example.) Each directory includes its own README file. In general:
-* `data` is for *locally* saving data and other miscelaneous files. This folder will be empty in the Github repo.
-* `doc` includes the written portions of the project: main, sections, appendices, and project outline tex/pdfs/aux files.
-* `misc` contains miscelaneous files.
+* `data` is for files containing subsets of the data used for training or testing models. 
+* `doc` includes the written portions of the project: main reports, proposals, poster, individual reports, and project outline tex/pdfs/aux files.
+* `misc` contains miscellaneous files, including files provided by the client.
 * `ref` has the bib file for generating the project's references.
 * `src` includes the R code developed for the project.

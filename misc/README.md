@@ -1,3 +1,3 @@
 # README 
 
-Additional (but not paramount) files for the project, such as the to do list.
+Contains initial project proposal brought by the client.

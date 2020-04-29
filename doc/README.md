@@ -1,3 +1,4 @@
+# README
 This folder includes all written portions of the project, such as proposals, the STAT 450 poster, main reports and supplementary ones.  Highlights can be found via the following links:
 
 - [STAT 450 poster](https://github.com/STAT450-550/RealEstate/blob/master/doc/450/450_poster.pdf)

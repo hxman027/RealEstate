@@ -1,3 +1,5 @@
+# README 
+
 - **rf_mill.Rmd, rf.Rmd & rf.md** files contain code for random forest, linear mixed effect model, and linear model to predict mill rates and assessment values
 - **rf_files** folder contains plots from the random forest regression
 - **rf.as.rda & rf.mill.rda** are model objects used to import into the shiny app

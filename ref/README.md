@@ -1,1 +1,2 @@
-Rreferences go here, ideally in a .bib file to be included in the project final report.
+# README
+References are here in a .bib file which was included in the STAT550 project final report.

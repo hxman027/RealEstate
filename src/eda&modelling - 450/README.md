@@ -1,3 +1,4 @@
+# README
 - **Data_Cleaning.Rmd** aggreagted 2.4 millions rows of data into ~260 data entries, grouped by municipality, year, and tax code
 - **EDA&model_fitting.Rmd** Performed exploratory data analysis and linear model (work in progress)
 - **EDA&model_fitting.md** is the knitted version of **EDA&model_fitting.Rmd**
